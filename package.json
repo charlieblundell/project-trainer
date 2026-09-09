@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "check:exercises": "node scripts/check-exercises.mjs",
-    "preview:plans": "tsx scripts/preview-plans.ts"
+    "preview:plans": "tsx scripts/preview-plans.ts",
+    "preview:progression": "tsx scripts/preview-progression.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.124.0",
@@ -32,3 +33,4 @@
     "typescript": "^5"
   }
 }
+

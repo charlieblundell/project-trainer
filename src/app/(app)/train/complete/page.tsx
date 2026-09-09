@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Flame } from "lucide-react";
+import { Flame, TrendingUp } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import { sessionById } from "@/lib/plan/helpers";
 
@@ -21,6 +21,7 @@ export default function TrainComplete() {
   const router = useRouter();
   const summary = useAppStore((s) => s.lastCompletedSummary);
   const plan = useAppStore((s) => s.plan);
+  const changes = useAppStore((s) => s.lastChanges);
 
   useEffect(() => {
     if (!summary) router.replace("/home");
@@ -32,14 +33,9 @@ export default function TrainComplete() {
   const totalSets = Object.values(summary.loggedSets).reduce((sum, arr) => sum + arr.length, 0);
   const exerciseCount = Object.keys(summary.loggedSets).length;
   const estMinutes = planSession?.estMinutes ?? 0;
-
-  // Every logged weight is a starting point the app didn't have before, so the
-  // first time through a plan, "calibrated" is the meaningful number.
-  const calibrated = planSession
-    ? planSession.exercises.filter(
-        (ex) => ex.targetWeightKg == null && (summary.loggedSets[ex.exerciseId]?.length ?? 0) > 0
-      ).length
-    : 0;
+  const upgrades = changes.filter(
+    (c) => c.kind === "increase" || c.kind === "harder_variant" || c.kind === "add_reps"
+  );
 
   return (
     <motion.div className="mx-auto max-w-sm" variants={container} initial="hidden" animate="show">
@@ -63,27 +59,39 @@ export default function TrainComplete() {
         ))}
       </motion.div>
 
-      {calibrated > 0 && (
+      {upgrades.length > 0 && (
         <motion.div
           variants={item}
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ type: "spring", stiffness: 400, damping: 22, delay: 0.15 }}
           className="mb-5 flex items-center gap-2 rounded-2xl bg-warning-soft px-4 py-3"
         >
-          <Flame size={16} className="text-warning" />
+          <Flame size={16} className="flex-shrink-0 text-warning" />
           <span className="text-sm font-semibold text-ink">
-            {calibrated} starting weight{calibrated > 1 ? "s" : ""} logged.
+            {upgrades.length} target{upgrades.length > 1 ? "s" : ""} going up next session.
           </span>
         </motion.div>
       )}
 
       <motion.div variants={item} className="mb-6 rounded-2xl bg-success-soft p-5">
-        <div className="mb-2 text-xs font-semibold text-success">WHAT HAPPENS NEXT</div>
-        <div className="text-sm leading-relaxed text-ink">
-          That&apos;s logged. Your coach can see it, so ask about anything that felt off — and next
-          session will build on what you did today.
+        <div className="mb-3 flex items-center gap-1.5 text-xs font-semibold text-success">
+          <TrendingUp size={13} /> WHAT CHANGES NEXT TIME
         </div>
+        {changes.length === 0 ? (
+          <p className="text-sm leading-relaxed text-ink">
+            That&apos;s logged. Next session will build on what you did today.
+          </p>
+        ) : (
+          <ul className="flex flex-col gap-2.5">
+            {changes.map((c) => (
+              <li key={c.exerciseId} className="text-sm leading-relaxed text-ink">
+                <span className="font-semibold">{c.exerciseName}</span>
+                <span className="text-muted"> — {c.reason}</span>
+              </li>
+            ))}
+          </ul>
+        )}
       </motion.div>
 
       <motion.button

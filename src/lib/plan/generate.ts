@@ -1,4 +1,4 @@
-﻿import {
+import {
   EXERCISES_BY_ID,
   availableExercises,
   type BodyPart,

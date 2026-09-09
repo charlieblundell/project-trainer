@@ -1,9 +1,12 @@
-﻿import { create } from "zustand";
+import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { OnboardingData, SetLog, ChatMessage } from "./types";
 import { EMPTY_ONBOARDING } from "./types";
 import { supabase } from "./supabase";
 import type { Plan } from "./plan/types";
+import { applyProgression, type Change } from "./plan/progress";
+import { savePlan } from "./plan/storage";
+import type { Equipment } from "./exercises";
 
 type TrainingSession = {
   /** Id of the session within the user's generated plan. */
@@ -32,6 +35,8 @@ type AppState = {
   nextExercise: () => void;
   swapExercise: (exerciseId: string, alt: { exerciseId: string }) => void;
   lastCompletedSummary: { workoutId: string; loggedSets: Record<string, SetLog[]> } | null;
+  /** What progression did to the plan after the last session. */
+  lastChanges: Change[];
   completeWorkout: () => Promise<void>;
 
   messages: ChatMessage[];
@@ -80,8 +85,12 @@ export const useAppStore = create<AppState>()(
           session: { ...s.session, overrides: { ...s.session.overrides, [exerciseId]: alt } },
         })),
       lastCompletedSummary: null,
+      lastChanges: [],
       completeWorkout: async () => {
         const s = get().session;
+        const currentPlan = get().plan;
+        const equipment = get().onboarding.equipment as Equipment[];
+
         set({ lastCompletedSummary: { workoutId: s.workoutId, loggedSets: s.loggedSets } });
 
         const { data } = await supabase.auth.getUser();
@@ -93,8 +102,26 @@ export const useAppStore = create<AppState>()(
           user_id: data.user.id,
           workout_id: s.workoutId,
           logged_sets: s.loggedSets,
+          rpe: s.rpeValues,
         });
         if (error) console.error("Failed to save workout:", error.message);
+
+        // Feed the results back into the plan so next week's targets move.
+        if (currentPlan) {
+          const { plan: nextPlan, changes } = applyProgression(
+            currentPlan,
+            s.workoutId,
+            s.loggedSets,
+            s.rpeValues,
+            equipment
+          );
+          set({ plan: nextPlan, lastChanges: changes });
+          try {
+            await savePlan(data.user.id, nextPlan);
+          } catch {
+            // Already logged in savePlan; the in-memory plan still reflects it.
+          }
+        }
       },
 
       messages: [INITIAL_GREETING],
@@ -111,6 +138,7 @@ export const useAppStore = create<AppState>()(
           messages: [INITIAL_GREETING],
           session: emptySession(""),
           lastCompletedSummary: null,
+          lastChanges: [],
           onboarding: EMPTY_ONBOARDING,
           onboardingComplete: false,
           plan: null,

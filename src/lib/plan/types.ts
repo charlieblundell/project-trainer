@@ -16,6 +16,11 @@ export type PlannedExercise = {
    * we ask them to find a working weight rather than inventing one for them.
    */
   targetWeightKg: number | null;
+  /**
+   * Consecutive sessions hitting the top of the rep range. Moving up a
+   * bodyweight ladder is a big jump, so it takes more than one good day.
+   */
+  streak?: number;
 };
 
 export type PlannedSession = {
