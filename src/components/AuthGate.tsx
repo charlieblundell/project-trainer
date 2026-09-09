@@ -13,6 +13,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   const initialized = useAuthStore((s) => s.initialized);
   const setOnboarding = useAppStore((s) => s.setOnboarding);
   const completeOnboarding = useAppStore((s) => s.completeOnboarding);
+  const claimForUser = useAppStore((s) => s.claimForUser);
   const [profileSynced, setProfileSynced] = useState(false);
   const syncedForUser = useRef<string | null>(null);
 
@@ -24,6 +25,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     }
     if (syncedForUser.current === user.id) return;
     syncedForUser.current = user.id;
+    claimForUser(user.id);
 
     supabase
       .from("profiles")
@@ -43,7 +45,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
         }
         setProfileSynced(true);
       });
-  }, [initialized, user, router, setOnboarding, completeOnboarding]);
+  }, [initialized, user, router, setOnboarding, completeOnboarding, claimForUser]);
 
   if (!initialized || !user || !profileSynced) {
     return (

@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Send } from "lucide-react";
 import { COACH_PROMPTS } from "@/lib/data";
 import { useAppStore } from "@/lib/store";
-import { fakeCoachReply } from "@/lib/fakeCoach";
+import { supabase } from "@/lib/supabase";
 
 export default function Coach() {
   const messages = useAppStore((s) => s.messages);
@@ -18,14 +18,35 @@ export default function Coach() {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
-  function send(text: string) {
+  async function send(text: string) {
+    const nextMessages = [...messages, { role: "user" as const, text }];
     addMessage({ role: "user", text });
     setInput("");
     setLoading(true);
-    setTimeout(() => {
-      addMessage({ role: "assistant", text: fakeCoachReply(text) });
+
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    try {
+      const res = await fetch("/api/coach", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(session ? { Authorization: `Bearer ${session.access_token}` } : {}),
+        },
+        body: JSON.stringify({ messages: nextMessages }),
+      });
+      const data = await res.json();
+      addMessage({
+        role: "assistant",
+        text: data.reply ?? data.error ?? "Sorry, I couldn't put together an answer just now.",
+      });
+    } catch {
+      addMessage({ role: "assistant", text: "I couldn't reach the coach right now — try again in a moment." });
+    } finally {
       setLoading(false);
-    }, 600);
+    }
   }
 
   return (

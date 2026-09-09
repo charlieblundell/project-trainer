@@ -6,10 +6,13 @@ import { motion } from "framer-motion";
 import { Settings } from "lucide-react";
 import { WORKOUTS, todaysWorkoutId } from "@/lib/data";
 import { useAppStore } from "@/lib/store";
+import { useAuthStore } from "@/lib/auth";
+import { displayName } from "@/lib/displayName";
 
 export default function Home() {
   const router = useRouter();
   const startWorkout = useAppStore((s) => s.startWorkout);
+  const user = useAuthStore((s) => s.user);
   const workout = WORKOUTS[todaysWorkoutId()];
 
   function start() {
@@ -22,7 +25,9 @@ export default function Home() {
       <div className="mb-6 flex items-start justify-between">
         <div>
           <div className="text-sm text-muted">Good afternoon,</div>
-          <h1 className="font-display text-2xl font-bold text-ink md:text-3xl">Charlie</h1>
+          <h1 className="font-display text-2xl font-bold text-ink md:text-3xl">
+            {displayName(user)}
+          </h1>
         </div>
         <Link
           href="/settings"

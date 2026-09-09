@@ -33,6 +33,14 @@ type AppState = {
 
   messages: ChatMessage[];
   addMessage: (msg: ChatMessage) => void;
+
+  ownerId: string | null;
+  claimForUser: (userId: string) => void;
+};
+
+const INITIAL_GREETING: ChatMessage = {
+  role: "assistant",
+  text: "Hey. What can I help with?",
 };
 
 export const useAppStore = create<AppState>()(
@@ -79,8 +87,21 @@ export const useAppStore = create<AppState>()(
         });
       },
 
-      messages: [{ role: "assistant", text: "Hey Charlie. What can I help with?" }],
+      messages: [INITIAL_GREETING],
       addMessage: (msg) => set((s) => ({ messages: [...s.messages, msg] })),
+
+      ownerId: null,
+      claimForUser: (userId) => {
+        if (get().ownerId === userId) return;
+        set({
+          ownerId: userId,
+          messages: [INITIAL_GREETING],
+          session: emptySession(todaysWorkoutId()),
+          lastCompletedSummary: null,
+          onboarding: { goal: null, experience: null, days: null, length: null, environment: null },
+          onboardingComplete: false,
+        });
+      },
     }),
     { name: "project-trainer-store" }
   )
