@@ -29,7 +29,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
 
     supabase
       .from("profiles")
-      .select("goal, experience, days, length, environment")
+      .select("*")
       .eq("id", user.id)
       .single()
       .then(({ data }) => {
@@ -40,6 +40,15 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
             days: data.days,
             length: data.length,
             environment: data.environment,
+            equipment: data.equipment ?? [],
+            likedExercises: data.liked_exercises ?? [],
+            dislikedExercises: data.disliked_exercises ?? [],
+            trainingDays: data.training_days ?? [],
+            bodyweightKg: data.bodyweight_kg,
+            age: data.age,
+            heightCm: data.height_cm,
+            sex: data.sex,
+            considerations: data.considerations,
           });
           completeOnboarding();
         }

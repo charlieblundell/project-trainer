@@ -5,6 +5,58 @@ import { ChevronLeft } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import { useAuthStore } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
+import { EQUIPMENT_LABELS, EXERCISES_BY_ID, type Equipment } from "@/lib/exercises";
+import type { OnboardingData } from "@/lib/types";
+
+const DAY_LABELS: Record<string, string> = {
+  mon: "Mon",
+  tue: "Tue",
+  wed: "Wed",
+  thu: "Thu",
+  fri: "Fri",
+  sat: "Sat",
+  sun: "Sun",
+};
+
+const SEX_LABELS: Record<string, string> = {
+  male: "Male",
+  female: "Female",
+  prefer_not_to_say: "Not specified",
+};
+
+function exerciseNames(ids: string[]): string {
+  return ids.map((id) => EXERCISES_BY_ID[id]?.name ?? id).join(", ");
+}
+
+function profileRows(o: OnboardingData): [string, string][] {
+  const rows: [string, string][] = [
+    ["Goal", o.goal ?? "Not set"],
+    ["Experience", o.experience ?? "Not set"],
+    ["Sessions", o.days ? `${o.days}/week` : "Not set"],
+    ["Session length", o.length ? `~${o.length} min` : "Not set"],
+    ["Where you train", o.environment ?? "Not set"],
+  ];
+
+  if (o.trainingDays.length) {
+    rows.push(["Days", o.trainingDays.map((d) => DAY_LABELS[d] ?? d).join(", ")]);
+  }
+  if (o.equipment.length) {
+    rows.push(["Equipment", o.equipment.map((e) => EQUIPMENT_LABELS[e as Equipment] ?? e).join(", ")]);
+  }
+  if (o.likedExercises.length) {
+    rows.push(["Favourites", exerciseNames(o.likedExercises)]);
+  }
+  if (o.dislikedExercises.length) {
+    rows.push(["Avoiding", exerciseNames(o.dislikedExercises)]);
+  }
+  if (o.bodyweightKg) rows.push(["Bodyweight", `${o.bodyweightKg} kg`]);
+  if (o.age) rows.push(["Age", `${o.age}`]);
+  if (o.heightCm) rows.push(["Height", `${o.heightCm} cm`]);
+  if (o.sex) rows.push(["Sex", SEX_LABELS[o.sex] ?? o.sex]);
+  if (o.considerations) rows.push(["Notes", o.considerations]);
+
+  return rows;
+}
 
 export default function Settings() {
   const router = useRouter();
@@ -26,19 +78,13 @@ export default function Settings() {
 
       <div className="mb-2 text-xs font-semibold tracking-widest text-muted">YOUR PROFILE</div>
       <div className="mb-6 overflow-hidden rounded-2xl border border-line bg-surface">
-        {[
-          ["Goal", onboarding.goal ?? "Build muscle"],
-          ["Experience", onboarding.experience ?? "Intermediate"],
-          ["Training days", `${onboarding.days ?? 4}/week`],
-          ["Session length", `~${onboarding.length ?? 60} min`],
-          ["Where you train", onboarding.environment ?? "Full gym"],
-        ].map(([label, value], i) => (
+        {profileRows(onboarding).map(([label, value], i) => (
           <div
             key={label}
-            className={`flex justify-between px-4 py-3.5 text-sm ${i !== 0 ? "border-t border-line" : ""}`}
+            className={`flex justify-between gap-6 px-4 py-3.5 text-sm ${i !== 0 ? "border-t border-line" : ""}`}
           >
-            <span className="text-muted">{label}</span>
-            <span className="font-semibold text-ink">{value}</span>
+            <span className="flex-shrink-0 text-muted">{label}</span>
+            <span className="text-right font-semibold text-ink">{value}</span>
           </div>
         ))}
       </div>

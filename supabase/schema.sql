@@ -6,6 +6,15 @@ create table public.profiles (
   days int,
   length int,
   environment text,
+  equipment text[] not null default '{}',
+  liked_exercises text[] not null default '{}',
+  disliked_exercises text[] not null default '{}',
+  training_days text[] not null default '{}',
+  bodyweight_kg numeric,
+  age int,
+  height_cm numeric,
+  sex text check (sex is null or sex in ('male', 'female', 'prefer_not_to_say')),
+  considerations text check (considerations is null or char_length(considerations) <= 2000),
   created_at timestamptz not null default now()
 );
 

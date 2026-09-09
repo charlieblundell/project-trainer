@@ -3,7 +3,13 @@ import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@supabase/supabase-js";
 import { WORKOUTS, PLAN_WEEK, todaysWorkoutId } from "@/lib/data";
 import { displayName } from "@/lib/displayName";
+import { EQUIPMENT_LABELS, EXERCISES_BY_ID, type Equipment } from "@/lib/exercises";
 import type { SetLog } from "@/lib/types";
+
+function namesFor(ids: string[] | null | undefined): string {
+  if (!ids?.length) return "";
+  return ids.map((id) => EXERCISES_BY_ID[id]?.name ?? id).join(", ");
+}
 
 const anthropic = new Anthropic();
 
@@ -35,11 +41,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "messages required" }, { status: 400 });
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("goal, experience, days, length, environment")
-    .eq("id", user.id)
-    .single();
+  const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single();
 
   const { data: recentSessions } = await supabase
     .from("workout_sessions")
@@ -93,6 +95,18 @@ export async function POST(req: NextRequest) {
     `- Experience: ${profile?.experience ?? "not set yet"}`,
     `- Trains ${profile?.days ?? "an unknown number of"} days/week, ~${profile?.length ?? "an unknown"} min/session`,
     `- Trains at: ${profile?.environment ?? "not set yet"}`,
+    `- Equipment available: ${
+      profile?.equipment?.length
+        ? profile.equipment.map((e: string) => EQUIPMENT_LABELS[e as Equipment] ?? e).join(", ")
+        : "not specified"
+    }`,
+    `- Enjoys: ${namesFor(profile?.liked_exercises) || "nothing specified"}`,
+    `- Wants to avoid: ${namesFor(profile?.disliked_exercises) || "nothing specified"}`,
+    profile?.bodyweight_kg ? `- Bodyweight: ${profile.bodyweight_kg} kg` : null,
+    profile?.age ? `- Age: ${profile.age}` : null,
+    "",
+    "Notes they gave about injuries or limitations (treat as constraints on programming, never as something to diagnose):",
+    profile?.considerations?.trim() || "None given.",
     "",
     "This week's plan:",
     weekPlan,
@@ -102,7 +116,9 @@ export async function POST(req: NextRequest) {
     "",
     "Recent completed workouts:",
     historySummary || "No workouts logged yet.",
-  ].join("\n");
+  ]
+    .filter((line): line is string => line !== null)
+    .join("\n");
 
   const apiMessages: Anthropic.MessageParam[] = messages.map((m) => ({
     role: m.role,

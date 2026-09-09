@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { OnboardingData, SetLog, ChatMessage } from "./types";
+import { EMPTY_ONBOARDING } from "./types";
 import { WORKOUTS, todaysWorkoutId } from "./data";
 import { supabase } from "./supabase";
 
@@ -46,7 +47,7 @@ const INITIAL_GREETING: ChatMessage = {
 export const useAppStore = create<AppState>()(
   persist(
     (set, get) => ({
-      onboarding: { goal: null, experience: null, days: null, length: null, environment: null },
+      onboarding: EMPTY_ONBOARDING,
       onboardingComplete: false,
       setOnboarding: (patch) => set((s) => ({ onboarding: { ...s.onboarding, ...patch } })),
       completeOnboarding: () => set({ onboardingComplete: true }),
@@ -98,12 +99,33 @@ export const useAppStore = create<AppState>()(
           messages: [INITIAL_GREETING],
           session: emptySession(todaysWorkoutId()),
           lastCompletedSummary: null,
-          onboarding: { goal: null, experience: null, days: null, length: null, environment: null },
+          onboarding: EMPTY_ONBOARDING,
           onboardingComplete: false,
         });
       },
     }),
-    { name: "project-trainer-store" }
+    {
+      name: "project-trainer-store",
+      version: 2,
+      // A saved copy from an older build is missing whatever fields have been
+      // added since. Backfilling defaults keeps existing browsers from
+      // restoring a half-shaped object over the current one.
+      migrate: (persisted) => {
+        const state = (persisted ?? {}) as Partial<AppState>;
+        return {
+          ...state,
+          onboarding: { ...EMPTY_ONBOARDING, ...(state.onboarding ?? {}) },
+        } as AppState;
+      },
+      merge: (persisted, current) => {
+        const state = (persisted ?? {}) as Partial<AppState>;
+        return {
+          ...current,
+          ...state,
+          onboarding: { ...EMPTY_ONBOARDING, ...(state.onboarding ?? {}) },
+        };
+      },
+    }
   )
 );
 

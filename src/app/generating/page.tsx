@@ -100,6 +100,15 @@ export default function Generating() {
                     days: onboarding.days,
                     length: onboarding.length,
                     environment: onboarding.environment,
+                    equipment: onboarding.equipment,
+                    liked_exercises: onboarding.likedExercises,
+                    disliked_exercises: onboarding.dislikedExercises,
+                    training_days: onboarding.trainingDays,
+                    bodyweight_kg: onboarding.bodyweightKg,
+                    age: onboarding.age,
+                    height_cm: onboarding.heightCm,
+                    sex: onboarding.sex,
+                    considerations: onboarding.considerations,
                   })
                   .eq("id", data.user.id);
               }
