@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { Home, Dumbbell, CalendarDays, TrendingUp, MessageCircle } from "lucide-react";
 import { clsx } from "@/lib/clsx";
+import { Wordmark } from "@/components/Wordmark";
 
 const ITEMS = [
   { href: "/home", label: "Home", icon: Home },
@@ -50,7 +51,7 @@ export function Nav() {
 
       {/* Desktop left rail */}
       <nav className="fixed inset-y-0 left-0 z-20 hidden w-60 flex-col border-r border-line bg-surface px-4 py-8 md:flex">
-        <div className="mb-10 px-2 font-display text-lg font-bold tracking-tight">Project Trainer</div>
+        <Wordmark className="mb-10 px-2" />
         <div className="flex flex-col gap-1">
           {ITEMS.map((item) => {
             const active = pathname.startsWith(item.href);

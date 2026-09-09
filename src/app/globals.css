@@ -8,6 +8,7 @@
   --line: #e4e5e1;
 
   --accent: #2954e5;
+  --accent-2: #7c5cff;
   --accent-ink: #ffffff;
   --accent-soft: #e8edfc;
 
@@ -30,6 +31,7 @@
     --line: #2b2e35;
 
     --accent: #7c95ff;
+    --accent-2: #b3a1ff;
     --accent-ink: #101114;
     --accent-soft: #202a4a;
 
@@ -49,6 +51,7 @@
   --color-line: var(--line);
 
   --color-accent: var(--accent);
+  --color-accent-2: var(--accent-2);
   --color-accent-ink: var(--accent-ink);
   --color-accent-soft: var(--accent-soft);
 

@@ -13,7 +13,7 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "Project Trainer",
+  title: "Your Personal Trainer",
   description: "Your personal trainer, adapted to you.",
 };
 

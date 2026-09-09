@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
+import { LogoMark } from "@/components/Wordmark";
 
 export default function SignUp() {
   const router = useRouter();
@@ -13,7 +14,8 @@ export default function SignUp() {
         <ChevronLeft size={20} />
       </Link>
 
-      <h1 className="mb-8 font-display text-3xl font-bold text-ink">Start training smarter.</h1>
+      <LogoMark size={36} />
+      <h1 className="mb-8 mt-4 font-display text-3xl font-bold text-ink">Start training smarter.</h1>
 
       <div className="mb-5 flex flex-col gap-2.5">
         {["Continue with Google", "Continue with Apple"].map((label) => (
