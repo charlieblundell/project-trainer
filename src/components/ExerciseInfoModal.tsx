@@ -1,10 +1,24 @@
+import { motion } from "framer-motion";
 import { X } from "lucide-react";
 import type { Exercise } from "@/lib/types";
 
 export function ExerciseInfoModal({ exercise, onClose }: { exercise: Exercise; onClose: () => void }) {
   return (
-    <div className="fixed inset-0 z-30 flex items-end justify-center bg-ink/45 md:items-center">
-      <div className="max-h-[80%] w-full max-w-lg overflow-y-auto rounded-t-3xl bg-surface p-6 md:rounded-3xl">
+    <motion.div
+      className="fixed inset-0 z-30 flex items-end justify-center bg-ink/45 md:items-center"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={onClose}
+    >
+      <motion.div
+        className="max-h-[80%] w-full max-w-lg overflow-y-auto rounded-t-3xl bg-surface p-6 md:rounded-3xl"
+        initial={{ y: 40, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: 40, opacity: 0 }}
+        transition={{ type: "spring", stiffness: 420, damping: 38 }}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="mb-4 flex items-start justify-between">
           <h3 className="font-display text-lg font-bold text-ink">{exercise.name}</h3>
           <button onClick={onClose} className="text-muted">
@@ -30,7 +44,7 @@ export function ExerciseInfoModal({ exercise, onClose }: { exercise: Exercise; o
             </div>
           ))}
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

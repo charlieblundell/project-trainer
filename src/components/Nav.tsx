@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { motion } from "framer-motion";
 import { Home, Dumbbell, CalendarDays, TrendingUp, MessageCircle } from "lucide-react";
 import { clsx } from "@/lib/clsx";
 
@@ -27,9 +28,18 @@ export function Nav() {
             <Link
               key={item.href}
               href={item.href}
-              className="flex flex-1 flex-col items-center gap-1 py-2.5"
+              className="relative flex flex-1 flex-col items-center gap-1 py-2.5"
             >
-              <Icon size={20} strokeWidth={active ? 2.4 : 2} className={active ? "text-ink" : "text-muted"} />
+              {active && (
+                <motion.div
+                  layoutId="mobile-nav-dot"
+                  className="absolute top-1 h-1 w-1 rounded-full bg-accent"
+                  transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                />
+              )}
+              <motion.div whileTap={{ scale: 0.85 }}>
+                <Icon size={20} strokeWidth={active ? 2.4 : 2} className={active ? "text-ink" : "text-muted"} />
+              </motion.div>
               <span className={clsx("text-[10px]", active ? "font-semibold text-ink" : "text-muted")}>
                 {item.label}
               </span>
@@ -46,16 +56,23 @@ export function Nav() {
             const active = pathname.startsWith(item.href);
             const Icon = item.icon;
             return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={clsx(
-                  "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition",
-                  active ? "bg-accent-soft text-accent" : "text-muted hover:bg-background hover:text-ink"
+              <Link key={item.href} href={item.href} className="relative">
+                {active && (
+                  <motion.div
+                    layoutId="desktop-nav-highlight"
+                    className="absolute inset-0 rounded-xl bg-accent-soft"
+                    transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                  />
                 )}
-              >
-                <Icon size={18} strokeWidth={active ? 2.4 : 2} />
-                {item.label}
+                <div
+                  className={clsx(
+                    "relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+                    active ? "text-accent" : "text-muted hover:text-ink"
+                  )}
+                >
+                  <Icon size={18} strokeWidth={active ? 2.4 : 2} />
+                  {item.label}
+                </div>
               </Link>
             );
           })}

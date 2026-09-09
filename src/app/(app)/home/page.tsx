@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import { Settings } from "lucide-react";
 import { WORKOUTS, todaysWorkoutId } from "@/lib/data";
 import { useAppStore } from "@/lib/store";
@@ -37,12 +38,13 @@ export default function Home() {
         <div className="mb-5 text-sm text-background/60">
           {workout.exercises.length} exercises · ~{workout.estMinutes} min
         </div>
-        <button
+        <motion.button
+          whileTap={{ scale: 0.98 }}
           onClick={start}
-          className="w-full rounded-xl bg-background py-3.5 text-sm font-semibold text-ink transition active:scale-[0.98]"
+          className="w-full rounded-xl bg-background py-3.5 text-sm font-semibold text-ink"
         >
           Start workout
-        </button>
+        </motion.button>
       </div>
 
       <div className="mb-5 grid grid-cols-2 gap-3">
@@ -50,7 +52,12 @@ export default function Home() {
           <div className="mb-1.5 text-xs text-muted">This week</div>
           <div className="tabular mb-2 font-display text-lg font-bold text-ink">3 / 4</div>
           <div className="h-1.5 overflow-hidden rounded-full bg-line">
-            <div className="h-full w-3/4 rounded-full bg-success" />
+            <motion.div
+              className="h-full rounded-full bg-success"
+              initial={{ width: 0 }}
+              animate={{ width: "75%" }}
+              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
+            />
           </div>
         </div>
         <div className="rounded-2xl border border-line bg-surface p-4">
@@ -60,10 +67,7 @@ export default function Home() {
         </div>
       </div>
 
-      <Link
-        href="/coach"
-        className="block rounded-2xl bg-success-soft p-4 transition active:scale-[0.99]"
-      >
+      <Link href="/coach" className="block rounded-2xl bg-success-soft p-4">
         <div className="mb-1.5 text-sm leading-relaxed text-ink">
           &ldquo;You&apos;ve completed your last 6 workouts. Your consistency is excellent.&rdquo;
         </div>

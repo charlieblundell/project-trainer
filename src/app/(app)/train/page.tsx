@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, Check, Info, MoreHorizontal } from "lucide-react";
 import { WORKOUTS } from "@/lib/data";
 import { useAppStore } from "@/lib/store";
@@ -148,7 +149,18 @@ function ExercisePanel({
               <span>{i + 1}</span>
               <span>{done ? `${done.w} kg` : "—"}</span>
               <span>{done ? done.r : "—"}</span>
-              <span>{done && <Check size={16} className="text-success" />}</span>
+              <span>
+                {done && (
+                  <motion.span
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ type: "spring", stiffness: 500, damping: 20 }}
+                    className="inline-flex"
+                  >
+                    <Check size={16} className="text-success" />
+                  </motion.span>
+                )}
+              </span>
             </div>
           );
         })}
@@ -186,13 +198,17 @@ function ExercisePanel({
           </>
         )
       ) : (
-        <RpeSelector onSubmit={handleSubmitRpe} />
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
+          <RpeSelector onSubmit={handleSubmitRpe} />
+        </motion.div>
       )}
 
-      {showInfo && <ExerciseInfoModal exercise={exercise} onClose={() => setShowInfo(false)} />}
-      {showSwap && (
-        <ExerciseSwapPanel exercise={exercise} onClose={() => setShowSwap(false)} onSwap={handleSwap} />
-      )}
+      <AnimatePresence>
+        {showInfo && <ExerciseInfoModal exercise={exercise} onClose={() => setShowInfo(false)} />}
+        {showSwap && (
+          <ExerciseSwapPanel exercise={exercise} onClose={() => setShowSwap(false)} onSwap={handleSwap} />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
