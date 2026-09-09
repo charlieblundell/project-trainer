@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   ChevronLeft,
   Check,
@@ -213,14 +213,15 @@ export default function Onboarding() {
         ))}
       </div>
 
-      <AnimatePresence mode="wait">
+      {/* Deliberately no exit animation: with AnimatePresence mode="wait" an
+          interrupted exit leaves the previous screen mounted while `step` moves
+          on, stranding the user on a screen whose Continue button validates the
+          next one. Animating only the incoming screen can't wedge. */}
+      <div key={step} className="flex-1">
         <motion.div
-          key={step}
           initial={{ opacity: 0, x: 16 }}
           animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -16 }}
           transition={{ duration: 0.2 }}
-          className="flex-1"
         >
           <h1 className="mb-2 font-display text-2xl font-bold text-ink">{current.question}</h1>
           {current.hint && <p className="mb-5 text-sm leading-relaxed text-muted">{current.hint}</p>}
@@ -373,7 +374,7 @@ export default function Onboarding() {
             />
           )}
         </motion.div>
-      </AnimatePresence>
+      </div>
 
       {/* Sticky so the CTA stays reachable on the longer screens (equipment, exercises). */}
       <div className="sticky bottom-0 -mx-6 mt-8 bg-background px-6 pb-2 pt-4">
