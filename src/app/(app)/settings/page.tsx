@@ -3,17 +3,26 @@
 import { useRouter } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { useAppStore } from "@/lib/store";
+import { useAuthStore } from "@/lib/auth";
+import { supabase } from "@/lib/supabase";
 
 export default function Settings() {
   const router = useRouter();
   const onboarding = useAppStore((s) => s.onboarding);
+  const user = useAuthStore((s) => s.user);
+
+  async function logOut() {
+    await supabase.auth.signOut();
+    router.push("/");
+  }
 
   return (
     <div className="mx-auto max-w-sm">
       <button onClick={() => router.push("/home")} className="mb-4 flex items-center text-muted">
         <ChevronLeft size={18} />
       </button>
-      <h1 className="mb-5 font-display text-2xl font-bold text-ink">Settings</h1>
+      <h1 className="mb-1 font-display text-2xl font-bold text-ink">Settings</h1>
+      {user?.email && <p className="mb-5 text-sm text-muted">{user.email}</p>}
 
       <div className="mb-2 text-xs font-semibold tracking-widest text-muted">YOUR PROFILE</div>
       <div className="mb-6 overflow-hidden rounded-2xl border border-line bg-surface">
@@ -46,7 +55,7 @@ export default function Settings() {
       </div>
 
       <button
-        onClick={() => router.push("/")}
+        onClick={logOut}
         className="w-full rounded-2xl border border-line py-3.5 text-sm font-semibold text-warning"
       >
         Log out

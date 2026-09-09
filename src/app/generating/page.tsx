@@ -8,6 +8,7 @@ import { GENERATING_STEPS } from "@/lib/data";
 import { useAppStore } from "@/lib/store";
 import { Button } from "@/components/Button";
 import { LogoMark } from "@/components/Wordmark";
+import { supabase } from "@/lib/supabase";
 
 export default function Generating() {
   const router = useRouter();
@@ -88,7 +89,20 @@ export default function Generating() {
             ))}
           </div>
           <Button
-            onClick={() => {
+            onClick={async () => {
+              const { data } = await supabase.auth.getUser();
+              if (data.user) {
+                await supabase
+                  .from("profiles")
+                  .update({
+                    goal: onboarding.goal,
+                    experience: onboarding.experience,
+                    days: onboarding.days,
+                    length: onboarding.length,
+                    environment: onboarding.environment,
+                  })
+                  .eq("id", data.user.id);
+              }
               completeOnboarding();
               router.push("/home");
             }}

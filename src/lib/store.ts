@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { OnboardingData, SetLog, ChatMessage } from "./types";
 import { WORKOUTS, todaysWorkoutId } from "./data";
+import { supabase } from "./supabase";
 
 type TrainingSession = {
   workoutId: string;
@@ -68,6 +69,14 @@ export const useAppStore = create<AppState>()(
       completeWorkout: () => {
         const s = get().session;
         set({ lastCompletedSummary: { workoutId: s.workoutId, loggedSets: s.loggedSets } });
+        supabase.auth.getUser().then(({ data }) => {
+          if (!data.user) return;
+          supabase.from("workout_sessions").insert({
+            user_id: data.user.id,
+            workout_id: s.workoutId,
+            logged_sets: s.loggedSets,
+          });
+        });
       },
 
       messages: [{ role: "assistant", text: "Hey Charlie. What can I help with?" }],
