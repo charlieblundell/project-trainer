@@ -1,15 +1,18 @@
 import { motion } from "framer-motion";
 import { X } from "lucide-react";
-import type { Exercise, ExerciseAlternative } from "@/lib/types";
+
+type Alternative = { id: string; name: string; muscles: string[] };
 
 export function ExerciseSwapPanel({
-  exercise,
+  exerciseName,
+  alternatives,
   onClose,
   onSwap,
 }: {
-  exercise: Exercise;
+  exerciseName: string;
+  alternatives: Alternative[];
   onClose: () => void;
-  onSwap: (alt: ExerciseAlternative) => void;
+  onSwap: (alt: Alternative) => void;
 }) {
   return (
     <motion.div
@@ -29,18 +32,18 @@ export function ExerciseSwapPanel({
       >
         <div className="mb-1 flex items-start justify-between">
           <h3 className="font-display text-lg font-bold text-ink">Don&apos;t like this one?</h3>
-          <button onClick={onClose} className="text-muted">
+          <button onClick={onClose} className="text-muted" aria-label="Close">
             <X size={20} />
           </button>
         </div>
         <p className="mb-4 text-sm text-muted">
-          Swap {exercise.name} for an alternative that works the same muscles.
+          Swap {exerciseName} for something that trains the same thing.
         </p>
 
         <div className="flex flex-col gap-2">
-          {exercise.alternatives?.map((alt, i) => (
+          {alternatives.map((alt, i) => (
             <motion.button
-              key={alt.name}
+              key={alt.id}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.04 }}
@@ -49,9 +52,7 @@ export function ExerciseSwapPanel({
               className="w-full rounded-2xl border border-line bg-background px-4 py-3.5 text-left"
             >
               <div className="mb-0.5 text-sm font-semibold text-ink">{alt.name}</div>
-              <div className="tabular text-xs text-muted">
-                {alt.targetWeight > 0 ? `${alt.targetWeight} kg x ${alt.targetReps}` : `${alt.targetReps} reps`}
-              </div>
+              <div className="text-xs text-muted">{alt.muscles.join(", ")}</div>
             </motion.button>
           ))}
         </div>

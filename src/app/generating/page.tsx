@@ -9,11 +9,14 @@ import { useAppStore } from "@/lib/store";
 import { Button } from "@/components/Button";
 import { LogoMark } from "@/components/Wordmark";
 import { supabase } from "@/lib/supabase";
+import { generatePlan } from "@/lib/plan/generate";
+import { savePlan } from "@/lib/plan/storage";
 
 export default function Generating() {
   const router = useRouter();
   const onboarding = useAppStore((s) => s.onboarding);
   const completeOnboarding = useAppStore((s) => s.completeOnboarding);
+  const setPlan = useAppStore((s) => s.setPlan);
   const [genStep, setGenStep] = useState(0);
 
   useEffect(() => {
@@ -111,6 +114,21 @@ export default function Generating() {
                     considerations: onboarding.considerations,
                   })
                   .eq("id", data.user.id);
+
+                const plan = generatePlan({
+                  goal: onboarding.goal,
+                  experience: onboarding.experience,
+                  days: onboarding.days,
+                  length: onboarding.length,
+                  equipment: onboarding.equipment,
+                  likedExercises: onboarding.likedExercises,
+                  dislikedExercises: onboarding.dislikedExercises,
+                  trainingDays: onboarding.trainingDays,
+                  considerations: onboarding.considerations,
+                  age: onboarding.age,
+                });
+                await savePlan(data.user.id, plan);
+                setPlan(plan);
               }
               completeOnboarding();
               router.push("/home");

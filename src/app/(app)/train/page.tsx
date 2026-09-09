@@ -3,20 +3,37 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronLeft, Check, Info, MoreHorizontal } from "lucide-react";
-import { WORKOUTS } from "@/lib/data";
+import { ChevronLeft, Check, Info, MoreHorizontal, Lightbulb } from "lucide-react";
+import { EXERCISES_BY_ID, substitutesFor, type Equipment } from "@/lib/exercises";
 import { useAppStore } from "@/lib/store";
 import { RpeSelector } from "@/components/RpeSelector";
 import { ExerciseInfoModal } from "@/components/ExerciseInfoModal";
 import { ExerciseSwapPanel } from "@/components/ExerciseSwapPanel";
-import type { Exercise, ExerciseAlternative, SetLog } from "@/lib/types";
+import { sessionById, targetLabel } from "@/lib/plan/helpers";
+import type { PlannedExercise } from "@/lib/plan/types";
+import type { SetLog } from "@/lib/types";
 
 export default function Train() {
   const router = useRouter();
+  const plan = useAppStore((s) => s.plan);
   const session = useAppStore((s) => s.session);
 
-  const workout = WORKOUTS[session.workoutId] ?? WORKOUTS.upperA;
-  const ex = workout.exercises[session.exerciseIdx];
+  const planSession = sessionById(plan, session.workoutId);
+  const planned = planSession?.exercises[session.exerciseIdx];
+
+  if (!planSession) {
+    return (
+      <div className="py-16 text-center">
+        <p className="mb-4 text-sm text-muted">No workout selected.</p>
+        <button
+          onClick={() => router.push("/plan")}
+          className="rounded-2xl bg-ink px-5 py-3 text-sm font-semibold text-background"
+        >
+          Pick one from your plan
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="relative">
@@ -24,22 +41,23 @@ export default function Train() {
         onClick={() => router.push("/home")}
         className="mb-4 flex items-center gap-1 text-sm text-muted"
       >
-        <ChevronLeft size={18} /> {workout.name}
+        <ChevronLeft size={18} /> {planSession.name}
       </button>
 
       <div className="mb-1 text-xs text-muted">
-        {Math.min(session.exerciseIdx + 1, workout.exercises.length)} / {workout.exercises.length} exercises
+        {Math.min(session.exerciseIdx + 1, planSession.exercises.length)} /{" "}
+        {planSession.exercises.length} exercises
       </div>
 
-      {ex ? (
+      {planned ? (
         <ExercisePanel
           key={`${session.workoutId}:${session.exerciseIdx}`}
-          workoutExerciseCount={workout.exercises.length}
-          exercise={ex}
+          planned={planned}
+          exerciseCount={planSession.exercises.length}
         />
       ) : (
         <div className="py-16 text-center text-sm text-muted">
-          No exercises left.{" "}
+          Nothing left in this session.{" "}
           <button className="underline" onClick={() => router.push("/home")}>
             Back home
           </button>
@@ -50,96 +68,110 @@ export default function Train() {
 }
 
 function ExercisePanel({
-  workoutExerciseCount,
-  exercise,
+  planned,
+  exerciseCount,
 }: {
-  workoutExerciseCount: number;
-  exercise: Exercise;
+  planned: PlannedExercise;
+  exerciseCount: number;
 }) {
   const router = useRouter();
   const session = useAppStore((s) => s.session);
+  const onboarding = useAppStore((s) => s.onboarding);
   const logSet = useAppStore((s) => s.logSet);
   const submitRpe = useAppStore((s) => s.submitRpe);
   const nextExercise = useAppStore((s) => s.nextExercise);
   const swapExercise = useAppStore((s) => s.swapExercise);
   const completeWorkout = useAppStore((s) => s.completeWorkout);
 
-  const override = session.overrides[exercise.id];
-  const displayWeight = override?.targetWeight ?? exercise.targetWeight;
-  const displayReps = override?.targetReps ?? exercise.targetReps;
+  const override = session.overrides[planned.exerciseId];
+  const activeId = override?.exerciseId ?? planned.exerciseId;
+  const def = EXERCISES_BY_ID[activeId];
 
-  const [setInput, setSetInput] = useState({ w: String(displayWeight), r: String(displayReps) });
+  const isTimed = planned.unit === "time" || planned.unit === "distance";
+  const tracksWeight = planned.unit === "weight_reps";
+  const needsCalibration = tracksWeight && planned.targetWeightKg == null;
+
+  const [input, setInput] = useState({
+    w: planned.targetWeightKg != null ? String(planned.targetWeightKg) : "",
+    r: isTimed ? String(Math.round((planned.seconds ?? 0) / 60)) : String(planned.repMax ?? 10),
+  });
   const [showInfo, setShowInfo] = useState(false);
   const [showSwap, setShowSwap] = useState(false);
 
-  const logs = session.loggedSets[exercise.id] ?? [];
-  const awaitingRpe = logs.length >= exercise.sets && session.rpeValues[exercise.id] === undefined;
-  const hasExtras = Boolean(exercise.muscles && exercise.alternatives);
+  const logs = session.loggedSets[planned.exerciseId] ?? [];
+  const awaitingRpe =
+    logs.length >= planned.sets && session.rpeValues[planned.exerciseId] === undefined;
+
+  const alternatives = substitutesFor(activeId, onboarding.equipment as Equipment[]).slice(0, 4);
 
   function handleLogSet() {
-    const w = parseFloat(setInput.w) || displayWeight;
-    const r = parseInt(setInput.r, 10) || displayReps;
-    const log: SetLog = { w, r };
-    logSet(exercise.id, log);
+    const log: SetLog = {
+      w: parseFloat(input.w) || 0,
+      r: parseInt(input.r, 10) || 0,
+    };
+    logSet(planned.exerciseId, log);
   }
 
-  function handleSubmitRpe(value: number) {
-    submitRpe(exercise.id, value);
-    if (session.exerciseIdx + 1 < workoutExerciseCount) {
+  async function handleSubmitRpe(value: number) {
+    submitRpe(planned.exerciseId, value);
+    if (session.exerciseIdx + 1 < exerciseCount) {
       nextExercise();
-    } else {
-      completeWorkout();
-      router.push("/train/complete");
+      return;
     }
-  }
-
-  function handleSwap(alt: ExerciseAlternative) {
-    swapExercise(exercise.id, alt);
-    setSetInput({ w: String(alt.targetWeight), r: String(alt.targetReps) });
-    setShowSwap(false);
+    // Wait for the save so a fast navigation can't cut the request short.
+    await completeWorkout();
+    router.push("/train/complete");
   }
 
   return (
     <div>
       <div className="mb-1 flex items-start justify-between gap-3">
-        <h1 className="font-display text-2xl font-bold text-ink">{override?.name ?? exercise.name}</h1>
-        {hasExtras && (
-          <div className="flex flex-shrink-0 gap-1.5 pt-1">
+        <h1 className="font-display text-2xl font-bold text-ink">{def?.name ?? activeId}</h1>
+        <div className="flex flex-shrink-0 gap-1.5 pt-1">
+          {def?.cues && (
             <button
               onClick={() => setShowInfo(true)}
               className="flex h-8 w-8 items-center justify-center rounded-full border border-line bg-surface text-muted"
+              aria-label="Exercise info"
             >
               <Info size={15} />
             </button>
+          )}
+          {alternatives.length > 0 && (
             <button
               onClick={() => setShowSwap(true)}
               className="flex h-8 w-8 items-center justify-center rounded-full border border-line bg-surface text-muted"
+              aria-label="Swap exercise"
             >
               <MoreHorizontal size={15} />
             </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       <div className="tabular mb-1 text-[15px] font-semibold text-accent">
-        Target: {displayWeight} kg x {displayReps}
+        {targetLabel(planned)}
       </div>
-      {override ? (
-        <div className="mb-5 text-xs font-semibold text-success">Swapped in for today</div>
-      ) : (
-        <div className="tabular mb-5 text-xs text-muted">
-          Previous: {exercise.previous.map((p) => `${p.w}x${p.r}`).join(", ")}
+      {override && <div className="mb-4 text-xs font-semibold text-success">Swapped in for today</div>}
+
+      {needsCalibration && (
+        <div className="mb-5 flex gap-2.5 rounded-2xl bg-accent-soft p-4">
+          <Lightbulb size={16} className="mt-0.5 flex-shrink-0 text-accent" />
+          <p className="text-sm leading-relaxed text-ink">
+            First time on this one. Work up to a weight where the last two reps are hard but your
+            form holds, then log what you did — we&apos;ll take it from there.
+          </p>
         </div>
       )}
 
       <div className="mb-5 overflow-hidden rounded-2xl border border-line bg-surface">
         <div className="grid grid-cols-[1fr_2fr_2fr_1fr] border-b border-line px-4 py-2.5 text-xs font-semibold text-muted">
           <span>Set</span>
-          <span>Weight</span>
-          <span>Reps</span>
+          <span>{tracksWeight ? "Weight" : ""}</span>
+          <span>{isTimed ? "Minutes" : "Reps"}</span>
           <span />
         </div>
-        {Array.from({ length: exercise.sets }).map((_, i) => {
+        {Array.from({ length: planned.sets }).map((_, i) => {
           const done = logs[i];
           return (
             <div
@@ -147,7 +179,7 @@ function ExercisePanel({
               className="tabular grid grid-cols-[1fr_2fr_2fr_1fr] items-center border-b border-line px-4 py-3 text-sm last:border-b-0"
             >
               <span>{i + 1}</span>
-              <span>{done ? `${done.w} kg` : "—"}</span>
+              <span>{done && tracksWeight ? `${done.w} kg` : tracksWeight ? "—" : ""}</span>
               <span>{done ? done.r : "—"}</span>
               <span>
                 {done && (
@@ -167,34 +199,39 @@ function ExercisePanel({
       </div>
 
       {!awaitingRpe ? (
-        logs.length < exercise.sets && (
+        logs.length < planned.sets && (
           <>
             <div className="mb-3.5 flex gap-2.5">
+              {tracksWeight && (
+                <div className="flex-1">
+                  <label className="text-xs text-muted">Weight (kg)</label>
+                  <input
+                    type="number"
+                    inputMode="decimal"
+                    value={input.w}
+                    onChange={(e) => setInput({ ...input, w: e.target.value })}
+                    className="tabular mt-1 w-full rounded-xl border border-line px-3 py-2.5 text-sm"
+                  />
+                </div>
+              )}
               <div className="flex-1">
-                <label className="text-xs text-muted">Weight (kg)</label>
+                <label className="text-xs text-muted">{isTimed ? "Minutes" : "Reps"}</label>
                 <input
                   type="number"
-                  value={setInput.w}
-                  onChange={(e) => setSetInput({ ...setInput, w: e.target.value })}
-                  className="tabular mt-1 w-full rounded-xl border border-line px-3 py-2.5 text-sm"
-                />
-              </div>
-              <div className="flex-1">
-                <label className="text-xs text-muted">Reps</label>
-                <input
-                  type="number"
-                  value={setInput.r}
-                  onChange={(e) => setSetInput({ ...setInput, r: e.target.value })}
+                  inputMode="numeric"
+                  value={input.r}
+                  onChange={(e) => setInput({ ...input, r: e.target.value })}
                   className="tabular mt-1 w-full rounded-xl border border-line px-3 py-2.5 text-sm"
                 />
               </div>
             </div>
-            <button
+            <motion.button
+              whileTap={{ scale: 0.98 }}
               onClick={handleLogSet}
-              className="w-full rounded-2xl bg-ink py-4 text-[15px] font-semibold text-background transition active:scale-[0.98]"
+              className="w-full rounded-2xl bg-ink py-4 text-[15px] font-semibold text-background"
             >
-              Log set
-            </button>
+              {isTimed ? "Log it" : "Log set"}
+            </motion.button>
           </>
         )
       ) : (
@@ -204,9 +241,26 @@ function ExercisePanel({
       )}
 
       <AnimatePresence>
-        {showInfo && <ExerciseInfoModal exercise={exercise} onClose={() => setShowInfo(false)} />}
+        {showInfo && def && (
+          <ExerciseInfoModal
+            exercise={{
+              name: def.name,
+              muscles: def.muscles,
+              tips: def.cues ?? [],
+            }}
+            onClose={() => setShowInfo(false)}
+          />
+        )}
         {showSwap && (
-          <ExerciseSwapPanel exercise={exercise} onClose={() => setShowSwap(false)} onSwap={handleSwap} />
+          <ExerciseSwapPanel
+            exerciseName={def?.name ?? activeId}
+            alternatives={alternatives.map((a) => ({ id: a.id, name: a.name, muscles: a.muscles }))}
+            onClose={() => setShowSwap(false)}
+            onSwap={(alt) => {
+              swapExercise(planned.exerciseId, { exerciseId: alt.id });
+              setShowSwap(false);
+            }}
+          />
         )}
       </AnimatePresence>
     </div>

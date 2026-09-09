@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/auth";
 import { useAppStore } from "@/lib/store";
 import { supabase } from "@/lib/supabase";
+import { loadPlan } from "@/lib/plan/storage";
 import { LogoMark } from "@/components/Wordmark";
 
 export function AuthGate({ children }: { children: React.ReactNode }) {
@@ -14,6 +15,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   const setOnboarding = useAppStore((s) => s.setOnboarding);
   const completeOnboarding = useAppStore((s) => s.completeOnboarding);
   const claimForUser = useAppStore((s) => s.claimForUser);
+  const setPlan = useAppStore((s) => s.setPlan);
   const [profileSynced, setProfileSynced] = useState(false);
   const syncedForUser = useRef<string | null>(null);
 
@@ -26,6 +28,8 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     if (syncedForUser.current === user.id) return;
     syncedForUser.current = user.id;
     claimForUser(user.id);
+
+    loadPlan(user.id).then(setPlan);
 
     supabase
       .from("profiles")
@@ -54,7 +58,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
         }
         setProfileSynced(true);
       });
-  }, [initialized, user, router, setOnboarding, completeOnboarding, claimForUser]);
+  }, [initialized, user, router, setOnboarding, completeOnboarding, claimForUser, setPlan]);
 
   if (!initialized || !user || !profileSynced) {
     return (

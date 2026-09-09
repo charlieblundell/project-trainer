@@ -1,10 +1,30 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@supabase/supabase-js";
-import { WORKOUTS, PLAN_WEEK, todaysWorkoutId } from "@/lib/data";
 import { displayName } from "@/lib/displayName";
+import {
+  WEEKDAY_LABELS,
+  WEEKDAY_ORDER,
+  exerciseName,
+  targetLabel,
+  todayWeekday,
+} from "@/lib/plan/helpers";
+import type { Plan } from "@/lib/plan/types";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { EQUIPMENT_LABELS, EXERCISES_BY_ID, type Equipment } from "@/lib/exercises";
 import type { SetLog } from "@/lib/types";
+
+/** Reads the user's newest plan through their own token, so RLS still applies. */
+async function loadPlanForUser(client: SupabaseClient, userId: string): Promise<Plan | null> {
+  const { data } = await client
+    .from("plans")
+    .select("data")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  return (data?.data as Plan) ?? null;
+}
 
 function namesFor(ids: string[] | null | undefined): string {
   if (!ids?.length) return "";
@@ -50,10 +70,12 @@ export async function POST(req: NextRequest) {
     .order("completed_at", { ascending: false })
     .limit(5);
 
+  const plan = await loadPlanForUser(supabase, user.id);
+  const planSessionsById = new Map((plan?.sessions ?? []).map((s) => [s.id, s]));
+
   const historySummary = (recentSessions ?? [])
     .map((s: { workout_id: string; logged_sets: Record<string, SetLog[]>; completed_at: string }) => {
-      const workout = WORKOUTS[s.workout_id];
-      const name = workout?.displayName ?? s.workout_id;
+      const name = planSessionsById.get(s.workout_id)?.name ?? s.workout_id;
       const setCount = Object.values(s.logged_sets ?? {}).reduce(
         (sum: number, arr: SetLog[]) => sum + arr.length,
         0
@@ -63,24 +85,28 @@ export async function POST(req: NextRequest) {
     })
     .join("\n");
 
-  const weekPlan = PLAN_WEEK.map((d) => {
-    const suffix = d.today ? " (today)" : "";
-    const mins = d.minutes ? ` ~${d.minutes} min` : "";
-    return `- ${d.day}: ${d.label}${mins}${suffix}`;
-  }).join("\n");
+  const today = todayWeekday();
 
-  const todayWorkout = WORKOUTS[todaysWorkoutId()];
-  const todayDetail = todayWorkout
-    ? todayWorkout.exercises
-        .map((ex) => {
-          const target =
-            ex.targetWeight > 0
-              ? `${ex.targetWeight} kg x ${ex.targetReps}`
-              : `${ex.targetReps} reps`;
-          return `- ${ex.name}: ${ex.sets} sets of ${target}`;
-        })
+  const weekPlan = plan
+    ? WEEKDAY_ORDER.map((day) => {
+        const s = plan.sessions.find((x) => x.weekday === day);
+        const suffix = day === today ? " (today)" : "";
+        return s
+          ? `- ${WEEKDAY_LABELS[day]}: ${s.name} — ${s.focus}, ~${s.estMinutes} min${suffix}`
+          : `- ${WEEKDAY_LABELS[day]}: Rest${suffix}`;
+      }).join("\n")
+    : "No plan generated yet.";
+
+  const todaySession = plan?.sessions.find((s) => s.weekday === today) ?? null;
+  const todayDetail = todaySession
+    ? todaySession.exercises
+        .map((ex) => `- ${exerciseName(ex)}: ${targetLabel(ex)}`)
         .join("\n")
-    : "No workout scheduled.";
+    : "Rest day.";
+
+  const planNotes = plan?.notes.length
+    ? plan.notes.map((n) => `- ${n}`).join("\n")
+    : "None.";
 
   const systemPrompt = [
     "You are the in-app AI coach for a fitness app called Your Personal Trainer.",
@@ -111,8 +137,11 @@ export async function POST(req: NextRequest) {
     "This week's plan:",
     weekPlan,
     "",
-    `Today's session (${todayWorkout?.name ?? "rest"}):`,
+    `Today's session (${todaySession?.name ?? "rest day"}):`,
     todayDetail,
+    "",
+    "Decisions the plan generator made and why (mention these if asked why something is or isn't in the plan):",
+    planNotes,
     "",
     "Recent completed workouts:",
     historySummary || "No workouts logged yet.",

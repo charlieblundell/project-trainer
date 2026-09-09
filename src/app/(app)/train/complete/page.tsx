@@ -4,8 +4,8 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Flame } from "lucide-react";
-import { WORKOUTS } from "@/lib/data";
 import { useAppStore } from "@/lib/store";
+import { sessionById } from "@/lib/plan/helpers";
 
 const container = {
   hidden: {},
@@ -20,22 +20,26 @@ const item = {
 export default function TrainComplete() {
   const router = useRouter();
   const summary = useAppStore((s) => s.lastCompletedSummary);
+  const plan = useAppStore((s) => s.plan);
 
   useEffect(() => {
     if (!summary) router.replace("/home");
   }, [summary, router]);
 
-  if (!summary) {
-    return null;
-  }
+  if (!summary) return null;
 
-  const workout = WORKOUTS[summary.workoutId];
+  const planSession = sessionById(plan, summary.workoutId);
   const totalSets = Object.values(summary.loggedSets).reduce((sum, arr) => sum + arr.length, 0);
-  const prCount = workout.exercises.reduce((count, ex) => {
-    const logs = summary.loggedSets[ex.id] ?? [];
-    const prevMax = Math.max(...ex.previous.map((p) => p.w));
-    return logs.some((s) => s.w > prevMax) ? count + 1 : count;
-  }, 0);
+  const exerciseCount = Object.keys(summary.loggedSets).length;
+  const estMinutes = planSession?.estMinutes ?? 0;
+
+  // Every logged weight is a starting point the app didn't have before, so the
+  // first time through a plan, "calibrated" is the meaningful number.
+  const calibrated = planSession
+    ? planSession.exercises.filter(
+        (ex) => ex.targetWeightKg == null && (summary.loggedSets[ex.exerciseId]?.length ?? 0) > 0
+      ).length
+    : 0;
 
   return (
     <motion.div className="mx-auto max-w-sm" variants={container} initial="hidden" animate="show">
@@ -45,18 +49,21 @@ export default function TrainComplete() {
 
       <motion.div variants={item} className="mb-5 flex gap-2.5">
         {[
-          [String(workout.estMinutes), "minutes"],
-          [String(workout.exercises.length), "exercises"],
+          [String(estMinutes), "minutes"],
+          [String(exerciseCount), "exercises"],
           [String(totalSets), "sets"],
         ].map(([num, label]) => (
-          <div key={label} className="flex-1 rounded-2xl border border-line bg-surface py-4 text-center">
+          <div
+            key={label}
+            className="flex-1 rounded-2xl border border-line bg-surface py-4 text-center"
+          >
             <div className="tabular font-display text-xl font-bold text-ink">{num}</div>
             <div className="text-xs text-muted">{label}</div>
           </div>
         ))}
       </motion.div>
 
-      {prCount > 0 && (
+      {calibrated > 0 && (
         <motion.div
           variants={item}
           initial={{ opacity: 0, scale: 0.9 }}
@@ -66,17 +73,16 @@ export default function TrainComplete() {
         >
           <Flame size={16} className="text-warning" />
           <span className="text-sm font-semibold text-ink">
-            {prCount} new personal record{prCount > 1 ? "s" : ""} today.
+            {calibrated} starting weight{calibrated > 1 ? "s" : ""} logged.
           </span>
         </motion.div>
       )}
 
       <motion.div variants={item} className="mb-6 rounded-2xl bg-success-soft p-5">
-        <div className="mb-2 text-xs font-semibold text-success">COACH&apos;S FEEDBACK</div>
+        <div className="mb-2 text-xs font-semibold text-success">WHAT HAPPENS NEXT</div>
         <div className="text-sm leading-relaxed text-ink">
-          {prCount > 0
-            ? "Nice work — you pushed past your previous best today. I'll raise a couple of your targets for next session."
-            : "Solid session. You hit your numbers across the board, so I'll nudge a couple of targets up for next time."}
+          That&apos;s logged. Your coach can see it, so ask about anything that felt off — and next
+          session will build on what you did today.
         </div>
       </motion.div>
 
@@ -86,7 +92,7 @@ export default function TrainComplete() {
         onClick={() => router.push("/home")}
         className="w-full rounded-2xl bg-ink py-4 text-[15px] font-semibold text-background"
       >
-        View next workout
+        Done
       </motion.button>
     </motion.div>
   );
