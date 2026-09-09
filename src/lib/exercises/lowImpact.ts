@@ -42,7 +42,7 @@ export const LOW_IMPACT_EXERCISES: ExerciseDef[] = [
     compound: true,
     level: 1,
     unit: "reps",
-    loads: ["shoulder", "elbow"],
+    loads: ["elbow"],
     lowImpact: true,
     substitutes: ["band_row", "cable_row"],
     cues: ["Band round your feet, pull the handles to your ribs."],
