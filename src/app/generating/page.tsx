@@ -79,7 +79,7 @@ export default function Generating() {
           <h1 className="mb-5 font-display text-2xl font-bold text-ink">Your plan is ready.</h1>
           <div className="mb-6 rounded-2xl border border-line bg-surface p-5">
             {[
-              ["Duration", "8 weeks"],
+              ["Duration", "Ongoing"],
               ["Training days", `${onboarding.days ?? 4}/week`],
               ["Session length", `~${onboarding.length ?? 60} min`],
               ["Goal", onboarding.goal ?? "Build muscle"],

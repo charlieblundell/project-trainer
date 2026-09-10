@@ -1,22 +1,26 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f7f7f5;
+  /* Neutrals carry a slight warm bias so they sit with the accent rather than
+     fighting it — a true grey next to terracotta reads as unconsidered. */
+  --background: #faf7f3;
   --surface: #ffffff;
-  --ink: #16181d;
-  --muted: #6b7076;
-  --line: #e4e5e1;
+  --ink: #1e1916;
+  --muted: #7a706a;
+  --line: #eae2da;
 
-  --accent: #2954e5;
-  --accent-2: #7c5cff;
+  --accent: #b8492a;
+  --accent-2: #e0912f;
   --accent-ink: #ffffff;
-  --accent-soft: #e8edfc;
+  --accent-soft: #fbe9e0;
 
-  --success: #1e8f5f;
-  --success-soft: #e4f5ec;
+  --success: #1a8757;
+  --success-soft: #e2f2e9;
 
-  --warning: #e2542d;
-  --warning-soft: #fbe7e1;
+  /* Destructive actions need to be unmistakably not the accent, so this sits
+     on the cool side of red rather than sharing terracotta's orange. */
+  --warning: #c4183f;
+  --warning-soft: #fbe3e8;
 
   --font-display: "Manrope", sans-serif;
   --font-body: "Inter", sans-serif;
@@ -24,22 +28,22 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #101114;
-    --surface: #1a1c21;
-    --ink: #f2f3f1;
-    --muted: #9296a0;
-    --line: #2b2e35;
+    --background: #17120f;
+    --surface: #211b17;
+    --ink: #f4efe9;
+    --muted: #a0948b;
+    --line: #342c26;
 
-    --accent: #7c95ff;
-    --accent-2: #b3a1ff;
-    --accent-ink: #101114;
-    --accent-soft: #202a4a;
+    --accent: #ef7d4e;
+    --accent-2: #f6b155;
+    --accent-ink: #17120f;
+    --accent-soft: #3b241a;
 
-    --success: #33b27a;
-    --success-soft: #143327;
+    --success: #35b57c;
+    --success-soft: #14311f;
 
-    --warning: #ff7a52;
-    --warning-soft: #3a1c14;
+    --warning: #ff6183;
+    --warning-soft: #3c1421;
   }
 }
 

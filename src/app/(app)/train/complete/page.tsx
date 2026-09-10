@@ -65,9 +65,9 @@ export default function TrainComplete() {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ type: "spring", stiffness: 400, damping: 22, delay: 0.15 }}
-          className="mb-5 flex items-center gap-2 rounded-2xl bg-warning-soft px-4 py-3"
+          className="mb-5 flex items-center gap-2 rounded-2xl bg-accent-soft px-4 py-3"
         >
-          <Flame size={16} className="flex-shrink-0 text-warning" />
+          <Flame size={16} className="flex-shrink-0 text-accent" />
           <span className="text-sm font-semibold text-ink">
             {upgrades.length} target{upgrades.length > 1 ? "s" : ""} going up next session.
           </span>

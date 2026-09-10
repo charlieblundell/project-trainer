@@ -3,13 +3,14 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { X, Info } from "lucide-react";
+import { X, Info, RefreshCw, Shuffle } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import {
   WEEKDAY_LABELS,
   exerciseName,
   targetLabel,
   todayWeekday,
+  weekNumber,
   weekOverview,
 } from "@/lib/plan/helpers";
 import type { PlannedSession } from "@/lib/plan/types";
@@ -18,7 +19,12 @@ export default function Plan() {
   const router = useRouter();
   const plan = useAppStore((s) => s.plan);
   const startWorkout = useAppStore((s) => s.startWorkout);
+  const sessionsLogged = useAppStore((s) => s.sessionsLogged);
+  const refreshPlan = useAppStore((s) => s.refreshPlan);
+  const lastRefresh = useAppStore((s) => s.lastRefresh);
+  const clearLastRefresh = useAppStore((s) => s.clearLastRefresh);
   const [preview, setPreview] = useState<PlannedSession | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
   const today = todayWeekday();
 
   if (!plan) {
@@ -36,14 +42,15 @@ export default function Plan() {
   }
 
   const week = weekOverview(plan);
-  const trainingDays = plan.sessions.length;
+  const done = sessionsLogged;
 
   return (
     <div className="relative">
       <div className="mb-1 text-xs font-semibold tracking-widest text-muted">YOUR PROGRAM</div>
       <h1 className="mb-1 font-display text-2xl font-bold text-ink">{plan.goal}</h1>
-      <div className="mb-5 text-sm text-muted">
-        {plan.weeks} weeks · {trainingDays} sessions a week
+      <div className="tabular mb-5 text-sm text-muted">
+        Week {weekNumber(plan)} ·{" "}
+        {done === 0 ? "no sessions yet" : `${done} session${done > 1 ? "s" : ""} done`}
       </div>
 
       {plan.notes.length > 0 && (
@@ -94,6 +101,54 @@ export default function Plan() {
             </motion.button>
           );
         })}
+      </div>
+
+      <div className="mt-6 rounded-2xl border border-line bg-surface p-4">
+        <div className="mb-1 flex items-center gap-1.5 text-sm font-semibold text-ink">
+          <Shuffle size={14} className="text-accent" /> Getting stale?
+        </div>
+        <p className="mb-3 text-sm leading-relaxed text-muted">
+          Swaps the isolation, core and mobility work for something different. Your main lifts stay
+          put, along with every weight you&apos;ve built on them — you&apos;ll find a working weight
+          for anything new on your next session.
+        </p>
+        <motion.button
+          whileTap={{ scale: 0.98 }}
+          disabled={refreshing}
+          onClick={async () => {
+            setRefreshing(true);
+            await refreshPlan();
+            setRefreshing(false);
+          }}
+          className="flex w-full items-center justify-center gap-2 rounded-2xl border border-line py-3 text-sm font-semibold text-ink disabled:opacity-50"
+        >
+          <RefreshCw size={14} className={refreshing ? "animate-spin" : undefined} />
+          {refreshing ? "Picking new work" : "Freshen up my accessories"}
+        </motion.button>
+
+        {lastRefresh && (
+          <div className="mt-3 rounded-xl bg-accent-soft p-3.5">
+            <div className="mb-2 flex items-start justify-between gap-3">
+              <span className="text-xs font-semibold text-accent">LAST REFRESH</span>
+              <button onClick={clearLastRefresh} className="text-accent" aria-label="Dismiss">
+                <X size={14} />
+              </button>
+            </div>
+            {lastRefresh.length === 0 ? (
+              <p className="text-sm leading-relaxed text-ink">
+                Nothing to swap — your equipment doesn&apos;t leave another option for those slots.
+              </p>
+            ) : (
+              <ul className="flex flex-col gap-1.5">
+                {lastRefresh.map((swap, i) => (
+                  <li key={`${swap.from}-${i}`} className="text-sm leading-relaxed text-ink">
+                    <span className="text-muted">{swap.from}</span> → {swap.to}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
       </div>
 
       <AnimatePresence>

@@ -6,6 +6,8 @@ import { supabase } from "./supabase";
 import type { Plan } from "./plan/types";
 import { applyProgression, type Change } from "./plan/progress";
 import { savePlan } from "./plan/storage";
+import { normalizePlan } from "./plan/normalize";
+import { profileFromOnboarding, refreshAccessories } from "./plan/generate";
 import type { Equipment } from "./exercises";
 
 type TrainingSession = {
@@ -44,6 +46,18 @@ type AppState = {
 
   plan: Plan | null;
   setPlan: (plan: Plan | null) => void;
+  /**
+   * Total workouts logged. The plan has no end date, so this — not weeks
+   * remaining — is what there is to count. It belongs to the person rather
+   * than to the plan, so rebuilding a plan doesn't reset it to zero.
+   */
+  sessionsLogged: number;
+  setSessionsLogged: (count: number) => void;
+  /** Re-picks the accessory work, leaving the main lifts and their weights alone. */
+  refreshPlan: () => Promise<void>;
+  /** What the last refresh swapped, shown once and then dismissed. */
+  lastRefresh: { from: string; to: string }[] | null;
+  clearLastRefresh: () => void;
 
   ownerId: string | null;
   claimForUser: (userId: string) => void;
@@ -105,6 +119,7 @@ export const useAppStore = create<AppState>()(
           rpe: s.rpeValues,
         });
         if (error) console.error("Failed to save workout:", error.message);
+        else set((prev) => ({ sessionsLogged: prev.sessionsLogged + 1 }));
 
         // Feed the results back into the plan so next week's targets move.
         if (currentPlan) {
@@ -128,7 +143,29 @@ export const useAppStore = create<AppState>()(
       addMessage: (msg) => set((s) => ({ messages: [...s.messages, msg] })),
 
       plan: null,
-      setPlan: (plan) => set({ plan }),
+      setPlan: (plan) => set({ plan: plan ? normalizePlan(plan) : null }),
+      sessionsLogged: 0,
+      setSessionsLogged: (count) => set({ sessionsLogged: count }),
+      lastRefresh: null,
+      clearLastRefresh: () => set({ lastRefresh: null }),
+      refreshPlan: async () => {
+        const currentPlan = get().plan;
+        if (!currentPlan) return;
+
+        const { plan: nextPlan, swapped } = refreshAccessories(
+          currentPlan,
+          profileFromOnboarding(get().onboarding)
+        );
+        set({ plan: nextPlan, lastRefresh: swapped });
+
+        const { data } = await supabase.auth.getUser();
+        if (!data.user) return;
+        try {
+          await savePlan(data.user.id, nextPlan);
+        } catch {
+          // Already logged in savePlan; the in-memory plan still reflects it.
+        }
+      },
 
       ownerId: null,
       claimForUser: (userId) => {
@@ -139,9 +176,11 @@ export const useAppStore = create<AppState>()(
           session: emptySession(""),
           lastCompletedSummary: null,
           lastChanges: [],
+          lastRefresh: null,
           onboarding: EMPTY_ONBOARDING,
           onboardingComplete: false,
           plan: null,
+          sessionsLogged: 0,
         });
       },
     }),
@@ -168,6 +207,9 @@ export const useAppStore = create<AppState>()(
           ...current,
           ...state,
           onboarding: { ...EMPTY_ONBOARDING, ...(state.onboarding ?? {}) },
+          // A plan saved by an older build is missing fields the screens now
+          // read, and it comes back from here before the database catches up.
+          plan: state.plan ? normalizePlan(state.plan) : null,
         };
       },
     }

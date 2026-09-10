@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { normalizePlan } from "./normalize";
 import type { Plan } from "./types";
 
 export async function savePlan(userId: string, plan: Plan): Promise<void> {
@@ -20,5 +21,6 @@ export async function loadPlan(userId: string): Promise<Plan | null> {
     .limit(1)
     .maybeSingle();
 
-  return (data?.data as Plan) ?? null;
+  if (!data?.data) return null;
+  return normalizePlan(data.data as Plan);
 }

@@ -23,6 +23,9 @@ export type PlannedExercise = {
   streak?: number;
 };
 
+/** Which half of the body a session trains, used to keep accessories on-topic. */
+export type Region = "upper" | "lower" | "core" | "full";
+
 export type PlannedSession = {
   id: string;
   /** "Upper A", "Full Body B", "Conditioning" */
@@ -31,6 +34,7 @@ export type PlannedSession = {
   focus: string;
   weekday: Weekday;
   estMinutes: number;
+  region: Region;
   exercises: PlannedExercise[];
 };
 
@@ -38,8 +42,15 @@ export type Plan = {
   createdAt: string;
   goal: string;
   level: Level;
-  weeks: number;
   daysPerWeek: number;
+  /** How many times the accessory work has been re-picked. */
+  refreshes: number;
+  /**
+   * Accessory movements recently swapped out. Without this, a second refresh
+   * hands straight back what the first one replaced. Oldest entries fall off,
+   * so nothing is banned forever.
+   */
+  retired: string[];
   sessions: PlannedSession[];
   /** Body parts we steered around, derived from the user's own notes. */
   avoiding: BodyPart[];

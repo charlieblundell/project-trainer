@@ -7,8 +7,8 @@ import {
   type Level,
   type MovementPattern,
 } from "@/lib/exercises";
-import type { Weekday } from "@/lib/types";
-import type { GeneratorProfile, Plan, PlannedExercise, PlannedSession } from "./types";
+import type { OnboardingData, Weekday } from "@/lib/types";
+import type { GeneratorProfile, Plan, PlannedExercise, PlannedSession, Region } from "./types";
 
 /* ------------------------------------------------------------------ *
  * Session templates
@@ -17,8 +17,6 @@ import type { GeneratorProfile, Plan, PlannedExercise, PlannedSession } from "./
  * the biggest movements sit at the front, and when someone's session is
  * short we trim from the back rather than dropping a main lift.
  * ------------------------------------------------------------------ */
-
-type Region = "upper" | "lower" | "core" | "full";
 
 type Template = {
   name: string;
@@ -35,7 +33,7 @@ const LOWER_MUSCLES = new Set([
 const CORE_MUSCLES = new Set(["core", "obliques", "lower back", "spine", "thoracic spine"]);
 
 /** Which half of the body a movement belongs to, read from its primary muscle. */
-function regionOf(ex: ExerciseDef): Region {
+export function regionOf(ex: ExerciseDef): Region {
   const primary = (ex.muscles[0] ?? "").toLowerCase();
   if (primary === "full body") return "full";
   if (CORE_MUSCLES.has(primary)) return "core";
@@ -397,6 +395,28 @@ function describePattern(pattern: MovementPattern): string {
   return PATTERN_LABELS[pattern] ?? pattern;
 }
 
+/** Everything they can actually do: owned equipment, minus what they ruled out. */
+function poolFor(profile: GeneratorProfile): ExerciseDef[] {
+  const disliked = new Set(profile.dislikedExercises);
+  return availableExercises(profile.equipment as Equipment[]).filter((ex) => !disliked.has(ex.id));
+}
+
+/** The generator only needs the training half of what onboarding collected. */
+export function profileFromOnboarding(o: OnboardingData): GeneratorProfile {
+  return {
+    goal: o.goal,
+    experience: o.experience,
+    days: o.days,
+    length: o.length,
+    equipment: o.equipment,
+    likedExercises: o.likedExercises,
+    dislikedExercises: o.dislikedExercises,
+    trainingDays: o.trainingDays,
+    considerations: o.considerations,
+    age: o.age,
+  };
+}
+
 export function generatePlan(profile: GeneratorProfile): Plan {
   const goal = profile.goal ?? "Build muscle";
   const level = experienceToLevel(profile.experience);
@@ -405,9 +425,7 @@ export function generatePlan(profile: GeneratorProfile): Plan {
   const avoiding = parseConsiderations(profile.considerations);
   const notes: string[] = [];
 
-  const equipment = profile.equipment as Equipment[];
-  const disliked = new Set(profile.dislikedExercises);
-  const pool = availableExercises(equipment).filter((ex) => !disliked.has(ex.id));
+  const pool = poolFor(profile);
   const avoidingSet = new Set(avoiding);
 
   const preferLowImpact = goal === "General health" || (profile.age ?? 0) >= 60;
@@ -464,6 +482,7 @@ export function generatePlan(profile: GeneratorProfile): Plan {
       focus: template.focus,
       weekday: weekdays[i] ?? FALLBACK_DAYS[i],
       estMinutes: estimateMinutes(chosen),
+      region: template.region,
       exercises: chosen,
     });
   });
@@ -508,11 +527,102 @@ export function generatePlan(profile: GeneratorProfile): Plan {
     createdAt: new Date().toISOString(),
     goal,
     level,
-    weeks: 8,
     daysPerWeek: days,
+    refreshes: 0,
+    retired: [],
     sessions,
     avoiding,
     notes,
+  };
+}
+
+/* ------------------------------------------------------------------ *
+ * Refreshing an ongoing plan
+ * ------------------------------------------------------------------ */
+
+const ACCESSORY_PATTERNS = new Set<MovementPattern>(["isolation", "core", "mobility"]);
+
+/** How many swapped-out movements to remember before they can come back around. */
+const RETIRED_MEMORY = 24;
+
+export type Refresh = { plan: Plan; swapped: { from: string; to: string }[] };
+
+/**
+ * Re-picks the accessory work and leaves the main lifts alone.
+ *
+ * The plan has no end date, so the thing that eventually kills it isn't the
+ * calendar running out — it's boredom. Compounds are where the weight climbs,
+ * and swapping those throws away every calibrated target, so they stay. The
+ * isolation, core and mobility slots are where variety is free.
+ */
+export function refreshAccessories(plan: Plan, profile: GeneratorProfile): Refresh {
+  const pool = poolFor(profile);
+  const level = experienceToLevel(profile.experience);
+  const liked = new Set(profile.likedExercises);
+  const avoiding = new Set(plan.avoiding);
+  const preferLowImpact = plan.goal === "General health" || (profile.age ?? 0) >= 60;
+  const swapped: { from: string; to: string }[] = [];
+  const justRetired: string[] = [];
+
+  // Seeded with everything the plan already uses, so Thursday's refresh doesn't
+  // hand back a movement that's already sitting in Tuesday's session.
+  const usedThisWeek = new Set<string>();
+  for (const session of plan.sessions) {
+    for (const ex of session.exercises) usedThisWeek.add(ex.exerciseId);
+  }
+
+  const sessions = plan.sessions.map((session) => {
+    // Includes the exercise being replaced, which is what forces a new pick.
+    const usedThisSession = new Set(session.exercises.map((e) => e.exerciseId));
+
+    const exercises = session.exercises.map((planned, slotIndex) => {
+      const def = EXERCISES_BY_ID[planned.exerciseId];
+      if (!def || !ACCESSORY_PATTERNS.has(def.pattern)) return planned;
+
+      const base = {
+        pool,
+        liked,
+        level,
+        preferLowImpact,
+        avoiding,
+        usedThisWeek,
+      };
+
+      // Two passes: first ruling out what's been retired recently, then, if
+      // that leaves nothing, settling for anything but what's there now. A
+      // narrow category shouldn't mean the button quietly does nothing.
+      let result = selectForSlot(def.pattern, slotIndex, session.region, {
+        ...base,
+        usedThisSession: new Set([...usedThisSession, ...plan.retired]),
+      });
+      if (result.kind !== "picked") {
+        result = selectForSlot(def.pattern, slotIndex, session.region, {
+          ...base,
+          usedThisSession,
+        });
+      }
+
+      // Nothing else fits the slot — the same movement beats an empty one.
+      if (result.kind !== "picked") return planned;
+
+      usedThisSession.add(result.exercise.id);
+      usedThisWeek.add(result.exercise.id);
+      justRetired.push(def.id);
+      swapped.push({ from: def.name, to: result.exercise.name });
+      return prescribe(result.exercise, plan.goal);
+    });
+
+    return { ...session, exercises, estMinutes: estimateMinutes(exercises) };
+  });
+
+  return {
+    plan: {
+      ...plan,
+      sessions,
+      refreshes: plan.refreshes + 1,
+      retired: [...justRetired, ...plan.retired].slice(0, RETIRED_MEMORY),
+    },
+    swapped,
   };
 }
 

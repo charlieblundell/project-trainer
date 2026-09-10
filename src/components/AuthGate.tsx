@@ -16,6 +16,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   const completeOnboarding = useAppStore((s) => s.completeOnboarding);
   const claimForUser = useAppStore((s) => s.claimForUser);
   const setPlan = useAppStore((s) => s.setPlan);
+  const setSessionsLogged = useAppStore((s) => s.setSessionsLogged);
   const [profileSynced, setProfileSynced] = useState(false);
   const syncedForUser = useRef<string | null>(null);
 
@@ -30,6 +31,14 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     claimForUser(user.id);
 
     loadPlan(user.id).then(setPlan);
+
+    // The workouts table is the record of what they've actually done, so the
+    // running total is read from it rather than kept on the plan.
+    supabase
+      .from("workout_sessions")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .then(({ count }) => setSessionsLogged(count ?? 0));
 
     supabase
       .from("profiles")
@@ -58,7 +67,16 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
         }
         setProfileSynced(true);
       });
-  }, [initialized, user, router, setOnboarding, completeOnboarding, claimForUser, setPlan]);
+  }, [
+    initialized,
+    user,
+    router,
+    setOnboarding,
+    completeOnboarding,
+    claimForUser,
+    setPlan,
+    setSessionsLogged,
+  ]);
 
   if (!initialized || !user || !profileSynced) {
     return (

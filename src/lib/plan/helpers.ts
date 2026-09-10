@@ -37,6 +37,16 @@ export function nextSession(plan: Plan | null, now = new Date()): PlannedSession
   return null;
 }
 
+/**
+ * Which week of training they're on. The plan has no end date, so this counts
+ * up from the day it was built rather than down toward a finish line.
+ */
+export function weekNumber(plan: Plan, now = new Date()): number {
+  const started = new Date(plan.createdAt).getTime();
+  const weeks = Math.floor((now.getTime() - started) / (7 * 24 * 60 * 60 * 1000));
+  return Math.max(1, weeks + 1);
+}
+
 export function sessionById(plan: Plan | null, id: string): PlannedSession | null {
   return plan?.sessions.find((s) => s.id === id) ?? null;
 }
