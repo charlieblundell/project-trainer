@@ -1,12 +1,90 @@
 "use client";
 
-import { useState } from "react";
-import { STRENGTH_HISTORY, PERSONAL_RECORDS } from "@/lib/data";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import { useAuthStore } from "@/lib/auth";
+import { useAppStore } from "@/lib/store";
+import { loadHistory } from "@/lib/progress/storage";
+import {
+  personalRecords,
+  sessionsPerWeek,
+  strengthSeries,
+  trainingTotals,
+} from "@/lib/progress/compute";
+import type { ExerciseSeries, WorkoutRecord } from "@/lib/progress/types";
 import { Sparkline } from "@/components/Sparkline";
 import { clsx } from "@/lib/clsx";
 
+/** A stable empty array, so the memos below don't recompute on every render. */
+const NO_RECORDS: WorkoutRecord[] = [];
+
+/**
+ * Enough to see how training is going without an endless scroll — refreshing
+ * the plan a few times leaves far more movements behind than anyone reads.
+ */
+const SHOWN = 10;
+
+/** "+7.5 kg over 6 sessions", or an honest note when there's no trend yet. */
+function trendLabel(series: ExerciseSeries): string {
+  const sessions = series.points.length;
+  if (series.change === null) return "First session logged";
+
+  const unit = series.measure === "weight" ? "kg" : series.measure === "time" ? "min" : "reps";
+  if (series.change === 0) return `Holding steady over ${sessions} sessions`;
+  const sign = series.change > 0 ? "+" : "";
+  return `${sign}${series.change} ${unit} over ${sessions} sessions`;
+}
+
 export default function Progress() {
+  const router = useRouter();
+  const user = useAuthStore((s) => s.user);
+  const plan = useAppStore((s) => s.plan);
   const [tab, setTab] = useState<"Strength" | "Training">("Strength");
+  const [records, setRecords] = useState<WorkoutRecord[] | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    loadHistory(user.id).then(setRecords);
+  }, [user]);
+
+  const history = records ?? NO_RECORDS;
+  const series = useMemo(() => strengthSeries(history), [history]);
+  const prs = useMemo(() => personalRecords(history), [history]);
+  const daysPerWeek = plan?.daysPerWeek ?? null;
+  const totals = useMemo(() => trainingTotals(history, daysPerWeek), [history, daysPerWeek]);
+  const weeks = useMemo(() => sessionsPerWeek(history), [history]);
+  const busiestWeek = Math.max(1, ...weeks.map((w) => w.count));
+
+  if (records === null) {
+    return (
+      <div>
+        <h1 className="mb-5 font-display text-2xl font-bold text-ink">Your progress</h1>
+        <p className="text-sm text-muted">Loading what you&apos;ve logged…</p>
+      </div>
+    );
+  }
+
+  if (records.length === 0) {
+    return (
+      <div>
+        <h1 className="mb-5 font-display text-2xl font-bold text-ink">Your progress</h1>
+        <div className="rounded-2xl border border-line bg-surface p-6 text-center">
+          <p className="mb-1 text-sm font-semibold text-ink">Nothing logged yet.</p>
+          <p className="mb-5 text-sm leading-relaxed text-muted">
+            Finish a workout and everything here fills in from what you actually lifted — no
+            estimates, no placeholders.
+          </p>
+          <button
+            onClick={() => router.push("/plan")}
+            className="rounded-2xl bg-ink px-5 py-3 text-sm font-semibold text-background"
+          >
+            Go to my plan
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -29,44 +107,99 @@ export default function Progress() {
 
       {tab === "Strength" ? (
         <>
-          {Object.entries(STRENGTH_HISTORY).map(([name, values]) => (
-            <div key={name} className="mb-3 rounded-2xl border border-line bg-surface p-4">
-              <div className="mb-2 flex justify-between">
-                <span className="text-sm font-semibold text-ink">{name}</span>
-                <span className="tabular text-sm text-muted">
-                  {values[values.length - 1]}
-                  {name.includes("reps") ? "" : " kg"}
+          {series.length > SHOWN && (
+            <p className="mb-3 text-xs text-muted">
+              The {SHOWN} movements you&apos;ve trained most recently, of {series.length}.
+            </p>
+          )}
+          {series.slice(0, SHOWN).map((s, i) => (
+            <motion.div
+              key={s.exerciseId}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: Math.min(i, 6) * 0.03 }}
+              className="mb-3 rounded-2xl border border-line bg-surface p-4"
+            >
+              <div className="mb-2 flex items-baseline justify-between gap-3">
+                <span className="text-sm font-semibold text-ink">{s.name}</span>
+                <span className="tabular flex-shrink-0 text-sm text-muted">
+                  {s.points[s.points.length - 1].label}
                 </span>
               </div>
-              <Sparkline values={values} />
-            </div>
+              <Sparkline values={s.points.map((p) => p.value)} />
+              <div className="tabular mt-2 text-xs text-muted">{trendLabel(s)}</div>
+            </motion.div>
           ))}
 
           <div className="mb-2.5 mt-6 text-xs font-semibold tracking-widest text-muted">
-            PERSONAL RECORDS
+            PERSONAL BESTS
           </div>
-          {PERSONAL_RECORDS.map((pr) => (
-            <div key={pr.name} className="flex justify-between border-t border-line py-2.5 first:border-t-0">
+          {prs.slice(0, SHOWN).map((pr) => (
+            <div
+              key={pr.exerciseId}
+              className="flex items-center justify-between gap-4 border-t border-line py-2.5 first:border-t-0"
+            >
               <span className="text-sm text-ink">{pr.name}</span>
-              <span className="tabular text-sm font-semibold text-ink">{pr.value}</span>
+              <span className="tabular flex-shrink-0 text-sm font-semibold text-ink">
+                {pr.label}
+              </span>
             </div>
           ))}
         </>
       ) : (
         <div className="flex flex-col gap-3">
-          {[
-            ["Workouts completed", "34"],
-            ["Total volume", "48,620 kg"],
-            ["Consistency", "87%"],
-          ].map(([label, value]) => (
-            <div
-              key={label}
-              className="flex items-center justify-between rounded-2xl border border-line bg-surface px-4 py-4"
-            >
-              <span className="text-sm text-muted">{label}</span>
-              <span className="tabular font-display text-lg font-bold text-ink">{value}</span>
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              ["Workouts", totals.workouts.toLocaleString("en-GB")],
+              ["Sets logged", totals.sets.toLocaleString("en-GB")],
+              ["Weight lifted", `${totals.volumeKg.toLocaleString("en-GB")} kg`],
+              [
+                "Consistency",
+                totals.consistency === null
+                  ? "—"
+                  : `${Math.round(totals.consistency * 100)}%`,
+              ],
+            ].map(([label, value]) => (
+              <div key={label} className="rounded-2xl border border-line bg-surface px-4 py-4">
+                <div className="tabular font-display text-xl font-bold text-ink">{value}</div>
+                <div className="mt-0.5 text-xs text-muted">{label}</div>
+              </div>
+            ))}
+          </div>
+
+          {totals.consistency !== null && (
+            <p className="px-1 text-xs leading-relaxed text-muted">
+              Consistency is the last four weeks against the {plan?.daysPerWeek} sessions a week
+              your plan asks for.
+            </p>
+          )}
+
+          <div className="rounded-2xl border border-line bg-surface p-4">
+            <div className="mb-3 text-xs font-semibold tracking-widest text-muted">
+              LAST 12 WEEKS
             </div>
-          ))}
+            <div className="flex h-24 items-end gap-1.5">
+              {weeks.map((week) => (
+                <div
+                  key={week.weekStart}
+                  className={clsx(
+                    "flex-1 rounded-t-sm",
+                    week.count > 0 ? "bg-accent" : "bg-line"
+                  )}
+                  style={{
+                    height: week.count > 0 ? `${(week.count / busiestWeek) * 100}%` : "3px",
+                  }}
+                  title={`Week of ${week.label}: ${week.count} session${
+                    week.count === 1 ? "" : "s"
+                  }`}
+                />
+              ))}
+            </div>
+            <div className="mt-2 flex justify-between text-xs text-muted">
+              <span>{weeks[0].label}</span>
+              <span>This week</span>
+            </div>
+          </div>
         </div>
       )}
     </div>

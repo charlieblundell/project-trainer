@@ -10,7 +10,8 @@
     "check:exercises": "node scripts/check-exercises.mjs",
     "preview:plans": "tsx scripts/preview-plans.ts",
     "preview:progression": "tsx scripts/preview-progression.ts",
-    "preview:refresh": "tsx scripts/preview-refresh.ts"
+    "preview:refresh": "tsx scripts/preview-refresh.ts",
+    "preview:progress": "tsx scripts/preview-progress.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.124.0",
