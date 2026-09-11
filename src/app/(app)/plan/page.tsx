@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { X, Info, RefreshCw, Shuffle, BookOpen } from "lucide-react";
+import { X, Info, Pencil, RefreshCw, Shuffle, BookOpen } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import {
   WEEKDAY_LABELS,
@@ -114,6 +114,13 @@ export default function Plan() {
           );
         })}
       </div>
+
+      <button
+        onClick={() => router.push("/plan/edit")}
+        className="mt-2.5 flex w-full items-center justify-center gap-2 rounded-2xl border border-line py-3.5 text-sm font-semibold text-ink"
+      >
+        <Pencil size={15} /> Edit my plan
+      </button>
 
       <div className="mt-6 rounded-2xl border border-line bg-surface p-4">
         <div className="mb-1 flex items-center gap-1.5 text-sm font-semibold text-ink">

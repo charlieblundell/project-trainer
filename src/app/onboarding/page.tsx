@@ -6,6 +6,11 @@ import { motion } from "framer-motion";
 import { ChevronLeft, Check } from "lucide-react";
 import { clsx } from "@/lib/clsx";
 import { useAppStore } from "@/lib/store";
+import { supabase } from "@/lib/supabase";
+import { saveSetupProfile } from "@/lib/setup";
+import { emptyWeek } from "@/lib/plan/edit";
+import { experienceToLevel } from "@/lib/plan/generate";
+import { savePlan } from "@/lib/plan/storage";
 import {
   EQUIPMENT_BY_ENVIRONMENT,
   availableExercises,
@@ -28,7 +33,7 @@ import {
   valueFor,
 } from "@/components/ProfileFields";
 
-type StepKind = "single" | "multi" | "exercises" | "weekdays" | "consent" | "about" | "text";
+type StepKind = "single" | "multi" | "exercises" | "weekdays" | "consent" | "about" | "text" | "choice";
 
 /** Screens that collect health information, shown only with consent. */
 const HEALTH_STEPS = new Set(["about", "considerations"]);
@@ -93,14 +98,26 @@ const STEPS: Step[] = [
     hint: "Old injuries, sore joints, anything you're working around. We'll program conservatively.",
     optional: true,
   },
+  {
+    // Asked last, so someone who already has a program has still told us
+    // enough for the coach and the progression to work.
+    key: "planChoice",
+    kind: "choice",
+    question: "How do you want to start?",
+  },
 ];
 
 export default function Onboarding() {
   const router = useRouter();
   const onboarding = useAppStore((s) => s.onboarding);
   const setOnboarding = useAppStore((s) => s.setOnboarding);
+  const setPlan = useAppStore((s) => s.setPlan);
+  const completeOnboarding = useAppStore((s) => s.completeOnboarding);
   const [step, setStep] = useState(0);
   const [query, setQuery] = useState("");
+  const [buildOwn, setBuildOwn] = useState<boolean | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Declining consent removes the health screens. The consent screen comes
   // before them, so its position is the same either way. A full gym has
@@ -155,15 +172,50 @@ export default function Onboarding() {
         return onboarding.trainingDays.length === (onboarding.days ?? 0);
       case "healthConsent":
         return onboarding.healthConsent !== null;
+      case "planChoice":
+        return buildOwn !== null && !busy;
       default:
         return true;
     }
   }
 
+  /**
+   * Their own week: save the answers, create an empty plan and open the editor.
+   * The app writes nothing, so nobody has to undo a plan they didn't want.
+   */
+  async function startOwnPlan() {
+    setBusy(true);
+    setError(null);
+    try {
+      const { data } = await supabase.auth.getUser();
+      if (!data.user) {
+        router.replace("/signup");
+        return;
+      }
+      await saveSetupProfile(data.user.id, onboarding);
+      const plan = emptyWeek(onboarding.goal ?? "Build muscle", experienceToLevel(onboarding.experience));
+      await savePlan(data.user.id, plan);
+      setPlan(plan);
+      completeOnboarding();
+      router.push("/plan/edit");
+    } catch (err) {
+      console.error("Failed to start an own plan:", err);
+      setError("That didn't save — check you're online and try again.");
+      setBusy(false);
+    }
+  }
+
   function next() {
     setQuery("");
-    if (step < steps.length - 1) setStep(step + 1);
-    else router.push("/generating");
+    if (step < steps.length - 1) {
+      setStep(step + 1);
+      return;
+    }
+    if (buildOwn) {
+      startOwnPlan();
+      return;
+    }
+    router.push("/generating");
   }
 
   function back() {
@@ -336,6 +388,55 @@ export default function Onboarding() {
             </div>
           )}
 
+          {current.kind === "choice" && (
+            <div>
+              <div role="radiogroup" aria-label="How to start" className="flex flex-col gap-2.5">
+                {[
+                  {
+                    value: false,
+                    label: "Write me a plan",
+                    detail: "Built from your answers. You can change any of it afterwards.",
+                  },
+                  {
+                    value: true,
+                    label: "I'll build my own week",
+                    detail: "Start empty and add your own sessions and exercises. Best if you already have a program.",
+                  },
+                ].map((option) => {
+                  const selected = buildOwn === option.value;
+                  return (
+                    <button
+                      key={option.label}
+                      role="radio"
+                      aria-checked={selected}
+                      onClick={() => setBuildOwn(option.value)}
+                      className={clsx(
+                        "rounded-2xl border px-4 py-3.5 text-left",
+                        selected ? "border-ink bg-ink text-background" : "border-line bg-surface text-ink"
+                      )}
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="text-sm font-semibold">{option.label}</span>
+                        <span
+                          className={clsx(
+                            "flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border",
+                            selected ? "border-background bg-background" : "border-line"
+                          )}
+                        >
+                          {selected && <Check size={13} className="text-ink" />}
+                        </span>
+                      </div>
+                      <div className={clsx("mt-1 text-xs leading-relaxed", selected ? "text-background/70" : "text-muted")}>
+                        {option.detail}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+              {error && <p className="mt-3 text-sm text-warning">{error}</p>}
+            </div>
+          )}
+
           {current.kind === "text" && (
             <textarea
               value={onboarding.considerations ?? ""}
@@ -355,7 +456,13 @@ export default function Onboarding() {
           onClick={next}
           className="w-full rounded-2xl bg-ink py-4 text-[15px] font-semibold text-background transition disabled:cursor-not-allowed disabled:bg-line disabled:text-muted"
         >
-          {step === steps.length - 1 ? "Build my plan" : continueLabel(current, onboarding)}
+          {step === steps.length - 1
+            ? busy
+              ? "Setting up…"
+              : buildOwn
+                ? "Start my own week"
+                : "Build my plan"
+            : continueLabel(current, onboarding)}
         </button>
       </div>
     </div>

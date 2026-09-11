@@ -191,7 +191,8 @@ const PRESCRIPTIONS: Record<string, { compound: Prescription; isolation: Prescri
   },
 };
 
-function prescribe(exercise: ExerciseDef, goal: string): PlannedExercise {
+/** The sets, reps and rest a movement gets for a goal. Shared with the plan editor. */
+export function prescribe(exercise: ExerciseDef, goal: string): PlannedExercise {
   const table = PRESCRIPTIONS[goal] ?? PRESCRIPTIONS["Build muscle"];
   const base = exercise.compound ? table.compound : table.isolation;
 
@@ -372,7 +373,7 @@ function estimateSeconds(ex: PlannedExercise): number {
   return setup + ex.sets * (workPerSet + ex.restSeconds);
 }
 
-function estimateMinutes(exercises: PlannedExercise[]): number {
+export function estimateMinutes(exercises: PlannedExercise[]): number {
   return Math.round(exercises.reduce((sum, ex) => sum + estimateSeconds(ex), 0) / 60);
 }
 

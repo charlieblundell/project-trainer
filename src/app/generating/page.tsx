@@ -10,6 +10,7 @@ import { LogoMark } from "@/components/Wordmark";
 import { supabase } from "@/lib/supabase";
 import { generatePlan } from "@/lib/plan/generate";
 import { savePlan } from "@/lib/plan/storage";
+import { saveSetupProfile } from "@/lib/setup";
 import { InstallPrompt } from "@/components/InstallPrompt";
 import {
   WEEKDAY_LABELS,
@@ -62,28 +63,7 @@ export default function Generating() {
 
       // Health details are only stored, or used for the plan, with consent.
       const consented = onboarding.healthConsent === true;
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .update({
-          goal: onboarding.goal,
-          experience: onboarding.experience,
-          days: onboarding.days,
-          length: onboarding.length,
-          environment: onboarding.environment,
-          equipment: onboarding.equipment,
-          liked_exercises: onboarding.likedExercises,
-          disliked_exercises: onboarding.dislikedExercises,
-          training_days: onboarding.trainingDays,
-          bodyweight_kg: consented ? onboarding.bodyweightKg : null,
-          age: consented ? onboarding.age : null,
-          height_cm: consented ? onboarding.heightCm : null,
-          sex: consented ? onboarding.sex : null,
-          considerations: consented ? onboarding.considerations : null,
-          // The record that consent was given, and when.
-          health_consent_at: consented ? new Date().toISOString() : null,
-        })
-        .eq("id", data.user.id);
-      if (profileError) throw new Error(profileError.message);
+      await saveSetupProfile(data.user.id, onboarding);
 
       const plan = generatePlan({
         goal: onboarding.goal,

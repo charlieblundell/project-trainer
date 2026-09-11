@@ -28,7 +28,7 @@ export function normalizePlan(plan: StoredPlan): Plan {
 }
 
 /** Reads a session's region back off the movements it already contains. */
-function inferRegion(session: { exercises: { exerciseId: string }[] }): Region {
+export function inferRegion(session: { exercises: { exerciseId: string }[] }): Region {
   let upper = 0;
   let lower = 0;
   for (const planned of session.exercises) {

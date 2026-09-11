@@ -78,6 +78,8 @@ type AppState = {
    */
   billing: Billing | null;
   setBilling: (billing: Billing | null) => void;
+  /** Saves a plan the person changed by hand, in the editor or while training. */
+  updatePlan: (plan: Plan) => Promise<void>;
   /** Re-picks the accessory work, leaving the main lifts and their weights alone. */
   refreshPlan: () => Promise<void>;
   /** What the last refresh swapped, shown once and then dismissed. */
@@ -185,6 +187,18 @@ export const useAppStore = create<AppState>()(
       setBilling: (billing) => set({ billing }),
       lastRefresh: null,
       clearLastRefresh: () => set({ lastRefresh: null }),
+      updatePlan: async (plan) => {
+        // What progression or a refresh last did no longer describes this plan.
+        set({ plan: normalizePlan(plan), lastChanges: [], lastRefresh: null });
+
+        const { data } = await supabase.auth.getUser();
+        if (!data.user) return;
+        try {
+          await savePlan(data.user.id, plan);
+        } catch {
+          // Already logged in savePlan; the in-memory plan still reflects it.
+        }
+      },
       refreshPlan: async () => {
         const currentPlan = get().plan;
         if (!currentPlan) return;

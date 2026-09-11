@@ -18,7 +18,8 @@
     "check:weekly": "tsx scripts/check-weekly.ts",
     "check:readiness": "tsx scripts/check-readiness.ts",
     "check:rebuild": "tsx scripts/check-rebuild.ts",
-    "check:warmup": "tsx scripts/check-warmup.ts"
+    "check:warmup": "tsx scripts/check-warmup.ts",
+    "check:plan-edit": "tsx scripts/check-plan-edit.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.124.0",
