@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import { useAuthStore } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
+import { CLEARED_HEALTH_FIELDS, withdrawHealthConsent } from "@/lib/health-consent";
 import { EQUIPMENT_LABELS, EXERCISES_BY_ID, type Equipment } from "@/lib/exercises";
 import type { OnboardingData } from "@/lib/types";
 import { PLANS } from "@/lib/billing/plans";
@@ -120,6 +121,86 @@ function billingSummary(billing: Billing | null): {
   };
 }
 
+/**
+ * Consent to health information can be withdrawn as easily as it was given,
+ * as the Privacy Policy promises. Withdrawing deletes the details themselves.
+ */
+function HealthDetails() {
+  const user = useAuthStore((s) => s.user);
+  const shared = useAppStore((s) => s.onboarding.healthConsent === true);
+  const plan = useAppStore((s) => s.plan);
+  const setPlan = useAppStore((s) => s.setPlan);
+  const setOnboarding = useAppStore((s) => s.setOnboarding);
+  const [confirming, setConfirming] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function withdraw() {
+    if (!user) return;
+    setBusy(true);
+    setError(null);
+    const result = await withdrawHealthConsent(user.id, plan);
+    if (result.ok) {
+      setOnboarding({ ...CLEARED_HEALTH_FIELDS, healthConsent: false });
+      if (result.plan) setPlan(result.plan);
+      setConfirming(false);
+    } else {
+      setError("That didn't save — check your connection and try again.");
+    }
+    setBusy(false);
+  }
+
+  return (
+    <>
+      <div className="mb-2 text-xs font-semibold tracking-widest text-muted">HEALTH DETAILS</div>
+      <div className="mb-6 rounded-2xl border border-line bg-surface px-4 py-3.5">
+        <div className="text-sm font-semibold text-ink">{shared ? "Shared with your consent" : "Not shared"}</div>
+        <div className="text-xs leading-relaxed text-muted">
+          {shared
+            ? "Your bodyweight, height, age, sex and injury notes are used to tailor your plan."
+            : "Your plan doesn't use your bodyweight, height, age, sex or injury notes."}
+        </div>
+
+        {shared && !confirming && (
+          <button
+            onClick={() => setConfirming(true)}
+            className="mt-3 w-full rounded-xl border border-line py-2.5 text-sm font-semibold text-ink"
+          >
+            Stop sharing health details
+          </button>
+        )}
+
+        {shared && confirming && (
+          <div className="mt-3">
+            <p className="mb-2.5 text-xs leading-relaxed text-ink">
+              This deletes your bodyweight, height, age, sex and injury notes, and removes anything your plan
+              worked out from them. Your workouts and progress stay.
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={withdraw}
+                disabled={busy}
+                className="flex-1 rounded-xl bg-ink py-2.5 text-sm font-semibold text-background disabled:opacity-60"
+              >
+                {busy ? "Deleting" : "Delete them"}
+              </button>
+              <button
+                onClick={() => setConfirming(false)}
+                disabled={busy}
+                className="flex-1 rounded-xl border border-line py-2.5 text-sm font-semibold text-ink"
+              >
+                Keep them
+              </button>
+            </div>
+          </div>
+        )}
+
+        {error && <p className="mt-2 text-xs text-warning">{error}</p>}
+      </div>
+    </>
+  );
+}
+
 export default function Settings() {
   const router = useRouter();
   const onboarding = useAppStore((s) => s.onboarding);
@@ -205,6 +286,8 @@ export default function Settings() {
           </div>
         ))}
       </div>
+
+      <HealthDetails />
 
       <div className="mb-2 text-xs font-semibold tracking-widest text-muted">REFERENCE</div>
       <button

@@ -95,6 +95,8 @@ export default function Generating() {
             onClick={async () => {
               const { data } = await supabase.auth.getUser();
               if (data.user) {
+                // Health details are only stored, or used for the plan, with consent.
+                const consented = onboarding.healthConsent === true;
                 await supabase
                   .from("profiles")
                   .update({
@@ -107,11 +109,13 @@ export default function Generating() {
                     liked_exercises: onboarding.likedExercises,
                     disliked_exercises: onboarding.dislikedExercises,
                     training_days: onboarding.trainingDays,
-                    bodyweight_kg: onboarding.bodyweightKg,
-                    age: onboarding.age,
-                    height_cm: onboarding.heightCm,
-                    sex: onboarding.sex,
-                    considerations: onboarding.considerations,
+                    bodyweight_kg: consented ? onboarding.bodyweightKg : null,
+                    age: consented ? onboarding.age : null,
+                    height_cm: consented ? onboarding.heightCm : null,
+                    sex: consented ? onboarding.sex : null,
+                    considerations: consented ? onboarding.considerations : null,
+                    // The record that consent was given, and when.
+                    health_consent_at: consented ? new Date().toISOString() : null,
                   })
                   .eq("id", data.user.id);
 
@@ -124,8 +128,8 @@ export default function Generating() {
                   likedExercises: onboarding.likedExercises,
                   dislikedExercises: onboarding.dislikedExercises,
                   trainingDays: onboarding.trainingDays,
-                  considerations: onboarding.considerations,
-                  age: onboarding.age,
+                  considerations: consented ? onboarding.considerations : null,
+                  age: consented ? onboarding.age : null,
                 });
                 await savePlan(data.user.id, plan);
                 setPlan(plan);

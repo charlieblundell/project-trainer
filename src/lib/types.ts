@@ -20,6 +20,12 @@ export type OnboardingData = {
   heightCm: number | null;
   sex: Sex | null;
   considerations: string | null;
+  /**
+   * Permission to collect health information. null until they've been asked;
+   * the health questions are only shown, and their answers only kept, when
+   * this is true.
+   */
+  healthConsent: boolean | null;
 };
 
 export const EMPTY_ONBOARDING: OnboardingData = {
@@ -37,6 +43,7 @@ export const EMPTY_ONBOARDING: OnboardingData = {
   heightCm: null,
   sex: null,
   considerations: null,
+  healthConsent: null,
 };
 
 export type ChatMessage = {

@@ -34,6 +34,7 @@ import {
   type Equipment,
 } from "@/lib/exercises";
 import type { Weekday, Sex } from "@/lib/types";
+import { CLEARED_HEALTH_FIELDS } from "@/lib/health-consent";
 
 const ICONS: Record<string, LucideIcon> = {
   "Build muscle": Dumbbell,
@@ -68,7 +69,10 @@ const SEX_OPTIONS: { id: Sex; label: string }[] = [
   { id: "prefer_not_to_say", label: "Prefer not to say" },
 ];
 
-type StepKind = "single" | "multi" | "exercises" | "weekdays" | "about" | "text";
+type StepKind = "single" | "multi" | "exercises" | "weekdays" | "consent" | "about" | "text";
+
+/** Screens that collect health information, shown only with consent. */
+const HEALTH_STEPS = new Set(["about", "considerations"]);
 
 type Step = {
   key: string;
@@ -110,6 +114,13 @@ const STEPS: Step[] = [
     question: "Which days work for you?",
   },
   {
+    // Health information is sensitive information under the Privacy Act, so
+    // permission is asked for before any of it is collected.
+    key: "healthConsent",
+    kind: "consent",
+    question: "Can we use your health details?",
+  },
+  {
     key: "about",
     kind: "about",
     question: "A bit about you",
@@ -132,7 +143,11 @@ export default function Onboarding() {
   const [step, setStep] = useState(0);
   const [query, setQuery] = useState("");
 
-  const current = STEPS[step];
+  // Declining consent removes the health screens. The consent screen comes
+  // before them, so its position is the same either way.
+  const steps =
+    onboarding.healthConsent === false ? STEPS.filter((s) => !HEALTH_STEPS.has(s.key)) : STEPS;
+  const current = steps[step];
 
   const equipmentOptions: Equipment[] =
     EQUIPMENT_BY_ENVIRONMENT[onboarding.environment ?? "Mixed"] ??
@@ -177,6 +192,8 @@ export default function Onboarding() {
         return onboarding.equipment.length > 0;
       case "trainingDays":
         return onboarding.trainingDays.length === (onboarding.days ?? 0);
+      case "healthConsent":
+        return onboarding.healthConsent !== null;
       default:
         return true;
     }
@@ -184,7 +201,7 @@ export default function Onboarding() {
 
   function next() {
     setQuery("");
-    if (step < STEPS.length - 1) setStep(step + 1);
+    if (step < steps.length - 1) setStep(step + 1);
     else router.push("/generating");
   }
 
@@ -200,8 +217,8 @@ export default function Onboarding() {
         <ChevronLeft size={20} />
       </button>
 
-      <div className="mb-8 flex gap-1" role="progressbar" aria-valuenow={step + 1} aria-valuemin={1} aria-valuemax={STEPS.length}>
-        {STEPS.map((_, i) => (
+      <div className="mb-8 flex gap-1" role="progressbar" aria-valuenow={step + 1} aria-valuemin={1} aria-valuemax={steps.length}>
+        {steps.map((_, i) => (
           <div
             key={i}
             className={clsx(
@@ -318,6 +335,69 @@ export default function Onboarding() {
             </div>
           )}
 
+          {current.kind === "consent" && (
+            <div>
+              <div className="mb-5 flex flex-col gap-3 text-sm leading-relaxed text-ink">
+                <p>
+                  The next two questions ask for your bodyweight, height, age, sex and any injuries.
+                  These count as health information under Australian privacy law, so we need your
+                  permission before collecting them.
+                </p>
+                <p className="text-muted">
+                  We only use them to make your plan safer and better suited to you — for example,
+                  keeping exercises away from a sore knee. Never for marketing, and never sold.
+                  It&apos;s optional, and you can stop sharing them at any time in Settings.
+                </p>
+              </div>
+
+              <div role="radiogroup" aria-label="Health details consent" className="flex flex-col gap-2.5">
+                {[
+                  { value: true, label: "Yes, use my health details" },
+                  { value: false, label: "No, skip these questions" },
+                ].map((option) => {
+                  const selected = onboarding.healthConsent === option.value;
+                  return (
+                    <button
+                      key={option.label}
+                      role="radio"
+                      aria-checked={selected}
+                      onClick={() =>
+                        setOnboarding(
+                          option.value
+                            ? { healthConsent: true }
+                            : // Clear anything entered before changing their mind.
+                              { healthConsent: false, ...CLEARED_HEALTH_FIELDS }
+                        )
+                      }
+                      className={clsx(
+                        "flex items-center justify-between rounded-2xl border px-4 py-3.5 text-left text-sm font-medium",
+                        selected ? "border-ink bg-ink text-background" : "border-line bg-surface text-ink"
+                      )}
+                    >
+                      {option.label}
+                      <span
+                        className={clsx(
+                          "flex h-5 w-5 items-center justify-center rounded-full border",
+                          selected ? "border-background bg-background" : "border-line"
+                        )}
+                      >
+                        {selected && <Check size={13} className="text-ink" />}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <p className="mt-4 text-xs leading-relaxed text-muted">
+                More detail in our{" "}
+                <a href="/privacy" target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">
+                  Privacy Policy
+                </a>
+                .
+              </p>
+            </div>
+          )}
+
           {current.kind === "about" && (
             <div className="flex flex-col gap-4">
               <NumberField
@@ -383,7 +463,7 @@ export default function Onboarding() {
           onClick={next}
           className="w-full rounded-2xl bg-ink py-4 text-[15px] font-semibold text-background transition disabled:cursor-not-allowed disabled:bg-line disabled:text-muted"
         >
-          {step === STEPS.length - 1 ? "Build my plan" : continueLabel(current, onboarding)}
+          {step === steps.length - 1 ? "Build my plan" : continueLabel(current, onboarding)}
         </button>
       </div>
     </div>

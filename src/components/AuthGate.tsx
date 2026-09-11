@@ -7,7 +7,14 @@ import { useAppStore } from "@/lib/store";
 import { supabase } from "@/lib/supabase";
 import { loadPlan } from "@/lib/plan/storage";
 import { BILLING_COLUMNS, billingFromRow, hasAccess, type BillingRow } from "@/lib/billing/entitlement";
+import {
+  CLEARED_HEALTH_FIELDS,
+  grantHealthConsent,
+  hasHealthDetails,
+  withdrawHealthConsent,
+} from "@/lib/health-consent";
 import { LogoMark } from "@/components/Wordmark";
+import { HealthConsentPrompt } from "@/components/HealthConsentPrompt";
 
 /**
  * Pages someone whose trial has ended can still reach: the way to pay, the
@@ -30,6 +37,9 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   const setBilling = useAppStore((s) => s.setBilling);
   const [profileSynced, setProfileSynced] = useState(false);
   const [billingChecked, setBillingChecked] = useState(false);
+  const [needsHealthConsent, setNeedsHealthConsent] = useState(false);
+  const [consentBusy, setConsentBusy] = useState(false);
+  const [consentError, setConsentError] = useState<string | null>(null);
   const syncedForUser = useRef<string | null>(null);
 
   useEffect(() => {
@@ -71,6 +81,9 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
       .eq("id", user.id)
       .single()
       .then(({ data }) => {
+        const hasHealth = !!data && hasHealthDetails(data);
+        const consented = !!data?.health_consent_at;
+
         if (data?.goal) {
           setOnboarding({
             goal: data.goal,
@@ -87,9 +100,14 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
             heightCm: data.height_cm,
             sex: data.sex,
             considerations: data.considerations,
+            healthConsent: consented ? true : hasHealth ? null : false,
           });
           completeOnboarding();
         }
+
+        // Details given before the app asked for consent can't keep being
+        // used without it, so anyone in that position is asked once.
+        setNeedsHealthConsent(hasHealth && !consented);
         setProfileSynced(true);
       });
   }, [
@@ -111,11 +129,50 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     if (locked && !pageIsOpen) router.replace("/upgrade");
   }, [locked, pageIsOpen, router]);
 
+  async function agreeToHealthConsent() {
+    if (!user) return;
+    setConsentBusy(true);
+    setConsentError(null);
+    if (await grantHealthConsent(user.id)) {
+      setOnboarding({ healthConsent: true });
+      setNeedsHealthConsent(false);
+    } else {
+      setConsentError("That didn't save — check your connection and try again.");
+    }
+    setConsentBusy(false);
+  }
+
+  async function declineHealthConsent() {
+    if (!user) return;
+    setConsentBusy(true);
+    setConsentError(null);
+    const result = await withdrawHealthConsent(user.id, useAppStore.getState().plan);
+    if (result.ok) {
+      setOnboarding({ ...CLEARED_HEALTH_FIELDS, healthConsent: false });
+      if (result.plan) setPlan(result.plan);
+      setNeedsHealthConsent(false);
+    } else {
+      setConsentError("That didn't save — check your connection and try again.");
+    }
+    setConsentBusy(false);
+  }
+
   if (!initialized || !user || !profileSynced || !billingChecked || (locked && !pageIsOpen)) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <LogoMark size={36} />
       </div>
+    );
+  }
+
+  if (needsHealthConsent) {
+    return (
+      <HealthConsentPrompt
+        busy={consentBusy}
+        error={consentError}
+        onAgree={agreeToHealthConsent}
+        onDecline={declineHealthConsent}
+      />
     );
   }
 
