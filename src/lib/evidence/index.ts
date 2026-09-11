@@ -6,6 +6,7 @@ import type { EvidenceTopic, Finding } from "./types";
 import { citation } from "./types";
 
 export * from "./types";
+export * from "./labels";
 
 export const FINDINGS: Finding[] = [...PROGRAMMING, ...RECOVERY, ...NUTRITION, ...PAIN];
 

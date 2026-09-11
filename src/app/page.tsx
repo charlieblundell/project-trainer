@@ -254,6 +254,13 @@ export default function Landing() {
                 );
               })}
             </ul>
+
+            <Link
+              href="/research"
+              className={`mt-12 inline-block text-[15px] font-semibold text-ink underline decoration-ink/30 underline-offset-4 hover:decoration-ink ${focusRing}`}
+            >
+              Read all {FINDINGS.length} findings
+            </Link>
           </div>
         </section>
 
@@ -296,6 +303,9 @@ export default function Landing() {
           <div className="flex flex-col gap-2 sm:items-end">
             <p>Training guidance, not medical advice. If something hurts, see a clinician.</p>
             <div className="flex gap-5">
+              <Link href="/research" className={`hover:text-ink ${focusRing}`}>
+                Research
+              </Link>
               <Link href="/terms" className={`hover:text-ink ${focusRing}`}>
                 Terms of Service
               </Link>

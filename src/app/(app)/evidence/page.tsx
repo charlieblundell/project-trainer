@@ -4,39 +4,9 @@ import { Suspense, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { ChevronDown, ExternalLink } from "lucide-react";
-import { FINDINGS, citation, sourceUrl } from "@/lib/evidence";
+import { FINDINGS, STRENGTH_LABEL, TOPICS, citation, sourceUrl } from "@/lib/evidence";
 import type { EvidenceStrength, EvidenceTopic, Finding } from "@/lib/evidence";
 import { clsx } from "@/lib/clsx";
-
-const TOPICS: { id: EvidenceTopic; label: string; blurb: string }[] = [
-  {
-    id: "programming",
-    label: "Training",
-    blurb: "Sets, reps, load, effort and rest — the decisions your plan makes for you.",
-  },
-  {
-    id: "recovery",
-    label: "Recovery",
-    blurb: "Sleep, soreness, easy weeks, and a few popular things that do less than advertised.",
-  },
-  {
-    id: "nutrition",
-    label: "Nutrition",
-    blurb: "General principles only. Nothing here is personalised dietary advice.",
-  },
-  {
-    id: "pain",
-    label: "Pain",
-    blurb:
-      "How to load a body that's complaining — never how to work out what's wrong with it. See a clinician for that.",
-  },
-];
-
-const STRENGTH_LABEL: Record<EvidenceStrength, string> = {
-  strong: "Strong evidence",
-  moderate: "Moderate evidence",
-  limited: "Limited evidence",
-};
 
 function StrengthBadge({ strength }: { strength: EvidenceStrength }) {
   return (

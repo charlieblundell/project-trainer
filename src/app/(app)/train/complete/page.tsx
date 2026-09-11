@@ -7,6 +7,7 @@ import { Flame, TrendingUp } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import { sessionById } from "@/lib/plan/helpers";
 import { InstallPrompt } from "@/components/InstallPrompt";
+import { InviteFriends } from "@/components/InviteFriends";
 
 const container = {
   hidden: {},
@@ -96,6 +97,7 @@ export default function TrainComplete() {
       </motion.div>
 
       <InstallPrompt className="mb-5" dismissible mobileOnly />
+      <InviteFriends className="mb-5" />
 
       <motion.button
         variants={item}

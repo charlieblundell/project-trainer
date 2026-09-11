@@ -9,6 +9,7 @@ import { useAuthStore } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 import { CLEARED_HEALTH_FIELDS, withdrawHealthConsent } from "@/lib/health-consent";
 import { InstallPrompt } from "@/components/InstallPrompt";
+import { InviteFriends } from "@/components/InviteFriends";
 import { EQUIPMENT_LABELS, EXERCISES_BY_ID, type Equipment } from "@/lib/exercises";
 import type { OnboardingData } from "@/lib/types";
 import { PLANS } from "@/lib/billing/plans";
@@ -454,7 +455,8 @@ export default function Settings() {
       </div>
 
       <div className="mb-2 text-xs font-semibold tracking-widest text-muted">APP</div>
-      <InstallPrompt className="mb-6" showInstalled />
+      <InstallPrompt className="mb-3" showInstalled />
+      <InviteFriends className="mb-6" />
 
       <HealthDetails />
 

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Manrope } from "next/font/google";
 import { AuthProvider } from "@/components/AuthProvider";
 import { SiteAnalytics } from "@/components/SiteAnalytics";
+import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 const inter = Inter({
@@ -15,9 +16,23 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "Your Personal Trainer",
-  description: "A training plan that adapts to every set you log.",
-  applicationName: "Your Personal Trainer",
+  metadataBase: new URL(SITE_URL),
+  title: SITE_NAME,
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  // What a shared link shows. The image comes from app/opengraph-image.tsx.
+  openGraph: {
+    type: "website",
+    siteName: SITE_NAME,
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
+    locale: "en_AU",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
+  },
   // Opens full screen when added to an iPhone home screen.
   appleWebApp: { capable: true, title: "Trainer", statusBarStyle: "default" },
 };
