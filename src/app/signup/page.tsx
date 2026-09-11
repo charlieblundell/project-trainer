@@ -138,8 +138,7 @@ export default function SignUp() {
                 <Mail size={20} className="mb-2 text-accent" />
                 <div className="mb-1 text-sm font-semibold text-ink">Check your inbox</div>
                 <p className="text-sm leading-relaxed text-muted">
-                  We sent a code to <span className="text-ink">{email}</span>. Type it below
-                  {installed ? "." : ", or tap the link in the email on this device."}
+                  We sent a code to <span className="text-ink">{email}</span>. Type it below to sign in.
                 </p>
               </div>
 
