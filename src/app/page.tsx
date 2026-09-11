@@ -291,7 +291,17 @@ export default function Landing() {
       <footer className="border-t border-line">
         <div className="mx-auto flex max-w-6xl flex-col gap-3 px-6 py-8 text-sm text-muted sm:flex-row sm:items-center sm:justify-between">
           <TypeMark />
-          <p>Training guidance, not medical advice. If something hurts, see a clinician.</p>
+          <div className="flex flex-col gap-2 sm:items-end">
+            <p>Training guidance, not medical advice. If something hurts, see a clinician.</p>
+            <div className="flex gap-5">
+              <Link href="/terms" className={`hover:text-ink ${focusRing}`}>
+                Terms of Service
+              </Link>
+              <Link href="/privacy" className={`hover:text-ink ${focusRing}`}>
+                Privacy Policy
+              </Link>
+            </div>
+          </div>
         </div>
       </footer>
     </div>

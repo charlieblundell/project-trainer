@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Mail } from "lucide-react";
 import { TypeMark } from "@/components/TypeMark";
 import { marketingFontClasses } from "@/lib/fonts/marketing";
@@ -136,7 +137,15 @@ export default function SignUp() {
         </div>
 
         <p className="text-xs leading-relaxed text-muted">
-          By continuing, you agree to our Terms and Privacy Policy.
+          By continuing, you confirm you&apos;re 16 or older and agree to our{" "}
+          <Link href="/terms" className="underline underline-offset-4 hover:text-ink">
+            Terms of Service
+          </Link>{" "}
+          and{" "}
+          <Link href="/privacy" className="underline underline-offset-4 hover:text-ink">
+            Privacy Policy
+          </Link>
+          .
         </p>
       </div>
     </div>
