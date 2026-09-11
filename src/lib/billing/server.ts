@@ -11,12 +11,23 @@ if (typeof window !== "undefined") {
   throw new Error("lib/billing/server must never be imported in the browser.");
 }
 
+/**
+ * Reads a secret from the environment with all whitespace removed. None of
+ * these keys can contain spaces or line breaks, but a value pasted into a
+ * dashboard easily picks one up — and a key with a line break in it makes
+ * the HTTP header invalid, which fails with an error that prints the key.
+ */
+export function secretEnv(name: string): string | null {
+  const value = process.env[name]?.replace(/\s+/g, "");
+  return value || null;
+}
+
 let stripeClient: Stripe | null = null;
 
 /** Created on first use, so a build without payment keys still builds. */
 export function stripe(): Stripe {
   if (!stripeClient) {
-    const key = process.env.STRIPE_SECRET_KEY;
+    const key = secretEnv("STRIPE_SECRET_KEY");
     if (!key) throw new Error("STRIPE_SECRET_KEY is not set.");
     stripeClient = new Stripe(key);
   }
@@ -25,7 +36,7 @@ export function stripe(): Stripe {
 
 /** Writes billing. Bypasses RLS, which is exactly why users never get it. */
 export function adminSupabase(): SupabaseClient {
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const key = secretEnv("SUPABASE_SERVICE_ROLE_KEY");
   if (!key) throw new Error("SUPABASE_SERVICE_ROLE_KEY is not set.");
   return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, key, {
     auth: { persistSession: false, autoRefreshToken: false },

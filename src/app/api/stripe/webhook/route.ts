@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { stripe, syncSubscription } from "@/lib/billing/server";
+import { secretEnv, stripe, syncSubscription } from "@/lib/billing/server";
 
 /**
  * The only thing allowed to decide someone has paid.
@@ -9,7 +9,7 @@ import { stripe, syncSubscription } from "@/lib/billing/server";
  * succeeded" event here and unlock the app for free.
  */
 export async function POST(req: NextRequest) {
-  const secret = process.env.STRIPE_WEBHOOK_SECRET;
+  const secret = secretEnv("STRIPE_WEBHOOK_SECRET");
   const signature = req.headers.get("stripe-signature");
   if (!secret || !signature) {
     return NextResponse.json({ error: "Missing signature." }, { status: 400 });
