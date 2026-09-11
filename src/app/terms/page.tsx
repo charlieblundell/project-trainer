@@ -94,8 +94,8 @@ export default function Terms() {
       <Section id="trial" number={6} title="Free trial">
         <p>
           New accounts get 10 days of full access, starting when the account is created. You don&apos;t need to give
-          payment details to start the trial, and you will not be charged when it ends. We will email you before your
-          trial ends.
+          payment details to start the trial, and you will not be charged when it ends. You can see how many days you have
+          left in Settings.
         </p>
         <p>
           When the trial ends, you&apos;ll need a subscription to keep using the app. Your plan, workout history and
@@ -111,7 +111,7 @@ export default function Terms() {
               We are not registered for GST, so no GST is added: the price shown is the total you pay.
             </>,
             "Payments are processed by Stripe. We never receive or store your full card details.",
-            "Your subscription renews automatically at the end of each monthly or yearly period, and you'll be charged the same amount unless we've told you about a price change, until you cancel. We will email you before a yearly subscription renews.",
+            "Your subscription renews automatically at the end of each monthly or yearly period, and you'll be charged the same amount unless we've told you about a price change, until you cancel. Stripe will email you a reminder before a yearly subscription renews.",
             "If we change the price, we'll email you at least 30 days before it applies to you, so you can cancel beforehand if you don't want to continue. A price change never applies to a period you've already paid for.",
             "If a payment fails, Stripe will try again over a short period. If payment still can't be collected, your access may be paused until it's resolved.",
           ]}

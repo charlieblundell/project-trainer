@@ -109,7 +109,7 @@ export default function Privacy() {
             "to build your training plan and adjust your targets as you log workouts;",
             "to let the AI coach give answers that are relevant to your plan, profile and recent training;",
             "to run your free trial and subscription, and take payments;",
-            "to send you account emails, such as sign-in links, a reminder before your trial ends, a reminder before a yearly subscription renews, and notices about payments or changes to our terms;",
+            "to send you account emails, such as sign-in codes, a reminder before a yearly subscription renews, and notices about payments or changes to our terms;",
             "to keep the app secure, apply fair-use limits and fix problems; and",
             "to meet our legal obligations.",
           ]}
@@ -147,9 +147,8 @@ export default function Privacy() {
             <><strong>Supabase</strong> — stores your account, profile and training data, and sends sign-in emails.</>,
             <><strong>Vercel</strong> — hosts the app and runs its servers.</>,
             <><strong>Anthropic</strong> — generates the AI coach&apos;s replies from your message and the training details sent with it.</>,
-            <><strong>Stripe</strong> — processes subscriptions and payments.</>,
-            <><strong>Resend</strong> — sends account emails, such as trial and renewal reminders.</>,
-            <><strong>Google</strong> — only if you choose to sign in with Google.</>,
+            <><strong>Stripe</strong> — processes subscriptions and payments, and emails receipts and yearly renewal reminders.</>,
+            <><strong>Google</strong> — sends our account emails, such as sign-in codes, through Gmail, and handles sign-in if you choose to sign in with Google.</>,
           ]}
         />
         <p>
