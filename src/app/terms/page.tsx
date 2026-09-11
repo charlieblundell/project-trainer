@@ -15,7 +15,7 @@ export default function Terms() {
         <>
           <p>You need to be 16 or older. If you&apos;re under 18, get a parent or guardian&apos;s permission first.</p>
           <p>
-            Everyone gets 14 days free with no card. After that it&apos;s {PLANS.month.price} a month or{" "}
+            Everyone gets 10 days free with no card. After that it&apos;s {PLANS.month.price} a month or{" "}
             {PLANS.year.price} a year, and you can cancel any time in Settings.
           </p>
           <p>
@@ -93,7 +93,7 @@ export default function Terms() {
 
       <Section id="trial" number={6} title="Free trial">
         <p>
-          New accounts get 14 days of full access, starting when the account is created. You don&apos;t need to give
+          New accounts get 10 days of full access, starting when the account is created. You don&apos;t need to give
           payment details to start the trial, and you will not be charged when it ends. We will email you before your
           trial ends.
         </p>

@@ -63,7 +63,7 @@ function StartButton({ className = "" }: { className?: string }) {
       href="/signup"
       className={`inline-flex items-center justify-center rounded-md bg-ink px-6 py-3.5 text-[15px] font-semibold text-background transition hover:opacity-90 ${focusRing} ${className}`}
     >
-      Start 14 days free
+      Start 10 days free
     </Link>
   );
 }
@@ -261,7 +261,7 @@ export default function Landing() {
           <div className="mx-auto grid max-w-6xl gap-10 px-6 py-20 lg:grid-cols-12 lg:items-end">
             <div className="lg:col-span-5">
               <h2 className="font-marketing-display text-4xl font-extrabold leading-none text-ink [font-stretch:80%] [text-wrap:balance]">
-                Two weeks free. Then decide.
+                Ten days free. Then decide.
               </h2>
               <p className="mt-5 max-w-md text-[17px] leading-relaxed text-muted">
                 Everything, from the first day. No card until you choose to subscribe, and you can

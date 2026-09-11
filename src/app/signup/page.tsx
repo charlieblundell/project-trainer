@@ -68,7 +68,7 @@ export default function SignUp() {
 
         <div className="flex flex-1 flex-col justify-center py-12">
           <h1 className="font-marketing-display text-[2.1rem] font-extrabold leading-[1.02] tracking-[-0.01em] text-ink [font-stretch:88%] [text-wrap:balance]">
-            Start your 14 days free.
+            Start your 10 days free.
           </h1>
           <p className="mb-8 mt-3 text-[15px] leading-relaxed text-muted">
             No card needed. Answer a few questions and your first week is ready in a couple of
