@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { Flame, TrendingUp } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import { sessionById } from "@/lib/plan/helpers";
+import { InstallPrompt } from "@/components/InstallPrompt";
 
 const container = {
   hidden: {},
@@ -93,6 +94,8 @@ export default function TrainComplete() {
           </ul>
         )}
       </motion.div>
+
+      <InstallPrompt className="mb-5" dismissible mobileOnly />
 
       <motion.button
         variants={item}

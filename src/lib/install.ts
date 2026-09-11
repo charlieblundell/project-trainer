@@ -55,5 +55,42 @@ export function isRunningInstalled(): boolean {
 
 export function isIos(): boolean {
   if (typeof navigator === "undefined") return false;
-  return /iphone|ipad|ipod/i.test(navigator.userAgent);
+  // iPads report themselves as Macs; a touch screen gives them away.
+  const iPadOs = /Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1;
+  return iPadOs || /iphone|ipad|ipod/i.test(navigator.userAgent);
+}
+
+/**
+ * Browsers built into other apps — Instagram, Facebook, TikTok — can't add a
+ * site to the home screen. People arriving from social posts land in them.
+ */
+export function isInAppBrowser(): boolean {
+  if (typeof navigator === "undefined") return false;
+  return /Instagram|FBAN|FBAV|FB_IAB|TikTok|musical_ly|Snapchat|Line\//i.test(navigator.userAgent);
+}
+
+export function isMobileDevice(): boolean {
+  if (typeof window === "undefined") return false;
+  return isIos() || /android/i.test(navigator.userAgent) || window.matchMedia("(pointer: coarse)").matches;
+}
+
+const DISMISS_KEY = "install-prompt-dismissed-at";
+const DISMISS_DAYS = 14;
+
+/** "Not now" hides the prompt for a fortnight, then it comes back. Settings always has it. */
+export function installPromptDismissed(): boolean {
+  try {
+    const at = Number(localStorage.getItem(DISMISS_KEY));
+    return !!at && Date.now() - at < DISMISS_DAYS * 24 * 60 * 60 * 1000;
+  } catch {
+    return false;
+  }
+}
+
+export function dismissInstallPrompt(): void {
+  try {
+    localStorage.setItem(DISMISS_KEY, String(Date.now()));
+  } catch {
+    // Storage blocked: it will simply show again next time.
+  }
 }

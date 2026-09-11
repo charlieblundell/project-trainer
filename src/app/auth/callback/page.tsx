@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { destinationAfterSignIn } from "@/lib/after-sign-in";
 import { LogoMark } from "@/components/Wordmark";
 
 export default function AuthCallback() {
@@ -33,17 +34,10 @@ export default function AuthCallback() {
         return;
       }
 
-      // Only a brand-new account is sent to the setup questions. Sending
-      // everyone there meant a returning user who went through them again
-      // replaced their plan and lost every calibrated weight.
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("goal")
-        .eq("id", session.user.id)
-        .maybeSingle();
-
+      // Only a brand-new account is sent to the setup questions.
+      const destination = await destinationAfterSignIn(session.user.id);
       if (cancelled) return;
-      router.replace(profile?.goal ? "/home" : "/onboarding");
+      router.replace(destination);
     }
 
     run();

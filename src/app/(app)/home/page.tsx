@@ -24,6 +24,7 @@ import {
   weeklyStreak,
 } from "@/lib/progress/compute";
 import type { WorkoutRecord } from "@/lib/progress/types";
+import { InstallPrompt } from "@/components/InstallPrompt";
 
 function greeting(now = new Date()): string {
   const h = now.getHours();
@@ -124,6 +125,8 @@ export default function Home() {
           )}
         </div>
       )}
+
+      {plan && <InstallPrompt className="mb-5" dismissible mobileOnly />}
 
       {plan && (
         <section className="mb-5 rounded-2xl border border-line bg-surface p-4" aria-labelledby="this-week">

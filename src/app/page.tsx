@@ -149,7 +149,7 @@ function TrainingSheet() {
 export default function Landing() {
   return (
     <div className={`${marketingFontClasses} font-marketing-body bg-background text-ink`}>
-      <RedirectIfSignedIn to="/home" />
+      <RedirectIfSignedIn />
       <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
         <TypeMark />
         <nav className="flex items-center gap-6 text-[15px]">

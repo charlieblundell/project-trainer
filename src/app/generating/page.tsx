@@ -10,6 +10,7 @@ import { LogoMark } from "@/components/Wordmark";
 import { supabase } from "@/lib/supabase";
 import { generatePlan } from "@/lib/plan/generate";
 import { savePlan } from "@/lib/plan/storage";
+import { InstallPrompt } from "@/components/InstallPrompt";
 import {
   WEEKDAY_LABELS,
   WEEKDAY_ORDER,
@@ -321,6 +322,8 @@ function PlanReveal({
           </ul>
         </section>
       )}
+
+      <InstallPrompt className="mb-6" mobileOnly />
 
       {trialDays !== null && (
         <p className="mb-4 text-center text-sm text-muted">
