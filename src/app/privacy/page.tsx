@@ -77,7 +77,8 @@ export default function Privacy() {
           <strong>Technical information.</strong> Our hosting providers keep standard server logs, which can include
           your IP address, browser type and the time of a request, for security and fixing faults. The app stores data
           in your browser to keep you signed in and remember where you were. We don&apos;t use advertising or tracking
-          cookies.
+          cookies. We count visits to each page with Vercel Web Analytics, which doesn&apos;t use cookies and
+          doesn&apos;t identify you.
         </p>
       </Section>
 
@@ -145,7 +146,7 @@ export default function Privacy() {
         <Bullets
           items={[
             <><strong>Supabase</strong> — stores your account, profile and training data, and sends sign-in emails.</>,
-            <><strong>Vercel</strong> — hosts the app and runs its servers.</>,
+            <><strong>Vercel</strong> — hosts the app, runs its servers and counts page visits.</>,
             <><strong>Anthropic</strong> — generates the AI coach&apos;s replies from your message and the training details sent with it.</>,
             <><strong>Stripe</strong> — processes subscriptions and payments, and emails receipts and yearly renewal reminders.</>,
             <><strong>Google</strong> — sends our account emails, such as sign-in codes, through Gmail, and handles sign-in if you choose to sign in with Google.</>,
