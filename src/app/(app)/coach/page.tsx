@@ -116,6 +116,8 @@ export default function Coach() {
             if (e.key === "Enter" && input.trim()) send(input.trim());
           }}
           placeholder="Ask your coach..."
+          // Matches the server's limit, so the box stops you rather than an error does.
+          maxLength={2000}
           className="flex-1 rounded-full border border-line px-4 py-3 text-sm"
         />
         <motion.button

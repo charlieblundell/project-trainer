@@ -36,6 +36,42 @@ const anthropic = new Anthropic();
 
 type IncomingMessage = { role: "user" | "assistant"; text: string };
 
+/** Enough history for a real conversation; older turns stop being useful context. */
+const MAX_MESSAGES = 20;
+/** A long question fits easily; a pasted novel does not. */
+const MAX_MESSAGE_CHARS = 2000;
+/** Stops a runaway script. Nobody types eleven questions in a minute. */
+const PER_MINUTE_LIMIT = 10;
+/** A hard ceiling on what one account can cost in a day. */
+const PER_DAY_LIMIT = 100;
+
+/**
+ * The browser sends whatever it likes, so nothing in the body is trusted:
+ * unknown roles, non-string text, oversized text and oversized histories are
+ * all rejected or trimmed here, before any of it reaches the model.
+ */
+function parseMessages(body: unknown): IncomingMessage[] | null {
+  const raw = (body as { messages?: unknown })?.messages;
+  if (!Array.isArray(raw)) return null;
+
+  const valid: IncomingMessage[] = [];
+  for (const item of raw) {
+    const role = (item as { role?: unknown })?.role;
+    const text = (item as { text?: unknown })?.text;
+    if (role !== "user" && role !== "assistant") return null;
+    if (typeof text !== "string" || text.trim().length === 0) return null;
+    if (text.length > MAX_MESSAGE_CHARS) return null;
+    valid.push({ role, text });
+  }
+
+  const recent = valid.slice(-MAX_MESSAGES);
+  // Trimming can leave the history opening on a coach reply; a conversation
+  // sent to the model should start with something the person said.
+  while (recent.length > 0 && recent[0].role === "assistant") recent.shift();
+  if (recent.length === 0 || recent[recent.length - 1].role !== "user") return null;
+  return recent;
+}
+
 export async function POST(req: NextRequest) {
   const authHeader = req.headers.get("authorization");
   if (!authHeader) {
@@ -56,10 +92,54 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
-  const body = await req.json();
-  const messages: IncomingMessage[] = Array.isArray(body?.messages) ? body.messages : [];
-  if (messages.length === 0) {
-    return NextResponse.json({ error: "messages required" }, { status: 400 });
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid request." }, { status: 400 });
+  }
+  const messages = parseMessages(body);
+  if (!messages) {
+    return NextResponse.json(
+      { error: `Messages must be under ${MAX_MESSAGE_CHARS} characters.` },
+      { status: 400 }
+    );
+  }
+
+  // Counted before the model is called, so parallel requests can't all slip
+  // under the limit at once.
+  const now = Date.now();
+  const [{ count: lastMinute }, { count: lastDay }] = await Promise.all([
+    supabase
+      .from("coach_usage")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .gte("created_at", new Date(now - 60_000).toISOString()),
+    supabase
+      .from("coach_usage")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .gte("created_at", new Date(now - 86_400_000).toISOString()),
+  ]);
+
+  if ((lastMinute ?? 0) >= PER_MINUTE_LIMIT) {
+    return NextResponse.json(
+      { error: "That's a lot of questions at once — give it a minute and ask again." },
+      { status: 429 }
+    );
+  }
+  if ((lastDay ?? 0) >= PER_DAY_LIMIT) {
+    return NextResponse.json(
+      { error: "You've reached today's coach limit. It resets over the next 24 hours." },
+      { status: 429 }
+    );
+  }
+
+  const { error: usageError } = await supabase.from("coach_usage").insert({ user_id: user.id });
+  if (usageError) {
+    // Failing closed: if usage can't be recorded, it can't be limited either.
+    console.error("Failed to record coach usage:", usageError.message);
+    return NextResponse.json({ error: "Coach is unavailable right now." }, { status: 503 });
   }
 
   const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single();
