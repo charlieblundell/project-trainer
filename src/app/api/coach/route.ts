@@ -303,8 +303,12 @@ export async function POST(req: NextRequest) {
     if (err instanceof Anthropic.RateLimitError) {
       return NextResponse.json({ error: "Coach is busy right now — try again in a moment." }, { status: 429 });
     }
+    // Includes the monthly spend cap being reached on the Anthropic account.
     if (err instanceof Anthropic.APIError) {
-      return NextResponse.json({ error: "Coach service error." }, { status: 502 });
+      return NextResponse.json(
+        { error: "Your coach isn't available right now. Try again later — the rest of the app works as normal." },
+        { status: 502 }
+      );
     }
     return NextResponse.json({ error: "Something went wrong." }, { status: 500 });
   }
