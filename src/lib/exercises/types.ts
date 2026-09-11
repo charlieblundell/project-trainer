@@ -95,6 +95,8 @@ export const EQUIPMENT_LABELS: Record<Equipment, string> = {
 
 /** Which equipment options to offer, based on the answer to "where do you train". */
 export const EQUIPMENT_BY_ENVIRONMENT: Record<string, Equipment[]> = {
+  // Bands and a box or bench to step on are in every gym, and leaving them out
+  // made a full gym offer fewer exercises than a spare room at home.
   "Full gym": [
     "barbell",
     "dumbbell",
@@ -104,9 +106,13 @@ export const EQUIPMENT_BY_ENVIRONMENT: Record<string, Equipment[]> = {
     "squat_rack",
     "bench",
     "pullup_bar",
+    "bands",
     "cardio",
+    "chair",
     "mat",
   ],
+  // A kitted-out garage shouldn't offer less than a spare room: it has
+  // somewhere to sit or step up on too.
   "Home gym": [
     "dumbbell",
     "kettlebell",
@@ -114,6 +120,7 @@ export const EQUIPMENT_BY_ENVIRONMENT: Record<string, Equipment[]> = {
     "bench",
     "pullup_bar",
     "bands",
+    "chair",
     "mat",
     "bodyweight",
   ],

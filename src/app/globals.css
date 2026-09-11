@@ -1,6 +1,12 @@
 @import "tailwindcss";
 
 :root {
+  /* One palette, whatever the phone is set to: the warm paper look is the
+     brand, and a second dark version would be a design nobody has vetted.
+     Declaring the scheme keeps native controls — inputs, scrollbars, pickers —
+     light too, rather than following the system and clashing. */
+  color-scheme: light;
+
   /* Neutrals carry a slight warm bias so they sit with the accent rather than
      fighting it — a true grey next to terracotta reads as unconsidered. */
   --background: #faf7f3;
@@ -24,27 +30,6 @@
 
   --font-display: "Manrope", sans-serif;
   --font-body: "Inter", sans-serif;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #17120f;
-    --surface: #211b17;
-    --ink: #f4efe9;
-    --muted: #a0948b;
-    --line: #342c26;
-
-    --accent: #ef7d4e;
-    --accent-2: #f6b155;
-    --accent-ink: #17120f;
-    --accent-soft: #3b241a;
-
-    --success: #35b57c;
-    --success-soft: #14311f;
-
-    --warning: #ff6183;
-    --warning-soft: #3c1421;
-  }
 }
 
 @theme inline {

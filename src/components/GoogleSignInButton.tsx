@@ -92,10 +92,11 @@ export function GoogleSignInButton({ fallback }: { fallback: ReactNode }) {
           },
         });
 
-        const dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
         google.accounts.id.renderButton(parent, {
           type: "standard",
-          theme: dark ? "filled_black" : "outline",
+          // The app is light whatever the phone is set to, so the black button
+          // Google offers for dark mode would sit oddly on the paper ground.
+          theme: "outline",
           size: "large",
           text: "continue_with",
           shape: "rectangular",

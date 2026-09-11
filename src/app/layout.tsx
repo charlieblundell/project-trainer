@@ -40,10 +40,8 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#faf7f3" },
-    { media: "(prefers-color-scheme: dark)", color: "#17120f" },
-  ],
+  // One colour, because the app is light whatever the phone is set to.
+  themeColor: "#faf7f3",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

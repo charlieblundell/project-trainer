@@ -129,7 +129,7 @@ export default function SignUp() {
 
         <div className="flex flex-1 flex-col justify-center py-12">
           <h1 className="font-marketing-display text-[2.1rem] font-extrabold leading-[1.02] tracking-[-0.01em] text-ink [font-stretch:88%] [text-wrap:balance]">
-            {installed ? "Sign in to your plan." : "Start your 10 days free."}
+            {installed ? "Sign in to your plan." : "Start training, free."}
           </h1>
           <p className="mb-8 mt-3 text-[15px] leading-relaxed text-muted">
             {installed

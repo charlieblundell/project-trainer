@@ -107,7 +107,7 @@ export default async function FindingPage({ params }: Props) {
           href="/signup"
           className="mt-5 inline-flex rounded-md bg-ink px-6 py-3 text-[15px] font-semibold text-background transition hover:opacity-90"
         >
-          Start 10 days free
+          Start free
         </Link>
       </aside>
 
