@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useAppStore } from "@/lib/store";
@@ -7,6 +8,13 @@ import { useAuthStore } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 import { EQUIPMENT_LABELS, EXERCISES_BY_ID, type Equipment } from "@/lib/exercises";
 import type { OnboardingData } from "@/lib/types";
+import { PLANS } from "@/lib/billing/plans";
+import {
+  inTrial,
+  isSubscribed,
+  trialDaysLeft,
+  type Billing,
+} from "@/lib/billing/entitlement";
 
 const DAY_LABELS: Record<string, string> = {
   mon: "Mon",
@@ -58,14 +66,96 @@ function profileRows(o: OnboardingData): [string, string][] {
   return rows;
 }
 
+function formatDate(iso: string): string {
+  return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+}
+
+/** What to say about someone's subscription, and what they can do about it. */
+function billingSummary(billing: Billing | null): {
+  title: string;
+  detail: string;
+  action: "subscribe" | "manage";
+  urgent?: boolean;
+} {
+  if (!billing) {
+    return { title: "Subscription", detail: "Your subscription status couldn't be loaded.", action: "subscribe" };
+  }
+
+  if (isSubscribed(billing)) {
+    const plan = billing.interval ? `${PLANS[billing.interval].label} plan` : "Subscribed";
+    if (billing.status === "past_due") {
+      return {
+        title: plan,
+        detail: "Your last payment didn't go through. Update your card to keep access.",
+        action: "manage",
+        urgent: true,
+      };
+    }
+    if (billing.currentPeriodEnd) {
+      return {
+        title: plan,
+        detail: billing.cancelAtPeriodEnd
+          ? `Cancelled — you have access until ${formatDate(billing.currentPeriodEnd)}.`
+          : `Renews on ${formatDate(billing.currentPeriodEnd)}.`,
+        action: "manage",
+      };
+    }
+    return { title: plan, detail: "Active.", action: "manage" };
+  }
+
+  if (inTrial(billing)) {
+    const days = trialDaysLeft(billing);
+    return {
+      title: "Free trial",
+      detail: `${days} day${days === 1 ? "" : "s"} left. No card needed until you subscribe.`,
+      action: "subscribe",
+    };
+  }
+
+  return {
+    title: "Trial ended",
+    detail: "Subscribe to keep using your plan and coach.",
+    action: "subscribe",
+    urgent: true,
+  };
+}
+
 export default function Settings() {
   const router = useRouter();
   const onboarding = useAppStore((s) => s.onboarding);
+  const billing = useAppStore((s) => s.billing);
   const user = useAuthStore((s) => s.user);
+  const [opening, setOpening] = useState(false);
+  const [billingError, setBillingError] = useState<string | null>(null);
+
+  const summary = billingSummary(billing);
 
   async function logOut() {
     await supabase.auth.signOut();
     router.push("/");
+  }
+
+  async function manageBilling() {
+    setOpening(true);
+    setBillingError(null);
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    try {
+      const res = await fetch("/api/billing/portal", {
+        method: "POST",
+        headers: session ? { Authorization: `Bearer ${session.access_token}` } : {},
+      });
+      const data = (await res.json()) as { url?: string; error?: string };
+      if (res.ok && data.url) {
+        window.location.assign(data.url);
+        return;
+      }
+      setBillingError(data.error ?? "Couldn't open billing — try again in a moment.");
+    } catch {
+      setBillingError("Couldn't reach billing — check your connection and try again.");
+    }
+    setOpening(false);
   }
 
   return (
@@ -75,6 +165,33 @@ export default function Settings() {
       </button>
       <h1 className="mb-1 font-display text-2xl font-bold text-ink">Settings</h1>
       {user?.email && <p className="mb-5 text-sm text-muted">{user.email}</p>}
+
+      <div className="mb-2 text-xs font-semibold tracking-widest text-muted">SUBSCRIPTION</div>
+      <div className="mb-6 rounded-2xl border border-line bg-surface px-4 py-3.5">
+        <div className="mb-3">
+          <div className="text-sm font-semibold text-ink">{summary.title}</div>
+          <div className={`text-xs leading-relaxed ${summary.urgent ? "text-warning" : "text-muted"}`}>
+            {summary.detail}
+          </div>
+        </div>
+        {summary.action === "subscribe" ? (
+          <button
+            onClick={() => router.push("/upgrade")}
+            className="w-full rounded-xl bg-ink py-2.5 text-sm font-semibold text-background"
+          >
+            Subscribe
+          </button>
+        ) : (
+          <button
+            onClick={manageBilling}
+            disabled={opening}
+            className="w-full rounded-xl border border-line py-2.5 text-sm font-semibold text-ink disabled:opacity-60"
+          >
+            {opening ? "Opening billing" : "Manage billing"}
+          </button>
+        )}
+        {billingError && <p className="mt-2 text-xs text-warning">{billingError}</p>}
+      </div>
 
       <div className="mb-2 text-xs font-semibold tracking-widest text-muted">YOUR PROFILE</div>
       <div className="mb-6 overflow-hidden rounded-2xl border border-line bg-surface">
@@ -87,17 +204,6 @@ export default function Settings() {
             <span className="text-right font-semibold text-ink">{value}</span>
           </div>
         ))}
-      </div>
-
-      <div className="mb-2 text-xs font-semibold tracking-widest text-muted">PLAN</div>
-      <div className="mb-6 flex items-center justify-between rounded-2xl border border-line bg-surface px-4 py-3.5">
-        <div>
-          <div className="text-sm font-semibold text-ink">Free</div>
-          <div className="text-xs text-muted">1 program · limited coach messages</div>
-        </div>
-        <button className="rounded-xl bg-ink px-3.5 py-2 text-xs font-semibold text-background">
-          Upgrade
-        </button>
       </div>
 
       <div className="mb-2 text-xs font-semibold tracking-widest text-muted">REFERENCE</div>

@@ -12,7 +12,9 @@
     "preview:progression": "tsx scripts/preview-progression.ts",
     "preview:refresh": "tsx scripts/preview-refresh.ts",
     "preview:progress": "tsx scripts/preview-progress.ts",
-    "check:evidence": "tsx scripts/check-evidence.ts"
+    "check:evidence": "tsx scripts/check-evidence.ts",
+    "check:billing": "tsx scripts/check-billing.ts",
+    "check:webhook": "tsx scripts/check-webhook.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.124.0",
@@ -22,6 +24,7 @@
     "next": "16.3.4",
     "react": "19.2.8",
     "react-dom": "19.2.8",
+    "stripe": "^22.6.2",
     "zustand": "^5.0.15"
   },
   "devDependencies": {
@@ -36,4 +39,3 @@
     "typescript": "^5"
   }
 }
-

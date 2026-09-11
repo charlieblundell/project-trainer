@@ -9,6 +9,7 @@ import { savePlan } from "./plan/storage";
 import { normalizePlan } from "./plan/normalize";
 import { profileFromOnboarding, refreshAccessories } from "./plan/generate";
 import type { Equipment } from "./exercises";
+import type { Billing } from "./billing/entitlement";
 
 type TrainingSession = {
   /** Id of the session within the user's generated plan. */
@@ -53,6 +54,12 @@ type AppState = {
    */
   sessionsLogged: number;
   setSessionsLogged: (count: number) => void;
+  /**
+   * Trial and subscription state, or null if it couldn't be read. Shown and
+   * used for the lock screen only — the server makes its own decision.
+   */
+  billing: Billing | null;
+  setBilling: (billing: Billing | null) => void;
   /** Re-picks the accessory work, leaving the main lifts and their weights alone. */
   refreshPlan: () => Promise<void>;
   /** What the last refresh swapped, shown once and then dismissed. */
@@ -146,6 +153,8 @@ export const useAppStore = create<AppState>()(
       setPlan: (plan) => set({ plan: plan ? normalizePlan(plan) : null }),
       sessionsLogged: 0,
       setSessionsLogged: (count) => set({ sessionsLogged: count }),
+      billing: null,
+      setBilling: (billing) => set({ billing }),
       lastRefresh: null,
       clearLastRefresh: () => set({ lastRefresh: null }),
       refreshPlan: async () => {
@@ -181,6 +190,7 @@ export const useAppStore = create<AppState>()(
           onboardingComplete: false,
           plan: null,
           sessionsLogged: 0,
+          billing: null,
         });
       },
     }),

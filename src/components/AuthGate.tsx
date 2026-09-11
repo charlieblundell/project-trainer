@@ -1,15 +1,24 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/auth";
 import { useAppStore } from "@/lib/store";
 import { supabase } from "@/lib/supabase";
 import { loadPlan } from "@/lib/plan/storage";
+import { BILLING_COLUMNS, billingFromRow, hasAccess, type BillingRow } from "@/lib/billing/entitlement";
 import { LogoMark } from "@/components/Wordmark";
+
+/**
+ * Pages someone whose trial has ended can still reach: the way to pay, the
+ * way back from paying, their settings (to log out or manage billing), and
+ * the evidence library, which is reference rather than product.
+ */
+const OPEN_WHEN_LOCKED = ["/upgrade", "/billing", "/settings", "/evidence"];
 
 export function AuthGate({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const pathname = usePathname();
   const user = useAuthStore((s) => s.user);
   const initialized = useAuthStore((s) => s.initialized);
   const setOnboarding = useAppStore((s) => s.setOnboarding);
@@ -17,7 +26,10 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   const claimForUser = useAppStore((s) => s.claimForUser);
   const setPlan = useAppStore((s) => s.setPlan);
   const setSessionsLogged = useAppStore((s) => s.setSessionsLogged);
+  const billing = useAppStore((s) => s.billing);
+  const setBilling = useAppStore((s) => s.setBilling);
   const [profileSynced, setProfileSynced] = useState(false);
+  const [billingChecked, setBillingChecked] = useState(false);
   const syncedForUser = useRef<string | null>(null);
 
   useEffect(() => {
@@ -39,6 +51,19 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
       .select("id", { count: "exact", head: true })
       .eq("user_id", user.id)
       .then(({ count }) => setSessionsLogged(count ?? 0));
+
+    supabase
+      .from("billing")
+      .select(BILLING_COLUMNS)
+      .eq("user_id", user.id)
+      .maybeSingle()
+      .then(({ data, error }) => {
+        // If billing can't be read, the app stays open rather than locking out
+        // someone who may well have paid. The coach, which is what costs
+        // money, is still enforced on the server either way.
+        setBilling(data && !error ? billingFromRow(data as BillingRow) : null);
+        setBillingChecked(true);
+      });
 
     supabase
       .from("profiles")
@@ -76,9 +101,17 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     claimForUser,
     setPlan,
     setSessionsLogged,
+    setBilling,
   ]);
 
-  if (!initialized || !user || !profileSynced) {
+  const locked = billingChecked && billing !== null && !hasAccess(billing);
+  const pageIsOpen = OPEN_WHEN_LOCKED.some((path) => pathname.startsWith(path));
+
+  useEffect(() => {
+    if (locked && !pageIsOpen) router.replace("/upgrade");
+  }, [locked, pageIsOpen, router]);
+
+  if (!initialized || !user || !profileSynced || !billingChecked || (locked && !pageIsOpen)) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <LogoMark size={36} />

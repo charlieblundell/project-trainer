@@ -13,6 +13,7 @@ import type { Plan } from "@/lib/plan/types";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { EQUIPMENT_LABELS, EXERCISES_BY_ID, type Equipment } from "@/lib/exercises";
 import { claimsIndex, detailFor, relevantFindings } from "@/lib/evidence";
+import { BILLING_COLUMNS, billingFromRow, hasAccess, type BillingRow } from "@/lib/billing/entitlement";
 import type { SetLog } from "@/lib/types";
 
 /** Reads the user's newest plan through their own token, so RLS still applies. */
@@ -90,6 +91,23 @@ export async function POST(req: NextRequest) {
 
   if (!user) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+  }
+
+  // Access is decided here, not in the browser. The lock screen is a
+  // convenience; this check is what actually protects the API bill.
+  const { data: billingRow } = await supabase
+    .from("billing")
+    .select(BILLING_COLUMNS)
+    .eq("user_id", user.id)
+    .maybeSingle();
+  if (!billingRow || !hasAccess(billingFromRow(billingRow as BillingRow))) {
+    return NextResponse.json(
+      {
+        error: "Your free trial has ended. Subscribe to keep training with your coach.",
+        code: "subscription_required",
+      },
+      { status: 402 }
+    );
   }
 
   let body: unknown;
