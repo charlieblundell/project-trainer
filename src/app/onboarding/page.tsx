@@ -339,7 +339,8 @@ export default function Onboarding() {
             <div>
               <div className="mb-5 flex flex-col gap-3 text-sm leading-relaxed text-ink">
                 <p>
-                  The next two questions ask for your bodyweight, height, age, sex and any injuries.
+                  The next two questions ask for your bodyweight, height, age, sex and any injuries, and
+                  before workouts you can optionally tell us how you slept and whether anything hurts.
                   These count as health information under Australian privacy law, so we need your
                   permission before collecting them.
                 </p>

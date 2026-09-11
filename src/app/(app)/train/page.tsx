@@ -15,11 +15,15 @@ import type { SetLog } from "@/lib/types";
 import { useAuthStore } from "@/lib/auth";
 import { loadHistory } from "@/lib/progress/storage";
 import type { WorkoutRecord } from "@/lib/progress/types";
+import { adjustForReadiness, isLowReadiness } from "@/lib/plan/readiness";
+import { CheckIn } from "@/components/CheckIn";
 
 export default function Train() {
   const router = useRouter();
   const plan = useAppStore((s) => s.plan);
   const session = useAppStore((s) => s.session);
+  const healthConsent = useAppStore((s) => s.onboarding.healthConsent === true);
+  const setReadiness = useAppStore((s) => s.setReadiness);
   const user = useAuthStore((s) => s.user);
   const [history, setHistory] = useState<WorkoutRecord[] | null>(null);
 
@@ -61,7 +65,16 @@ export default function Train() {
   }, []);
 
   const planSession = sessionById(plan, session.workoutId);
-  const planned = planSession?.exercises[session.exerciseIdx];
+  const readiness = session.readiness && session.readiness !== "skipped" ? session.readiness : null;
+  const basePlanned = planSession?.exercises[session.exerciseIdx];
+  const planned = basePlanned ? adjustForReadiness(basePlanned, readiness) : undefined;
+  // Asked once, before the first set, and only of people who've agreed to
+  // share health information.
+  const needsCheckIn =
+    healthConsent &&
+    !session.readiness &&
+    session.exerciseIdx === 0 &&
+    Object.keys(session.loggedSets).length === 0;
 
   if (!planSession) {
     return (
@@ -77,6 +90,10 @@ export default function Train() {
     );
   }
 
+  if (needsCheckIn) {
+    return <CheckIn sessionName={planSession.name} onDone={setReadiness} />;
+  }
+
   return (
     <div className="relative">
       <button
@@ -89,6 +106,7 @@ export default function Train() {
       <div className="mb-1 text-xs text-muted">
         {Math.min(session.exerciseIdx + 1, planSession.exercises.length)} /{" "}
         {planSession.exercises.length} exercises
+        {isLowReadiness(readiness) && " · lighter day: one fewer set each, from your check-in"}
       </div>
 
       {planned ? (

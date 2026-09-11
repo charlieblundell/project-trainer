@@ -242,7 +242,7 @@ function HealthDetails() {
         {shared && confirming && (
           <div className="mt-3">
             <p className="mb-2.5 text-xs leading-relaxed text-ink">
-              This deletes your bodyweight, height, age, sex and injury notes, and removes anything your plan
+              This deletes your bodyweight, height, age, sex, injury notes and check-in answers, and removes anything your plan
               worked out from them. Your workouts and progress stay.
             </p>
             <div className="flex gap-2">

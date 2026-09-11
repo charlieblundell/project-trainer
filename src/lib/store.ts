@@ -10,6 +10,7 @@ import { normalizePlan } from "./plan/normalize";
 import { profileFromOnboarding, refreshAccessories } from "./plan/generate";
 import type { Equipment } from "./exercises";
 import type { Billing } from "./billing/entitlement";
+import type { Readiness } from "./plan/readiness";
 
 type TrainingSession = {
   /** Id of the session within the user's generated plan. */
@@ -19,10 +20,15 @@ type TrainingSession = {
   rpeValues: Record<string, number>;
   /** Swapped-in replacements, keyed by the planned exercise they replace. */
   overrides: Record<string, { exerciseId: string }>;
+  /**
+   * Pre-workout check-in answers, "skipped" if they chose not to answer, or
+   * null/absent before they've been asked (older saved sessions lack it).
+   */
+  readiness?: Readiness | "skipped" | null;
 };
 
 function emptySession(workoutId: string): TrainingSession {
-  return { workoutId, exerciseIdx: 0, loggedSets: {}, rpeValues: {}, overrides: {} };
+  return { workoutId, exerciseIdx: 0, loggedSets: {}, rpeValues: {}, overrides: {}, readiness: null };
 }
 
 type AppState = {
@@ -37,6 +43,7 @@ type AppState = {
   submitRpe: (exerciseId: string, value: number) => void;
   nextExercise: () => void;
   swapExercise: (exerciseId: string, alt: { exerciseId: string }) => void;
+  setReadiness: (readiness: Readiness | "skipped") => void;
   lastCompletedSummary: { workoutId: string; loggedSets: Record<string, SetLog[]> } | null;
   /** What progression did to the plan after the last session. */
   lastChanges: Change[];
@@ -105,6 +112,7 @@ export const useAppStore = create<AppState>()(
         set((s) => ({
           session: { ...s.session, overrides: { ...s.session.overrides, [exerciseId]: alt } },
         })),
+      setReadiness: (readiness) => set((s) => ({ session: { ...s.session, readiness } })),
       lastCompletedSummary: null,
       lastChanges: [],
       completeWorkout: async () => {
@@ -119,11 +127,18 @@ export const useAppStore = create<AppState>()(
 
         // Supabase query builders are lazy — without awaiting, the insert is
         // built and never sent. This silently dropped every logged workout.
+        // Check-in answers are health information: only kept with consent.
+        const readiness =
+          s.readiness && s.readiness !== "skipped" && get().onboarding.healthConsent === true
+            ? s.readiness
+            : null;
+
         const { error } = await supabase.from("workout_sessions").insert({
           user_id: data.user.id,
           workout_id: s.workoutId,
           logged_sets: s.loggedSets,
           rpe: s.rpeValues,
+          readiness,
         });
         if (error) console.error("Failed to save workout:", error.message);
         else set((prev) => ({ sessionsLogged: prev.sessionsLogged + 1 }));
@@ -135,7 +150,8 @@ export const useAppStore = create<AppState>()(
             s.workoutId,
             s.loggedSets,
             s.rpeValues,
-            equipment
+            equipment,
+            readiness
           );
           set({ plan: nextPlan, lastChanges: changes });
           try {

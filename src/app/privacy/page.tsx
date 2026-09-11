@@ -55,7 +55,8 @@ export default function Privacy() {
         </p>
         <p>
           <strong>Health information.</strong> Your bodyweight, height, age and sex if you provide them, and any notes
-          you give us about injuries or physical limitations. This is &ldquo;sensitive information&rdquo; under the
+          you give us about injuries or physical limitations, and your answers to the optional pre-workout check-in about
+          sleep, soreness and joint pain. This is &ldquo;sensitive information&rdquo; under the
           Privacy Act — see section 3.
         </p>
         <p>
@@ -125,6 +126,7 @@ export default function Privacy() {
           items={[
             "Your training plan — which exercises, sets, reps and rest you're given — is generated from your goal, experience, schedule, equipment, preferences, age and any injury notes.",
             "Your targets are adjusted automatically from the weights, reps and effort ratings you log.",
+            "If you use the pre-workout check-in, poor sleep or heavy soreness takes a set off each exercise that day, and stops a tough session lowering your targets.",
             "The AI coach's replies are generated from your question, your profile, your plan and your recent workouts.",
             "Whether you can use the app is decided automatically from your trial end date and subscription status.",
           ]}

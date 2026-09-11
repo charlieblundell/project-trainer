@@ -90,6 +90,17 @@ export async function withdrawHealthConsent(
     return { ok: false, plan };
   }
 
+  // Check-in answers saved with past workouts are health information too.
+  const { error: readinessError } = await supabase
+    .from("workout_sessions")
+    .update({ readiness: null })
+    .eq("user_id", userId)
+    .not("readiness", "is", null);
+  if (readinessError) {
+    console.error("Failed to clear check-in answers:", readinessError.message);
+    return { ok: false, plan };
+  }
+
   const current = plan ?? (await loadPlan(userId));
   if (!current) return { ok: true, plan: null };
 

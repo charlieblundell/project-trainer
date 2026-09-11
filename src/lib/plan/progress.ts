@@ -1,6 +1,7 @@
 import { EXERCISES_BY_ID, type Equipment, type ExerciseDef } from "@/lib/exercises";
 import type { SetLog } from "@/lib/types";
 import type { Plan, PlannedExercise, PlannedSession } from "./types";
+import { isLowReadiness, type Readiness } from "./readiness";
 
 export type ChangeKind =
   | "calibrated"
@@ -46,7 +47,8 @@ function progressWeighted(
   planned: PlannedExercise,
   def: ExerciseDef | undefined,
   sets: SetLog[],
-  rpe: number | null
+  rpe: number | null,
+  lowReadiness = false
 ): Change {
   const name = def?.name ?? planned.exerciseId;
   const repMin = planned.repMin ?? 8;
@@ -90,6 +92,18 @@ function progressWeighted(
       kind: "hold",
       reason: `You got the reps but it was near maximal, so staying at ${loggedWeight} kg.`,
       next: { ...planned, targetWeightKg: loggedWeight },
+    };
+  }
+
+  // On a day they reported sleeping badly or being very sore, falling short is
+  // expected, so it isn't held against the weight: the target simply holds.
+  if (belowRange && lowReadiness) {
+    return {
+      exerciseId: planned.exerciseId,
+      exerciseName: name,
+      kind: "hold",
+      reason: `A tough day by your check-in, so your target stays at ${planned.targetWeightKg} kg rather than dropping.`,
+      next: planned,
     };
   }
 
@@ -232,7 +246,8 @@ export function applyProgression(
   sessionId: string,
   loggedSets: Record<string, SetLog[]>,
   rpeValues: Record<string, number>,
-  owned: Equipment[]
+  owned: Equipment[],
+  readiness: Readiness | null = null
 ): { plan: Plan; changes: Change[] } {
   const changes: Change[] = [];
 
@@ -248,7 +263,7 @@ export function applyProgression(
 
       let change: Change;
       if (planned.unit === "weight_reps") {
-        change = progressWeighted(planned, def, sets, rpe);
+        change = progressWeighted(planned, def, sets, rpe, isLowReadiness(readiness));
       } else if (planned.unit === "reps") {
         change = progressBodyweight(planned, def, sets, owned);
       } else {
