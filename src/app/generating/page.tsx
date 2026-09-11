@@ -11,6 +11,7 @@ import { supabase } from "@/lib/supabase";
 import { generatePlan } from "@/lib/plan/generate";
 import { savePlan } from "@/lib/plan/storage";
 import { saveSetupProfile } from "@/lib/setup";
+import { signedInUser } from "@/lib/session";
 import { InstallPrompt } from "@/components/InstallPrompt";
 import {
   WEEKDAY_LABELS,
@@ -55,15 +56,15 @@ export default function Generating() {
   const buildAndSave = useCallback(async () => {
     setSave({ kind: "saving" });
     try {
-      const { data } = await supabase.auth.getUser();
-      if (!data.user) {
+      const signedIn = await signedInUser();
+      if (!signedIn) {
         router.replace("/signup");
         return;
       }
 
       // Health details are only stored, or used for the plan, with consent.
       const consented = onboarding.healthConsent === true;
-      await saveSetupProfile(data.user.id, onboarding);
+      await saveSetupProfile(signedIn.id, onboarding);
 
       const plan = generatePlan({
         goal: onboarding.goal,
@@ -77,14 +78,14 @@ export default function Generating() {
         considerations: consented ? onboarding.considerations : null,
         age: consented ? onboarding.age : null,
       });
-      await savePlan(data.user.id, plan);
+      await savePlan(signedIn.id, plan);
       setPlan(plan);
       completeOnboarding();
 
       const { data: billingRow } = await supabase
         .from("billing")
         .select(BILLING_COLUMNS)
-        .eq("user_id", data.user.id)
+        .eq("user_id", signedIn.id)
         .maybeSingle();
       const billing = billingRow ? billingFromRow(billingRow as BillingRow) : null;
       // No trial countdown while payments are paused: nothing ends yet.

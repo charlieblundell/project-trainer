@@ -1,12 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { ChevronLeft, Check } from "lucide-react";
 import { clsx } from "@/lib/clsx";
 import { useAppStore } from "@/lib/store";
-import { supabase } from "@/lib/supabase";
+import { useAuthStore } from "@/lib/auth";
+import { signedInUser } from "@/lib/session";
 import { saveSetupProfile } from "@/lib/setup";
 import { emptyWeek } from "@/lib/plan/edit";
 import { experienceToLevel } from "@/lib/plan/generate";
@@ -109,6 +110,8 @@ const STEPS: Step[] = [
 
 export default function Onboarding() {
   const router = useRouter();
+  const user = useAuthStore((s) => s.user);
+  const authReady = useAuthStore((s) => s.initialized);
   const onboarding = useAppStore((s) => s.onboarding);
   const setOnboarding = useAppStore((s) => s.setOnboarding);
   const setPlan = useAppStore((s) => s.setPlan);
@@ -118,6 +121,15 @@ export default function Onboarding() {
   const [buildOwn, setBuildOwn] = useState<boolean | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  /**
+   * Asked for at the start rather than at the end. A plan has to be saved to
+   * an account, and finding that out after twelve questions means answering
+   * them twice.
+   */
+  useEffect(() => {
+    if (authReady && !user) router.replace("/signup");
+  }, [authReady, user, router]);
 
   // Declining consent removes the health screens. The consent screen comes
   // before them, so its position is the same either way. A full gym has
@@ -187,14 +199,14 @@ export default function Onboarding() {
     setBusy(true);
     setError(null);
     try {
-      const { data } = await supabase.auth.getUser();
-      if (!data.user) {
+      const signedIn = await signedInUser();
+      if (!signedIn) {
         router.replace("/signup");
         return;
       }
-      await saveSetupProfile(data.user.id, onboarding);
+      await saveSetupProfile(signedIn.id, onboarding);
       const plan = emptyWeek(onboarding.goal ?? "Build muscle", experienceToLevel(onboarding.experience));
-      await savePlan(data.user.id, plan);
+      await savePlan(signedIn.id, plan);
       setPlan(plan);
       completeOnboarding();
       router.push("/plan/edit");

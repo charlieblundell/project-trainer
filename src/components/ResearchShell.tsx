@@ -16,15 +16,16 @@ export function strengthClass(strength: EvidenceStrength): string {
 export function ResearchShell({ children }: { children: React.ReactNode }) {
   return (
     <div className={`${marketingFontClasses} font-marketing-body min-h-screen bg-background text-ink`}>
-      <header className="mx-auto flex max-w-4xl items-center justify-between gap-4 px-6 py-6">
-        <TypeMark />
-        <nav className="flex items-center gap-6 text-[15px]">
-          <Link href="/research" className={`text-muted transition hover:text-ink ${focusRing}`}>
+      <header className="mx-auto flex max-w-4xl items-center justify-between gap-3 px-6 py-6">
+        <TypeMark className="whitespace-nowrap" />
+        <nav className="flex items-center gap-5 text-[15px]">
+          {/* Redundant on these pages, and on a narrow phone it squeezes the button into two lines. */}
+          <Link href="/research" className={`hidden text-muted transition hover:text-ink sm:inline ${focusRing}`}>
             Research
           </Link>
           <Link
             href="/signup"
-            className={`rounded-md border border-ink px-4 py-2 font-semibold text-ink transition hover:bg-ink hover:text-background ${focusRing}`}
+            className={`whitespace-nowrap rounded-md border border-ink px-4 py-2 font-semibold text-ink transition hover:bg-ink hover:text-background ${focusRing}`}
           >
             Start free
           </Link>
