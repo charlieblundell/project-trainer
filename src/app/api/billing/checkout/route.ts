@@ -1,12 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminSupabase, appUrl, priceIdFor, stripe, userFromRequest } from "@/lib/billing/server";
-import { billingFromRow, isSubscribed, type BillingRow } from "@/lib/billing/entitlement";
+import { PAYMENTS_OPEN, billingFromRow, isSubscribed, type BillingRow } from "@/lib/billing/entitlement";
 
 /** Starts a Stripe Checkout session and hands back the URL to send the person to. */
 export async function POST(req: NextRequest) {
   const user = await userFromRequest(req.headers.get("authorization"));
   if (!user) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+  }
+
+  // Until payments open, Stripe is in test mode, where a public test card
+  // would "subscribe" for free.
+  if (!PAYMENTS_OPEN) {
+    return NextResponse.json(
+      { error: "Subscriptions aren't open yet. Everything stays free until they are." },
+      { status: 503 }
+    );
   }
 
   let interval: unknown;

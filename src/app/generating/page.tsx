@@ -22,6 +22,7 @@ import {
 import {
   BILLING_COLUMNS,
   billingFromRow,
+  PAYMENTS_OPEN,
   inTrial,
   isSubscribed,
   trialDaysLeft,
@@ -106,7 +107,9 @@ export default function Generating() {
         .eq("user_id", data.user.id)
         .maybeSingle();
       const billing = billingRow ? billingFromRow(billingRow as BillingRow) : null;
-      const trialDays = billing && !isSubscribed(billing) && inTrial(billing) ? trialDaysLeft(billing) : null;
+      // No trial countdown while payments are paused: nothing ends yet.
+      const trialDays =
+        PAYMENTS_OPEN && billing && !isSubscribed(billing) && inTrial(billing) ? trialDaysLeft(billing) : null;
 
       setSave({ kind: "saved", plan, trialDays });
     } catch (err) {

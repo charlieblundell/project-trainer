@@ -6,7 +6,7 @@ import { Check } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import { supabase } from "@/lib/supabase";
 import { PLANS } from "@/lib/billing/plans";
-import { inTrial, isSubscribed, trialDaysLeft, type PlanInterval } from "@/lib/billing/entitlement";
+import { PAYMENTS_OPEN, inTrial, isSubscribed, trialDaysLeft, type PlanInterval } from "@/lib/billing/entitlement";
 import { clsx } from "@/lib/clsx";
 
 const INCLUDED = [
@@ -35,6 +35,46 @@ export default function Upgrade() {
           className="w-full rounded-2xl bg-ink py-4 text-[15px] font-semibold text-background"
         >
           Go to Settings
+        </button>
+      </div>
+    );
+  }
+
+  if (!PAYMENTS_OPEN) {
+    return (
+      <div className="mx-auto max-w-sm">
+        <h1 className="mb-2 font-display text-2xl font-bold text-ink">Subscriptions open soon.</h1>
+        <p className="mb-6 text-sm leading-relaxed text-muted">
+          We&apos;re not taking payments yet, so your plan, your coach and your progress are all free for now. When
+          subscriptions open, you&apos;ll have at least 7 more days free before you&apos;d need to subscribe.
+        </p>
+
+        <div className="mb-6 flex flex-col gap-2.5" aria-label="Prices when subscriptions open">
+          {(Object.keys(PLANS) as PlanInterval[]).map((id) => {
+            const plan = PLANS[id];
+            return (
+              <div
+                key={id}
+                className="flex items-center justify-between gap-4 rounded-2xl border border-line bg-surface px-4 py-4"
+              >
+                <div>
+                  <div className="text-sm font-semibold text-ink">{plan.label}</div>
+                  {plan.note && <div className="text-xs text-accent">{plan.note}</div>}
+                </div>
+                <div className="tabular text-right">
+                  <div className="font-display text-lg font-bold text-ink">{plan.price}</div>
+                  <div className="text-xs text-muted">{plan.per}</div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <button
+          onClick={() => router.push("/home")}
+          className="w-full rounded-2xl bg-ink py-4 text-[15px] font-semibold text-background"
+        >
+          Back to my plan
         </button>
       </div>
     );

@@ -12,6 +12,7 @@ import { EQUIPMENT_LABELS, EXERCISES_BY_ID, type Equipment } from "@/lib/exercis
 import type { OnboardingData } from "@/lib/types";
 import { PLANS } from "@/lib/billing/plans";
 import {
+  PAYMENTS_OPEN,
   inTrial,
   isSubscribed,
   trialDaysLeft,
@@ -76,7 +77,7 @@ function formatDate(iso: string): string {
 function billingSummary(billing: Billing | null): {
   title: string;
   detail: string;
-  action: "subscribe" | "manage";
+  action: "subscribe" | "manage" | "none";
   urgent?: boolean;
 } {
   if (!billing) {
@@ -103,6 +104,15 @@ function billingSummary(billing: Billing | null): {
       };
     }
     return { title: plan, detail: "Active.", action: "manage" };
+  }
+
+  if (!PAYMENTS_OPEN) {
+    return {
+      title: "Free early access",
+      detail:
+        "Subscriptions aren't open yet, so everything is free for now. When they open, you'll have at least 7 more days free before you'd need to subscribe.",
+      action: "none",
+    };
   }
 
   if (inTrial(billing)) {
@@ -356,13 +366,13 @@ export default function Settings() {
 
       <div className="mb-2 text-xs font-semibold tracking-widest text-muted">SUBSCRIPTION</div>
       <div className="mb-6 rounded-2xl border border-line bg-surface px-4 py-3.5">
-        <div className="mb-3">
+        <div className={summary.action === "none" ? "" : "mb-3"}>
           <div className="text-sm font-semibold text-ink">{summary.title}</div>
           <div className={`text-xs leading-relaxed ${summary.urgent ? "text-warning" : "text-muted"}`}>
             {summary.detail}
           </div>
         </div>
-        {summary.action === "subscribe" ? (
+        {summary.action === "none" ? null : summary.action === "subscribe" ? (
           <button
             onClick={() => router.push("/upgrade")}
             className="w-full rounded-xl bg-ink py-2.5 text-sm font-semibold text-background"

@@ -35,10 +35,18 @@ const cases: [string, Billing, boolean][] = [
 let failures = 0;
 console.log("\nAccess\n");
 for (const [label, b, expected] of cases) {
-  const actual = hasAccess(b, NOW);
+  const actual = hasAccess(b, NOW, true);
   const ok = actual === expected;
   if (!ok) failures += 1;
   console.log(`  ${ok ? "ok  " : "FAIL"}  ${label.padEnd(46)} ${actual ? "open" : "locked"}`);
+}
+
+// Before payments open there's no way to subscribe, so nobody is locked out.
+console.log("\nAccess while payments are paused\n");
+for (const [label, b] of cases) {
+  const actual = hasAccess(b, NOW, false);
+  if (!actual) failures += 1;
+  console.log(`  ${actual ? "ok  " : "FAIL"}  ${label.padEnd(46)} ${actual ? "open" : "locked"}`);
 }
 
 const dayCases: [string, number, number][] = [

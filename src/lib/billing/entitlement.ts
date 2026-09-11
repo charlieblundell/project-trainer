@@ -64,8 +64,17 @@ export function inTrial(billing: Billing, now = new Date()): boolean {
   return new Date(billing.trialEndsAt).getTime() > now.getTime();
 }
 
-export function hasAccess(billing: Billing, now = new Date()): boolean {
-  return isSubscribed(billing) || inTrial(billing, now);
+/**
+ * Whether people can subscribe yet. Real payments need an ABN and a live
+ * Stripe account, so until NEXT_PUBLIC_PAYMENTS_OPEN is "true" (and the app is
+ * redeployed) checkout is refused and nobody is locked out when their trial
+ * ends. When payments open, ended trials get at least 7 more days: the app
+ * promises that.
+ */
+export const PAYMENTS_OPEN = process.env.NEXT_PUBLIC_PAYMENTS_OPEN === "true";
+
+export function hasAccess(billing: Billing, now = new Date(), paymentsOpen = PAYMENTS_OPEN): boolean {
+  return !paymentsOpen || isSubscribed(billing) || inTrial(billing, now);
 }
 
 /** Rounded up, so the last afternoon of a trial still reads as "1 day left". */
