@@ -33,6 +33,8 @@ export const metadata: Metadata = {
     title: SITE_NAME,
     description: SITE_DESCRIPTION,
   },
+  // Proves ownership to Google Search Console. Public by design; not a secret.
+  verification: { google: "RpWpX8UK-b9ZaZ-oPsiFkhV_fRSYTYBBxl9Efwq7FoU" },
   // Opens full screen when added to an iPhone home screen.
   appleWebApp: { capable: true, title: "Trainer", statusBarStyle: "default" },
 };
