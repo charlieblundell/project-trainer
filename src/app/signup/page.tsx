@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Mail } from "lucide-react";
 import { TypeMark } from "@/components/TypeMark";
+import { RedirectIfSignedIn } from "@/components/RedirectIfSignedIn";
 import { marketingFontClasses } from "@/lib/fonts/marketing";
 import { supabase } from "@/lib/supabase";
 
@@ -62,6 +63,7 @@ export default function SignUp() {
   return (
     <div className={`${marketingFontClasses} font-marketing-body min-h-screen bg-background`}>
       <div className="mx-auto flex min-h-screen max-w-sm flex-col px-6 py-8">
+        <RedirectIfSignedIn to="/home" />
         <TypeMark />
 
         <div className="flex flex-1 flex-col justify-center py-12">

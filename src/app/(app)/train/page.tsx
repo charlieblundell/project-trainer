@@ -98,27 +98,34 @@ function ExercisePanel({
   const [showInfo, setShowInfo] = useState(false);
   const [showSwap, setShowSwap] = useState(false);
 
-  const logs = session.loggedSets[planned.exerciseId] ?? [];
-  const awaitingRpe =
-    logs.length >= planned.sets && session.rpeValues[planned.exerciseId] === undefined;
+  // Sets and effort are recorded against the exercise actually performed. If
+  // it was swapped, the planned exercise gets no sets today, so its targets
+  // hold rather than moving off a different movement's numbers.
+  const logs = session.loggedSets[activeId] ?? [];
+  const awaitingRpe = logs.length >= planned.sets && session.rpeValues[activeId] === undefined;
+  const [saving, setSaving] = useState(false);
 
   const alternatives = substitutesFor(activeId, onboarding.equipment as Equipment[]).slice(0, 4);
 
+  const weightValue = parseFloat(input.w);
+  const repsValue = parseInt(input.r, 10);
+  // An empty weight box used to log 0 kg, which then became the target.
+  const canLog = repsValue > 0 && (!tracksWeight || weightValue > 0);
+
   function handleLogSet() {
-    const log: SetLog = {
-      w: parseFloat(input.w) || 0,
-      r: parseInt(input.r, 10) || 0,
-    };
-    logSet(planned.exerciseId, log);
+    if (!canLog) return;
+    const log: SetLog = { w: tracksWeight ? weightValue : 0, r: repsValue };
+    logSet(activeId, log);
   }
 
   async function handleSubmitRpe(value: number) {
-    submitRpe(planned.exerciseId, value);
+    submitRpe(activeId, value);
     if (session.exerciseIdx + 1 < exerciseCount) {
       nextExercise();
       return;
     }
     // Wait for the save so a fast navigation can't cut the request short.
+    setSaving(true);
     await completeWorkout();
     router.push("/train/complete");
   }
@@ -198,7 +205,9 @@ function ExercisePanel({
         })}
       </div>
 
-      {!awaitingRpe ? (
+      {saving ? (
+        <p className="py-6 text-center text-sm text-muted">Saving your workout…</p>
+      ) : !awaitingRpe ? (
         logs.length < planned.sets && (
           <>
             <div className="mb-3.5 flex gap-2.5">
@@ -225,10 +234,14 @@ function ExercisePanel({
                 />
               </div>
             </div>
+            {tracksWeight && !(weightValue > 0) && (
+              <p className="mb-2.5 text-xs text-muted">Enter the weight you used to log this set.</p>
+            )}
             <motion.button
-              whileTap={{ scale: 0.98 }}
+              whileTap={canLog ? { scale: 0.98 } : undefined}
               onClick={handleLogSet}
-              className="w-full rounded-2xl bg-ink py-4 text-[15px] font-semibold text-background"
+              disabled={!canLog}
+              className="w-full rounded-2xl bg-ink py-4 text-[15px] font-semibold text-background disabled:bg-line disabled:text-muted"
             >
               {isTimed ? "Log it" : "Log set"}
             </motion.button>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { TypeMark } from "@/components/TypeMark";
+import { RedirectIfSignedIn } from "@/components/RedirectIfSignedIn";
 import { marketingFontClasses } from "@/lib/fonts/marketing";
 import { EQUIPMENT_BY_ENVIRONMENT, EXERCISES, availableExercises } from "@/lib/exercises";
 import { FINDINGS, FINDINGS_BY_ID, sourceUrl, type Finding } from "@/lib/evidence";
@@ -148,6 +149,7 @@ function TrainingSheet() {
 export default function Landing() {
   return (
     <div className={`${marketingFontClasses} font-marketing-body bg-background text-ink`}>
+      <RedirectIfSignedIn to="/home" />
       <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
         <TypeMark />
         <nav className="flex items-center gap-6 text-[15px]">
