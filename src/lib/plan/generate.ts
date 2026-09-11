@@ -279,6 +279,12 @@ type SelectionContext = {
   conditioningStyle?: "steady" | "interval";
   usedThisWeek: Set<string>;
   usedThisSession: Set<string>;
+  /**
+   * Movements from the plan being rebuilt. Preferred wherever they still fit,
+   * and allowed above the experience ceiling, since progression may have moved
+   * someone up to a harder variation they've earned.
+   */
+  keep: Set<string>;
 };
 
 const STEADY_IDS = new Set([
@@ -299,6 +305,7 @@ function score(ex: ExerciseDef, slotIndex: number, ctx: SelectionContext): numbe
   if (ctx.conditioningStyle === "steady" && STEADY_IDS.has(ex.id)) s += 40;
   if (ctx.conditioningStyle === "interval" && !STEADY_IDS.has(ex.id)) s += 40;
   if (ctx.liked.has(ex.id)) s += 50;
+  if (ctx.keep.has(ex.id)) s += 45;
   if (!ctx.usedThisWeek.has(ex.id)) s += 12;
   if (ex.compound && slotIndex < 2) s += 30;
   if (ctx.preferLowImpact && ex.lowImpact) s += 25;
@@ -327,7 +334,7 @@ function selectForSlot(
 
   const candidates = ctx.pool.filter((ex) => {
     if (ex.pattern !== pattern) return false;
-    if (ex.level > ctx.level) return false;
+    if (ex.level > ctx.level && !ctx.keep.has(ex.id)) return false;
     if (ctx.usedThisSession.has(ex.id)) return false;
     if (!regionMatters || region === "full") return true;
     const exRegion = regionOf(ex);
@@ -417,7 +424,8 @@ export function profileFromOnboarding(o: OnboardingData): GeneratorProfile {
   };
 }
 
-export function generatePlan(profile: GeneratorProfile): Plan {
+export function generatePlan(profile: GeneratorProfile, options: { keep?: Iterable<string> } = {}): Plan {
+  const keep = new Set(options.keep ?? []);
   const goal = profile.goal ?? "Build muscle";
   const level = experienceToLevel(profile.experience);
   const days = profile.days ?? 3;
@@ -452,6 +460,7 @@ export function generatePlan(profile: GeneratorProfile): Plan {
       conditioningStyle: template.conditioningStyle,
       usedThisWeek,
       usedThisSession,
+      keep,
     };
 
     const chosen: PlannedExercise[] = [];
@@ -586,6 +595,7 @@ export function refreshAccessories(plan: Plan, profile: GeneratorProfile): Refre
         preferLowImpact,
         avoiding,
         usedThisWeek,
+        keep: new Set<string>(),
       };
 
       // Two passes: first ruling out what's been retired recently, then, if
@@ -624,6 +634,78 @@ export function refreshAccessories(plan: Plan, profile: GeneratorProfile): Refre
     },
     swapped,
   };
+}
+
+/* ------------------------------------------------------------------ *
+ * Rebuilding after a settings change
+ * ------------------------------------------------------------------ */
+
+/** Epley estimate, so a weight moved to a different rep range stays about as hard. */
+function convertWeight(kg: number, fromReps: number, toReps: number): number {
+  const oneRepMax = kg * (1 + fromReps / 30);
+  return Math.round((oneRepMax / (1 + toReps / 30)) * 2) / 2;
+}
+
+function repMidpoint(ex: PlannedExercise): number {
+  return ((ex.repMin ?? 8) + (ex.repMax ?? 12)) / 2;
+}
+
+/** How far someone has got with a movement, to pick between two copies of it. */
+function progressValue(ex: PlannedExercise): number {
+  if (ex.unit === "weight_reps") return ex.targetWeightKg ?? -1;
+  if (ex.unit === "reps") return ex.repMax ?? 0;
+  return ex.seconds ?? 0;
+}
+
+/**
+ * Builds a fresh plan from changed settings without throwing away progress.
+ * Movements already in the plan are preferred wherever they still fit, and
+ * those that stay keep their calibrated weight, reps or duration. A weight
+ * moved to a new rep range is converted so it stays about as hard.
+ */
+export function rebuildPlan(current: Plan, profile: GeneratorProfile): Plan {
+  const previous = new Map<string, PlannedExercise>();
+  for (const session of current.sessions) {
+    for (const ex of session.exercises) {
+      const seen = previous.get(ex.exerciseId);
+      if (!seen || progressValue(ex) > progressValue(seen)) previous.set(ex.exerciseId, ex);
+    }
+  }
+
+  const fresh = generatePlan(profile, { keep: previous.keys() });
+
+  const sessions = fresh.sessions.map((session) => {
+    const exercises = session.exercises.map((planned): PlannedExercise => {
+      const before = previous.get(planned.exerciseId);
+      if (!before) return planned;
+
+      if (planned.unit === "weight_reps") {
+        if (before.targetWeightKg == null) return planned;
+        const sameRange = before.repMin === planned.repMin && before.repMax === planned.repMax;
+        return {
+          ...planned,
+          targetWeightKg: sameRange
+            ? before.targetWeightKg
+            : convertWeight(before.targetWeightKg, repMidpoint(before), repMidpoint(planned)),
+        };
+      }
+
+      // Bodyweight reps and cardio durations reflect what they can do, whatever the goal.
+      if (planned.unit === "reps") {
+        return {
+          ...planned,
+          repMin: before.repMin ?? planned.repMin,
+          repMax: before.repMax ?? planned.repMax,
+          streak: before.streak,
+        };
+      }
+      return { ...planned, seconds: before.seconds ?? planned.seconds };
+    });
+
+    return { ...session, exercises, estMinutes: estimateMinutes(exercises) };
+  });
+
+  return { ...fresh, sessions, refreshes: current.refreshes, retired: current.retired };
 }
 
 /** Convenience for screens that need the exercise definition alongside the plan. */

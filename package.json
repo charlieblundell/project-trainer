@@ -16,7 +16,8 @@
     "check:billing": "tsx scripts/check-billing.ts",
     "check:webhook": "tsx scripts/check-webhook.ts",
     "check:weekly": "tsx scripts/check-weekly.ts",
-    "check:readiness": "tsx scripts/check-readiness.ts"
+    "check:readiness": "tsx scripts/check-readiness.ts",
+    "check:rebuild": "tsx scripts/check-rebuild.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.124.0",

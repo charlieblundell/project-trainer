@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useAppStore } from "@/lib/store";
@@ -39,34 +40,61 @@ function exerciseNames(ids: string[]): string {
   return ids.map((id) => EXERCISES_BY_ID[id]?.name ?? id).join(", ");
 }
 
-function profileRows(o: OnboardingData): [string, string][] {
-  const rows: [string, string][] = [
-    ["Goal", o.goal ?? "Not set"],
-    ["Experience", o.experience ?? "Not set"],
-    ["Sessions", o.days ? `${o.days}/week` : "Not set"],
-    ["Session length", o.length ? `~${o.length} min` : "Not set"],
-    ["Where you train", o.environment ?? "Not set"],
+type ProfileGroup = { title: string; href: string; rows: [string, string][] };
+
+/** Their setup answers, grouped the way they can be edited. */
+function profileGroups(o: OnboardingData): ProfileGroup[] {
+  const dayOrder = Object.keys(DAY_LABELS);
+  const days = [...o.trainingDays].sort((a, b) => dayOrder.indexOf(a) - dayOrder.indexOf(b));
+
+  const groups: ProfileGroup[] = [
+    {
+      title: "Goal and experience",
+      href: "/settings/training",
+      rows: [
+        ["Goal", o.goal ?? "Not set"],
+        ["Experience", o.experience ?? "Not set"],
+      ],
+    },
+    {
+      title: "Training schedule",
+      href: "/settings/schedule",
+      rows: [
+        ["Sessions", o.days ? `${o.days} a week` : "Not set"],
+        ["Days", days.length ? days.map((d) => DAY_LABELS[d] ?? d).join(", ") : "Not set"],
+        ["Session length", o.length ? `~${o.length} min` : "Not set"],
+      ],
+    },
+    {
+      title: "Equipment and exercises",
+      href: "/settings/equipment",
+      rows: [
+        ["Where you train", o.environment ?? "Not set"],
+        [
+          "Equipment",
+          o.equipment.length ? o.equipment.map((e) => EQUIPMENT_LABELS[e as Equipment] ?? e).join(", ") : "Not set",
+        ],
+        ["Favourites", o.likedExercises.length ? exerciseNames(o.likedExercises) : "None"],
+        ["Avoiding", o.dislikedExercises.length ? exerciseNames(o.dislikedExercises) : "None"],
+      ],
+    },
   ];
 
-  if (o.trainingDays.length) {
-    rows.push(["Days", o.trainingDays.map((d) => DAY_LABELS[d] ?? d).join(", ")]);
+  if (o.healthConsent === true) {
+    groups.push({
+      title: "Body and injury details",
+      href: "/settings/body",
+      rows: [
+        ["Bodyweight", o.bodyweightKg ? `${o.bodyweightKg} kg` : "Not given"],
+        ["Age", o.age ? `${o.age}` : "Not given"],
+        ["Height", o.heightCm ? `${o.heightCm} cm` : "Not given"],
+        ["Sex", o.sex ? (SEX_LABELS[o.sex] ?? o.sex) : "Not given"],
+        ["Injuries", o.considerations?.trim() || "None given"],
+      ],
+    });
   }
-  if (o.equipment.length) {
-    rows.push(["Equipment", o.equipment.map((e) => EQUIPMENT_LABELS[e as Equipment] ?? e).join(", ")]);
-  }
-  if (o.likedExercises.length) {
-    rows.push(["Favourites", exerciseNames(o.likedExercises)]);
-  }
-  if (o.dislikedExercises.length) {
-    rows.push(["Avoiding", exerciseNames(o.dislikedExercises)]);
-  }
-  if (o.bodyweightKg) rows.push(["Bodyweight", `${o.bodyweightKg} kg`]);
-  if (o.age) rows.push(["Age", `${o.age}`]);
-  if (o.heightCm) rows.push(["Height", `${o.heightCm} cm`]);
-  if (o.sex) rows.push(["Sex", SEX_LABELS[o.sex] ?? o.sex]);
-  if (o.considerations) rows.push(["Notes", o.considerations]);
 
-  return rows;
+  return groups;
 }
 
 function formatDate(iso: string): string {
@@ -137,6 +165,7 @@ function billingSummary(billing: Billing | null): {
  * as the Privacy Policy promises. Withdrawing deletes the details themselves.
  */
 function HealthDetails() {
+  const router = useRouter();
   const user = useAuthStore((s) => s.user);
   const shared = useAppStore((s) => s.onboarding.healthConsent === true);
   const plan = useAppStore((s) => s.plan);
@@ -171,6 +200,15 @@ function HealthDetails() {
             ? "Your bodyweight, height, age, sex and injury notes are used to tailor your plan."
             : "Your plan doesn't use your bodyweight, height, age, sex or injury notes."}
         </div>
+
+        {!shared && (
+          <button
+            onClick={() => router.push("/settings/body")}
+            className="mt-3 w-full rounded-xl border border-line py-2.5 text-sm font-semibold text-ink"
+          >
+            Share health details
+          </button>
+        )}
 
         {shared && !confirming && (
           <button
@@ -392,15 +430,26 @@ export default function Settings() {
       </div>
 
       <div className="mb-2 text-xs font-semibold tracking-widest text-muted">YOUR PROFILE</div>
-      <div className="mb-6 overflow-hidden rounded-2xl border border-line bg-surface">
-        {profileRows(onboarding).map(([label, value], i) => (
-          <div
-            key={label}
-            className={`flex justify-between gap-6 px-4 py-3.5 text-sm ${i !== 0 ? "border-t border-line" : ""}`}
+      <div className="mb-6 flex flex-col gap-3">
+        {profileGroups(onboarding).map((group) => (
+          <section
+            key={group.href}
+            aria-label={group.title}
+            className="rounded-2xl border border-line bg-surface pb-2"
           >
-            <span className="flex-shrink-0 text-muted">{label}</span>
-            <span className="text-right font-semibold text-ink">{value}</span>
-          </div>
+            <div className="flex items-center justify-between gap-4 px-4 pb-1 pt-3.5">
+              <h2 className="text-sm font-semibold text-ink">{group.title}</h2>
+              <Link href={group.href} className="text-sm font-semibold text-accent">
+                Edit
+              </Link>
+            </div>
+            {group.rows.map(([label, value]) => (
+              <div key={label} className="flex justify-between gap-6 px-4 py-2 text-sm">
+                <span className="flex-shrink-0 text-muted">{label}</span>
+                <span className="text-right text-ink">{value}</span>
+              </div>
+            ))}
+          </section>
         ))}
       </div>
 
