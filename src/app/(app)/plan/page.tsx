@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { X, Info, RefreshCw, Shuffle } from "lucide-react";
+import { X, Info, RefreshCw, Shuffle, BookOpen } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import {
   WEEKDAY_LABELS,
@@ -14,6 +14,18 @@ import {
   weekOverview,
 } from "@/lib/plan/helpers";
 import type { PlannedSession } from "@/lib/plan/types";
+
+/** The findings that actually decide the numbers on a session card. */
+const PRESCRIPTION_EVIDENCE = [
+  "goal-changes-prescription",
+  "volume-dose-response",
+  "multiple-sets-beat-one-for-strength",
+  "load-for-strength",
+  "load-range-hypertrophy",
+  "rest-between-sets",
+  "failure-not-required",
+  "effort-gauged-by-reps-left",
+];
 
 export default function Plan() {
   const router = useRouter();
@@ -201,6 +213,14 @@ export default function Plan() {
               >
                 Start this workout
               </motion.button>
+
+              <button
+                onClick={() => router.push(`/evidence?ids=${PRESCRIPTION_EVIDENCE.join(",")}`)}
+                className="mt-3 flex w-full items-center justify-center gap-2 py-2 text-sm font-semibold text-muted"
+              >
+                <BookOpen size={14} />
+                Why these sets and reps?
+              </button>
             </motion.div>
           </motion.div>
         )}

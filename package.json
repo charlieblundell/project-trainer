@@ -11,7 +11,8 @@
     "preview:plans": "tsx scripts/preview-plans.ts",
     "preview:progression": "tsx scripts/preview-progression.ts",
     "preview:refresh": "tsx scripts/preview-refresh.ts",
-    "preview:progress": "tsx scripts/preview-progress.ts"
+    "preview:progress": "tsx scripts/preview-progress.ts",
+    "check:evidence": "tsx scripts/check-evidence.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.124.0",

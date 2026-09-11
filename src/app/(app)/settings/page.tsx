@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import { useAuthStore } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
@@ -99,6 +99,20 @@ export default function Settings() {
           Upgrade
         </button>
       </div>
+
+      <div className="mb-2 text-xs font-semibold tracking-widest text-muted">REFERENCE</div>
+      <button
+        onClick={() => router.push("/evidence")}
+        className="mb-6 flex w-full items-center justify-between gap-4 rounded-2xl border border-line bg-surface px-4 py-3.5 text-left"
+      >
+        <div>
+          <div className="text-sm font-semibold text-ink">The evidence behind your plan</div>
+          <div className="text-xs text-muted">
+            The research your plan and coach are built on, with sources
+          </div>
+        </div>
+        <ChevronRight size={18} className="flex-shrink-0 text-muted" />
+      </button>
 
       <button
         onClick={logOut}

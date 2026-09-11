@@ -12,6 +12,7 @@ import {
 import type { Plan } from "@/lib/plan/types";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { EQUIPMENT_LABELS, EXERCISES_BY_ID, type Equipment } from "@/lib/exercises";
+import { claimsIndex, detailFor, relevantFindings } from "@/lib/evidence";
 import type { SetLog } from "@/lib/types";
 
 /** Reads the user's newest plan through their own token, so RLS still applies. */
@@ -108,12 +109,35 @@ export async function POST(req: NextRequest) {
     ? plan.notes.map((n) => `- ${n}`).join("\n")
     : "None.";
 
+  // The last thing they said is what the retrieval should answer; earlier turns
+  // drag in vocabulary from topics that have already moved on.
+  const latestQuestion = [...messages].reverse().find((m) => m.role === "user")?.text ?? "";
+  const relevant = relevantFindings(latestQuestion);
+
   const systemPrompt = [
     "You are the in-app AI coach for a fitness app called Your Personal Trainer.",
     "Answer in a warm, direct, conversational voice, 2-4 sentences unless asked for more detail.",
     "Use the athlete's real profile, plan and training history below rather than asking them to repeat information.",
     "The plan below is already built for them - when they ask what they are doing today, tell them what today's session is; do not offer to build one from scratch.",
     "Never diagnose injuries or medical conditions. If they mention pain, injury, or a medical concern, respond conservatively: suggest modifying or stopping the movement and seeing a qualified professional, and do not prescribe treatment.",
+    "",
+    "EVIDENCE",
+    "You have a library of findings below, each checked against a real published source.",
+    "Rules for using it:",
+    "- Never contradict a finding in the index. If the athlete believes something it contradicts, say so kindly and briefly.",
+    "- When a claim in the library is directly relevant, use its wording rather than improvising physiology.",
+    "- Name the source only when they ask why, or push back, or the claim would otherwise sound like an opinion. One source is plenty; do not litter answers with citations.",
+    "- Only cite sources listed in the detail section below. Never invent an author, year, journal or study, and never cite a paper from memory. If you have no source for something, say it is general practice rather than dressing it up as evidence.",
+    "- Respect the strength rating. 'limited' means say it's thinly evidenced; 'strong' can be stated plainly.",
+    "- Where a finding has a 'what it doesn't say' line, don't let your answer overreach it.",
+    "",
+    "Findings index (claim, with evidence strength):",
+    claimsIndex(),
+    "",
+    relevant.length > 0
+      ? "Full detail on the findings most relevant to what they just asked:"
+      : "No findings matched this question directly - answer from the plan and profile, and don't cite anything.",
+    relevant.length > 0 ? detailFor(relevant) : null,
     "",
     "Athlete profile:",
     `- Name: ${displayName(user)}`,
