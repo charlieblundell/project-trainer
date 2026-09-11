@@ -16,14 +16,18 @@ import { useAuthStore } from "@/lib/auth";
 import { loadHistory } from "@/lib/progress/storage";
 import type { WorkoutRecord } from "@/lib/progress/types";
 import { adjustForReadiness, isLowReadiness } from "@/lib/plan/readiness";
+import { warmUpFor } from "@/lib/plan/warmup";
 import { CheckIn } from "@/components/CheckIn";
+import { WarmUp } from "@/components/WarmUp";
 
 export default function Train() {
   const router = useRouter();
   const plan = useAppStore((s) => s.plan);
   const session = useAppStore((s) => s.session);
   const healthConsent = useAppStore((s) => s.onboarding.healthConsent === true);
+  const equipment = useAppStore((s) => s.onboarding.equipment) as Equipment[];
   const setReadiness = useAppStore((s) => s.setReadiness);
+  const markWarmedUp = useAppStore((s) => s.markWarmedUp);
   const user = useAuthStore((s) => s.user);
   const [history, setHistory] = useState<WorkoutRecord[] | null>(null);
 
@@ -65,16 +69,17 @@ export default function Train() {
   }, []);
 
   const planSession = sessionById(plan, session.workoutId);
+  const warmUp = useMemo(
+    () => (planSession ? warmUpFor(planSession, equipment) : null),
+    [planSession, equipment]
+  );
   const readiness = session.readiness && session.readiness !== "skipped" ? session.readiness : null;
   const basePlanned = planSession?.exercises[session.exerciseIdx];
   const planned = basePlanned ? adjustForReadiness(basePlanned, readiness) : undefined;
+  const atStart = session.exerciseIdx === 0 && Object.keys(session.loggedSets).length === 0;
   // Asked once, before the first set, and only of people who've agreed to
   // share health information.
-  const needsCheckIn =
-    healthConsent &&
-    !session.readiness &&
-    session.exerciseIdx === 0 &&
-    Object.keys(session.loggedSets).length === 0;
+  const needsCheckIn = healthConsent && !session.readiness && atStart;
 
   if (!planSession) {
     return (
@@ -92,6 +97,11 @@ export default function Train() {
 
   if (needsCheckIn) {
     return <CheckIn sessionName={planSession.name} onDone={setReadiness} />;
+  }
+
+  // After the check-in, before the first set, and only if there's anything to show.
+  if (atStart && !session.warmedUp && warmUp && warmUp.moves.length > 0) {
+    return <WarmUp sessionName={planSession.name} warmUp={warmUp} onDone={markWarmedUp} />;
   }
 
   return (

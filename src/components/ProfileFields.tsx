@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import { clsx } from "@/lib/clsx";
 import { GOALS, EXPERIENCE_OPTIONS, DAY_OPTIONS, LENGTH_OPTIONS, ENVIRONMENTS } from "@/lib/data";
-import { EQUIPMENT_LABELS, type Equipment } from "@/lib/exercises";
+import { EQUIPMENT_BY_ENVIRONMENT, EQUIPMENT_LABELS, type Equipment } from "@/lib/exercises";
 import type { OnboardingData, Sex, Weekday } from "@/lib/types";
 
 /*
@@ -62,6 +62,19 @@ const SEX_OPTIONS: { id: Sex; label: string }[] = [
   { id: "male", label: "Male" },
   { id: "prefer_not_to_say", label: "Prefer not to say" },
 ];
+
+/** A full gym has everything, so there's nothing to ask about. */
+export const ASSUMED_COMPLETE = "Full gym";
+
+export function isFullyEquipped(environment: string | null): boolean {
+  return environment === ASSUMED_COMPLETE;
+}
+
+/** What someone starts with at a location: everything for a full gym, nothing anywhere else. */
+export function equipmentFor(environment: string): Equipment[] {
+  if (!isFullyEquipped(environment)) return [];
+  return EQUIPMENT_BY_ENVIRONMENT[environment] ?? [];
+}
 
 export function optionsFor(key: string): string[] {
   switch (key) {
@@ -106,8 +119,10 @@ export function patchFor(key: string, option: string, o: OnboardingData): Partia
   }
   if (key === "length") return { length: parseInt(option, 10) };
   if (key === "environment") {
-    // Equipment options are derived from location, so a new location clears them.
-    return option === o.environment ? {} : { environment: option, equipment: [] };
+    if (option === o.environment) return {};
+    // Equipment options are derived from location, so a new location clears them —
+    // except a full gym, which by definition has the lot.
+    return { environment: option, equipment: equipmentFor(option) };
   }
   return { [key]: option };
 }

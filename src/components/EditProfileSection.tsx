@@ -23,6 +23,7 @@ import {
   SexPicker,
   SingleSelect,
   WeekdayPicker,
+  isFullyEquipped,
   optionsFor,
   patchFor,
   toggleWeekday,
@@ -269,6 +270,11 @@ function Editor({ section, saved }: { section: ProfileSection; saved: Onboarding
               onSelect={(opt) => patch(patchFor("environment", opt, draft))}
             />
             <Label>EQUIPMENT</Label>
+            {isFullyEquipped(draft.environment) && (
+              <p className="mb-3 text-sm leading-relaxed text-muted">
+                A full gym is assumed to have everything. Untick anything yours doesn&apos;t have.
+              </p>
+            )}
             <EquipmentPicker
               options={EQUIPMENT_BY_ENVIRONMENT[draft.environment ?? "Mixed"] ?? EQUIPMENT_BY_ENVIRONMENT.Mixed}
               selected={draft.equipment}

@@ -25,10 +25,20 @@ type TrainingSession = {
    * null/absent before they've been asked (older saved sessions lack it).
    */
   readiness?: Readiness | "skipped" | null;
+  /** Whether the warm-up screen has been dealt with, done or skipped. */
+  warmedUp?: boolean;
 };
 
 function emptySession(workoutId: string): TrainingSession {
-  return { workoutId, exerciseIdx: 0, loggedSets: {}, rpeValues: {}, overrides: {}, readiness: null };
+  return {
+    workoutId,
+    exerciseIdx: 0,
+    loggedSets: {},
+    rpeValues: {},
+    overrides: {},
+    readiness: null,
+    warmedUp: false,
+  };
 }
 
 type AppState = {
@@ -44,6 +54,7 @@ type AppState = {
   nextExercise: () => void;
   swapExercise: (exerciseId: string, alt: { exerciseId: string }) => void;
   setReadiness: (readiness: Readiness | "skipped") => void;
+  markWarmedUp: () => void;
   lastCompletedSummary: { workoutId: string; loggedSets: Record<string, SetLog[]> } | null;
   /** What progression did to the plan after the last session. */
   lastChanges: Change[];
@@ -113,6 +124,7 @@ export const useAppStore = create<AppState>()(
           session: { ...s.session, overrides: { ...s.session.overrides, [exerciseId]: alt } },
         })),
       setReadiness: (readiness) => set((s) => ({ session: { ...s.session, readiness } })),
+      markWarmedUp: () => set((s) => ({ session: { ...s.session, warmedUp: true } })),
       lastCompletedSummary: null,
       lastChanges: [],
       completeWorkout: async () => {

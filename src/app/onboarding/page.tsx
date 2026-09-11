@@ -21,6 +21,7 @@ import {
   SexPicker,
   SingleSelect,
   WeekdayPicker,
+  isFullyEquipped,
   optionsFor,
   patchFor,
   toggleWeekday,
@@ -102,10 +103,14 @@ export default function Onboarding() {
   const [query, setQuery] = useState("");
 
   // Declining consent removes the health screens. The consent screen comes
-  // before them, so its position is the same either way.
-  const steps =
-    onboarding.healthConsent === false ? STEPS.filter((s) => !HEALTH_STEPS.has(s.key)) : STEPS;
-  const current = steps[step];
+  // before them, so its position is the same either way. A full gym has
+  // everything, so there's nothing to ask about equipment.
+  const steps = STEPS.filter((s) => {
+    if (onboarding.healthConsent === false && HEALTH_STEPS.has(s.key)) return false;
+    if (s.key === "equipment" && isFullyEquipped(onboarding.environment)) return false;
+    return true;
+  });
+  const current = steps[Math.min(step, steps.length - 1)];
 
   const equipmentOptions: Equipment[] =
     EQUIPMENT_BY_ENVIRONMENT[onboarding.environment ?? "Mixed"] ??
