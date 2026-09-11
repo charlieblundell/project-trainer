@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, Check, Info, MoreHorizontal, Lightbulb } from "lucide-react";
@@ -12,11 +12,53 @@ import { ExerciseSwapPanel } from "@/components/ExerciseSwapPanel";
 import { sessionById, targetLabel } from "@/lib/plan/helpers";
 import type { PlannedExercise } from "@/lib/plan/types";
 import type { SetLog } from "@/lib/types";
+import { useAuthStore } from "@/lib/auth";
+import { loadHistory } from "@/lib/progress/storage";
+import type { WorkoutRecord } from "@/lib/progress/types";
 
 export default function Train() {
   const router = useRouter();
   const plan = useAppStore((s) => s.plan);
   const session = useAppStore((s) => s.session);
+  const user = useAuthStore((s) => s.user);
+  const [history, setHistory] = useState<WorkoutRecord[] | null>(null);
+
+  useEffect(() => {
+    if (user) loadHistory(user.id).then(setHistory);
+  }, [user]);
+
+  /** The most recent logged sets for each exercise — history arrives oldest first. */
+  const lastByExercise = useMemo(() => {
+    const latest: Record<string, SetLog[]> = {};
+    for (const record of history ?? []) {
+      for (const [exerciseId, sets] of Object.entries(record.loggedSets)) {
+        if (sets.length > 0) latest[exerciseId] = sets;
+      }
+    }
+    return latest;
+  }, [history]);
+
+  // Phones lock between sets, which means unlocking with chalky hands to log
+  // anything. Keep the screen on while a workout is open, where supported.
+  useEffect(() => {
+    let lock: WakeLockSentinel | null = null;
+    const request = async () => {
+      try {
+        if ("wakeLock" in navigator) lock = await navigator.wakeLock.request("screen");
+      } catch {
+        // Denied or unsupported — the workout works the same without it.
+      }
+    };
+    const onVisible = () => {
+      if (document.visibilityState === "visible") request();
+    };
+    request();
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisible);
+      lock?.release().catch(() => {});
+    };
+  }, []);
 
   const planSession = sessionById(plan, session.workoutId);
   const planned = planSession?.exercises[session.exerciseIdx];
@@ -54,6 +96,7 @@ export default function Train() {
           key={`${session.workoutId}:${session.exerciseIdx}`}
           planned={planned}
           exerciseCount={planSession.exercises.length}
+          lastByExercise={lastByExercise}
         />
       ) : (
         <div className="py-16 text-center text-sm text-muted">
@@ -67,12 +110,28 @@ export default function Train() {
   );
 }
 
+/** "50 kg × 10, 10, 9", "12, 11, 10 reps" or "20 min" — however the exercise is measured. */
+function describeSets(sets: SetLog[], unit: PlannedExercise["unit"]): string {
+  if (unit === "time" || unit === "distance") return `${Math.max(...sets.map((s) => s.r))} min`;
+  if (unit === "reps") return `${sets.map((s) => s.r).join(", ")} reps`;
+  const sameWeight = sets.every((s) => s.w === sets[0].w);
+  return sameWeight
+    ? `${sets[0].w} kg × ${sets.map((s) => s.r).join(", ")}`
+    : sets.map((s) => `${s.w} kg × ${s.r}`).join(", ");
+}
+
+function formatRest(seconds: number): string {
+  return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
+}
+
 function ExercisePanel({
   planned,
   exerciseCount,
+  lastByExercise,
 }: {
   planned: PlannedExercise;
   exerciseCount: number;
+  lastByExercise: Record<string, SetLog[]>;
 }) {
   const router = useRouter();
   const session = useAppStore((s) => s.session);
@@ -104,6 +163,42 @@ function ExercisePanel({
   const logs = session.loggedSets[activeId] ?? [];
   const awaitingRpe = logs.length >= planned.sets && session.rpeValues[activeId] === undefined;
   const [saving, setSaving] = useState(false);
+  const lastSets = lastByExercise[activeId];
+
+  // The rest timer counts down to a timestamp rather than ticking a number,
+  // so it stays right when the phone locks or the browser throttles the tab.
+  const [restEndsAt, setRestEndsAt] = useState<number | null>(null);
+  const [now, setNow] = useState(0);
+  const buzzed = useRef(false);
+
+  useEffect(() => {
+    if (restEndsAt === null) return;
+    const id = setInterval(() => setNow(Date.now()), 250);
+    return () => clearInterval(id);
+  }, [restEndsAt]);
+
+  const restLeft = restEndsAt === null ? 0 : Math.max(0, Math.ceil((restEndsAt - now) / 1000));
+  const restDone = restEndsAt !== null && now > 0 && restLeft === 0;
+
+  useEffect(() => {
+    if (restDone && !buzzed.current) {
+      buzzed.current = true;
+      if ("vibrate" in navigator) navigator.vibrate([200, 100, 200]);
+    }
+  }, [restDone]);
+
+  function startRest() {
+    if (planned.restSeconds <= 0) return;
+    const t = Date.now();
+    buzzed.current = false;
+    setNow(t);
+    setRestEndsAt(t + planned.restSeconds * 1000);
+  }
+
+  function addRest(seconds: number) {
+    const t = Date.now();
+    setRestEndsAt((ends) => Math.max(ends ?? t, t) + seconds * 1000);
+  }
 
   const alternatives = substitutesFor(activeId, onboarding.equipment as Equipment[]).slice(0, 4);
 
@@ -116,6 +211,9 @@ function ExercisePanel({
     if (!canLog) return;
     const log: SetLog = { w: tracksWeight ? weightValue : 0, r: repsValue };
     logSet(activeId, log);
+    // No rest after the last set: the effort rating comes next.
+    if (logs.length + 1 < planned.sets) startRest();
+    else setRestEndsAt(null);
   }
 
   async function handleSubmitRpe(value: number) {
@@ -160,6 +258,11 @@ function ExercisePanel({
         {targetLabel(planned)}
       </div>
       {override && <div className="mb-4 text-xs font-semibold text-success">Swapped in for today</div>}
+      {lastSets && lastSets.length > 0 ? (
+        <div className="tabular mb-4 text-xs text-muted">Last time: {describeSets(lastSets, planned.unit)}</div>
+      ) : (
+        !override && <div className="mb-4" />
+      )}
 
       {needsCalibration && (
         <div className="mb-5 flex gap-2.5 rounded-2xl bg-accent-soft p-4">
@@ -204,6 +307,39 @@ function ExercisePanel({
           );
         })}
       </div>
+
+      {restEndsAt !== null && logs.length < planned.sets && !saving && (
+        <div
+          role="timer"
+          className="mb-4 flex items-center justify-between gap-3 rounded-2xl border border-line bg-surface px-4 py-3"
+        >
+          <div>
+            <div className="text-xs font-semibold tracking-widest text-muted">{restDone ? "REST DONE" : "REST"}</div>
+            <div className="tabular font-display text-2xl font-bold text-ink">
+              {restDone ? "Next set" : formatRest(restLeft)}
+            </div>
+          </div>
+          <span className="sr-only" aria-live="polite">
+            {restDone ? "Rest finished. Time for your next set." : ""}
+          </span>
+          <div className="flex gap-2">
+            {!restDone && (
+              <button
+                onClick={() => addRest(30)}
+                className="rounded-xl border border-line px-3 py-2 text-sm font-semibold text-ink"
+              >
+                +30s
+              </button>
+            )}
+            <button
+              onClick={() => setRestEndsAt(null)}
+              className="rounded-xl border border-line px-3 py-2 text-sm font-semibold text-ink"
+            >
+              {restDone ? "Dismiss" : "Skip"}
+            </button>
+          </div>
+        </div>
+      )}
 
       {saving ? (
         <p className="py-6 text-center text-sm text-muted">Saving your workout…</p>
