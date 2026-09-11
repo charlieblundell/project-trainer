@@ -15,7 +15,10 @@ const manrope = Manrope({
 
 export const metadata: Metadata = {
   title: "Your Personal Trainer",
-  description: "Your personal trainer, adapted to you.",
+  description: "A training plan that adapts to every set you log.",
+  applicationName: "Your Personal Trainer",
+  // Opens full screen when added to an iPhone home screen.
+  appleWebApp: { capable: true, title: "Trainer", statusBarStyle: "default" },
 };
 
 export const viewport: Viewport = {

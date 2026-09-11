@@ -7,6 +7,7 @@ import { useAppStore } from "@/lib/store";
 import { useAuthStore } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 import { CLEARED_HEALTH_FIELDS, withdrawHealthConsent } from "@/lib/health-consent";
+import { isIos, isRunningInstalled, useInstallStore } from "@/lib/install";
 import { EQUIPMENT_LABELS, EXERCISES_BY_ID, type Equipment } from "@/lib/exercises";
 import type { OnboardingData } from "@/lib/types";
 import { PLANS } from "@/lib/billing/plans";
@@ -119,6 +120,74 @@ function billingSummary(billing: Billing | null): {
     action: "subscribe",
     urgent: true,
   };
+}
+
+/**
+ * Getting the app onto the home screen. Browsers that support a real install
+ * prompt get a button; iPhones, which don't, get the two taps it takes.
+ * Settings only renders after sign-in has resolved in the browser, so reading
+ * window directly in the initial state can't mismatch server HTML.
+ */
+function InstallApp() {
+  const promptEvent = useInstallStore((s) => s.promptEvent);
+  const setPromptEvent = useInstallStore((s) => s.setPromptEvent);
+  const [installed, setInstalled] = useState(() => isRunningInstalled());
+  const [ios] = useState(() => isIos());
+
+  async function install() {
+    if (!promptEvent) return;
+    await promptEvent.prompt();
+    const choice = await promptEvent.userChoice;
+    // A prompt can only be used once, whatever they chose.
+    setPromptEvent(null);
+    if (choice.outcome === "accepted") setInstalled(true);
+  }
+
+  if (installed) {
+    return (
+      <>
+        <div className="mb-2 text-xs font-semibold tracking-widest text-muted">APP</div>
+        <div className="mb-6 rounded-2xl border border-line bg-surface px-4 py-3.5">
+          <div className="text-sm font-semibold text-ink">Installed</div>
+          <div className="text-xs leading-relaxed text-muted">You&apos;re using the app from your home screen.</div>
+        </div>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <div className="mb-2 text-xs font-semibold tracking-widest text-muted">APP</div>
+      <div className="mb-6 rounded-2xl border border-line bg-surface px-4 py-3.5">
+        <div className="text-sm font-semibold text-ink">Add it to your home screen</div>
+        {promptEvent ? (
+          <>
+            <div className="text-xs leading-relaxed text-muted">
+              Opens full screen like any other app, straight into your plan.
+            </div>
+            <button
+              onClick={install}
+              className="mt-3 w-full rounded-xl bg-ink py-2.5 text-sm font-semibold text-background"
+            >
+              Install the app
+            </button>
+          </>
+        ) : ios ? (
+          <div className="text-xs leading-relaxed text-muted">
+            In Safari, tap the <span className="font-semibold text-ink">Share</span> button, then{" "}
+            <span className="font-semibold text-ink">Add to Home Screen</span>. It opens full screen, straight into
+            your plan.
+          </div>
+        ) : (
+          <div className="text-xs leading-relaxed text-muted">
+            On your phone, open this site in Chrome or Safari and choose{" "}
+            <span className="font-semibold text-ink">Install app</span> or{" "}
+            <span className="font-semibold text-ink">Add to Home Screen</span> from the browser menu.
+          </div>
+        )}
+      </div>
+    </>
+  );
 }
 
 /**
@@ -392,6 +461,8 @@ export default function Settings() {
           </div>
         ))}
       </div>
+
+      <InstallApp />
 
       <HealthDetails />
 
