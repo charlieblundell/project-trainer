@@ -67,6 +67,10 @@
 
   --font-display: var(--font-display);
   --font-body: var(--font-body);
+
+  /* Only defined inside elements carrying marketingFontClasses. */
+  --font-marketing-display: var(--font-archivo), "Arial Narrow", system-ui, sans-serif;
+  --font-marketing-body: var(--font-source-sans), system-ui, sans-serif;
 }
 
 body {

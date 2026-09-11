@@ -1,14 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import { ChevronLeft, Mail } from "lucide-react";
-import { LogoMark } from "@/components/Wordmark";
+import { Mail } from "lucide-react";
+import { TypeMark } from "@/components/TypeMark";
+import { marketingFontClasses } from "@/lib/fonts/marketing";
 import { supabase } from "@/lib/supabase";
 
 function GoogleIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 18 18">
+    <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
       <path
         fill="#4285F4"
         d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62Z"
@@ -59,71 +59,86 @@ export default function SignUp() {
   }
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-sm flex-col justify-center px-6 py-10">
-      <Link href="/" className="mb-8 w-fit text-muted">
-        <ChevronLeft size={20} />
-      </Link>
+    <div className={`${marketingFontClasses} font-marketing-body min-h-screen bg-background`}>
+      <div className="mx-auto flex min-h-screen max-w-sm flex-col px-6 py-8">
+        <TypeMark />
 
-      <LogoMark size={36} />
-      <h1 className="mb-8 mt-4 font-display text-3xl font-bold text-ink">Start training smarter.</h1>
+        <div className="flex flex-1 flex-col justify-center py-12">
+          <h1 className="font-marketing-display text-[2.1rem] font-extrabold leading-[1.02] tracking-[-0.01em] text-ink [font-stretch:88%] [text-wrap:balance]">
+            Start your 14 days free.
+          </h1>
+          <p className="mb-8 mt-3 text-[15px] leading-relaxed text-muted">
+            No card needed. Answer a few questions and your first week is ready in a couple of
+            minutes.
+          </p>
 
-      {status === "sent" ? (
-        <div className="rounded-2xl border border-line bg-surface p-5 text-center">
-          <Mail size={24} className="mx-auto mb-3 text-accent" />
-          <div className="mb-1 text-sm font-semibold text-ink">Check your inbox</div>
-          <p className="text-sm leading-relaxed text-muted">
-            We sent a sign-in link to <span className="text-ink">{email}</span>. Open it on this
-            device to continue.
+          {status === "sent" ? (
+            <div className="rounded-md border border-line bg-surface p-5">
+              <Mail size={20} className="mb-3 text-accent" />
+              <div className="mb-1 text-sm font-semibold text-ink">Check your inbox</div>
+              <p className="text-sm leading-relaxed text-muted">
+                We sent a sign-in link to <span className="text-ink">{email}</span>. Open it on this
+                device to carry on.
+              </p>
+            </div>
+          ) : showEmailForm ? (
+            <div className="flex flex-col gap-2.5">
+              <label htmlFor="email" className="text-sm font-semibold text-ink">
+                Email address
+              </label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && sendMagicLink()}
+                placeholder="you@example.com"
+                autoFocus
+                className="w-full rounded-md border border-line bg-surface px-4 py-3.5 text-[15px] focus:border-ink focus:outline-none"
+              />
+              {status === "error" && <p className="text-sm text-warning">{error}</p>}
+              <button
+                onClick={sendMagicLink}
+                disabled={status === "sending" || !email.trim()}
+                className="w-full rounded-md bg-ink py-3.5 text-[15px] font-semibold text-background transition hover:opacity-90 disabled:opacity-50"
+              >
+                {status === "sending" ? "Sending…" : "Email me a sign-in link"}
+              </button>
+              <button
+                onClick={() => setShowEmailForm(false)}
+                className="py-2 text-sm text-muted hover:text-ink"
+              >
+                Use Google instead
+              </button>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2.5">
+              <button
+                onClick={signInWithGoogle}
+                className="flex w-full items-center justify-center gap-2.5 rounded-md border border-line bg-surface py-3.5 text-[15px] font-semibold text-ink transition hover:border-ink"
+              >
+                <GoogleIcon />
+                Continue with Google
+              </button>
+              <button
+                onClick={() => setShowEmailForm(true)}
+                className="w-full rounded-md bg-ink py-3.5 text-[15px] font-semibold text-background transition hover:opacity-90"
+              >
+                Continue with email
+              </button>
+            </div>
+          )}
+
+          <p className="mt-6 text-xs leading-relaxed text-muted">
+            Already have an account? Use the same option you signed up with and you&apos;ll go
+            straight back to your plan.
           </p>
         </div>
-      ) : showEmailForm ? (
-        <div className="flex flex-col gap-2.5">
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && sendMagicLink()}
-            placeholder="you@example.com"
-            autoFocus
-            className="w-full rounded-2xl border border-line px-4 py-3.5 text-sm"
-          />
-          {status === "error" && <p className="text-xs text-warning">{error}</p>}
-          <button
-            onClick={sendMagicLink}
-            disabled={status === "sending" || !email.trim()}
-            className="w-full rounded-2xl bg-ink py-3.5 text-sm font-semibold text-background transition active:scale-[0.98] disabled:opacity-50"
-          >
-            {status === "sending" ? "Sending..." : "Send sign-in link"}
-          </button>
-        </div>
-      ) : (
-        <div className="mb-5 flex flex-col gap-2.5">
-          <button
-            onClick={signInWithGoogle}
-            className="flex w-full items-center justify-center gap-2.5 rounded-2xl border border-line bg-surface py-3.5 text-sm font-semibold text-ink transition hover:border-ink/30 active:scale-[0.98]"
-          >
-            <GoogleIcon />
-            Continue with Google
-          </button>
-          <button
-            disabled
-            title="Not set up yet"
-            className="w-full cursor-not-allowed rounded-2xl border border-line bg-surface py-3.5 text-sm font-semibold text-muted opacity-50"
-          >
-            Continue with Apple
-          </button>
-          <button
-            onClick={() => setShowEmailForm(true)}
-            className="w-full rounded-2xl bg-ink py-3.5 text-sm font-semibold text-background transition active:scale-[0.98]"
-          >
-            Continue with Email
-          </button>
-        </div>
-      )}
 
-      <p className="mt-5 text-center text-xs leading-relaxed text-muted">
-        By continuing, you agree to our Terms and Privacy Policy.
-      </p>
+        <p className="text-xs leading-relaxed text-muted">
+          By continuing, you agree to our Terms and Privacy Policy.
+        </p>
+      </div>
     </div>
   );
 }
