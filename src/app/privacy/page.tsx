@@ -158,8 +158,7 @@ export default function Privacy() {
       <Section id="overseas" number={8} title="Information stored overseas">
         <p>
           Several of these providers are based in, or store data in, other countries. Your information is likely to be
-          disclosed to recipients in the United States, and {/* TODO before publishing: confirm the Supabase project region in Supabase → Project Settings → General, and name it here. */}
-          [DATABASE REGION — TO CONFIRM].
+          disclosed to recipients in the United States, and in Singapore, where our database is hosted.
         </p>
         <p>
           We choose established providers that are bound by their own privacy and security commitments, and we
