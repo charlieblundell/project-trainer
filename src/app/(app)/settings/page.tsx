@@ -201,6 +201,112 @@ function HealthDetails() {
   );
 }
 
+/** Deleting an account takes typing the word, so it can't happen by a mis-tap. */
+function DeleteAccount() {
+  const [open, setOpen] = useState(false);
+  const [typed, setTyped] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const confirmed = typed.trim() === "DELETE";
+
+  async function deleteAccount() {
+    if (!confirmed) return;
+    setBusy(true);
+    setError(null);
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    try {
+      const res = await fetch("/api/account/delete", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(session ? { Authorization: `Bearer ${session.access_token}` } : {}),
+        },
+        body: JSON.stringify({ confirm: "DELETE" }),
+      });
+      const data = (await res.json()) as { deleted?: boolean; error?: string };
+      if (res.ok && data.deleted) {
+        // A full page load, so nothing from the deleted account survives in memory.
+        window.location.replace("/account-deleted");
+        return;
+      }
+      setError(data.error ?? "Your account couldn't be deleted. Try again in a moment.");
+    } catch {
+      setError("Couldn't reach the server — check your connection and try again.");
+    }
+    setBusy(false);
+  }
+
+  return (
+    <>
+      <div className="mb-2 text-xs font-semibold tracking-widest text-muted">DELETE ACCOUNT</div>
+      <div className="mb-6 rounded-2xl border border-line bg-surface px-4 py-3.5">
+        <div className="text-sm font-semibold text-ink">Delete your account and data</div>
+        <div className="text-xs leading-relaxed text-muted">
+          Permanently removes your account and everything in it, and cancels any subscription.
+        </div>
+
+        {!open ? (
+          <button
+            onClick={() => setOpen(true)}
+            className="mt-3 w-full rounded-xl border border-line py-2.5 text-sm font-semibold text-warning"
+          >
+            Delete my account and data
+          </button>
+        ) : (
+          <div className="mt-3">
+            <p className="mb-2 text-sm font-semibold text-ink">This can&apos;t be undone.</p>
+            <ul className="mb-3 flex list-disc flex-col gap-1 pl-4 text-xs leading-relaxed text-ink marker:text-muted">
+              <li>Your profile, plan, logged workouts, progress and health details are deleted straight away.</li>
+              <li>
+                Any subscription is cancelled immediately, so you won&apos;t be charged again. You&apos;ll lose any
+                time left in your current billing period.
+              </li>
+              <li>Stripe keeps a record of past payments, because payment records have to be kept for tax.</li>
+            </ul>
+
+            <label htmlFor="confirm-delete" className="mb-1.5 block text-xs text-muted">
+              Type DELETE to confirm
+            </label>
+            <input
+              id="confirm-delete"
+              value={typed}
+              onChange={(e) => setTyped(e.target.value)}
+              autoComplete="off"
+              autoCapitalize="characters"
+              className="mb-3 w-full rounded-xl border border-line bg-background px-3 py-2.5 text-sm"
+            />
+
+            <div className="flex gap-2">
+              <button
+                onClick={deleteAccount}
+                disabled={!confirmed || busy}
+                className="flex-1 rounded-xl bg-warning py-2.5 text-sm font-semibold text-background disabled:opacity-40"
+              >
+                {busy ? "Deleting" : "Permanently delete"}
+              </button>
+              <button
+                onClick={() => {
+                  setOpen(false);
+                  setTyped("");
+                  setError(null);
+                }}
+                disabled={busy}
+                className="flex-1 rounded-xl border border-line py-2.5 text-sm font-semibold text-ink"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+
+        {error && <p className="mt-2 text-xs text-warning">{error}</p>}
+      </div>
+    </>
+  );
+}
+
 export default function Settings() {
   const router = useRouter();
   const onboarding = useAppStore((s) => s.onboarding);
@@ -302,6 +408,8 @@ export default function Settings() {
         </div>
         <ChevronRight size={18} className="flex-shrink-0 text-muted" />
       </button>
+
+      <DeleteAccount />
 
       <button
         onClick={logOut}

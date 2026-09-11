@@ -27,7 +27,8 @@ export default function Privacy() {
           </p>
           <p>We don&apos;t sell your information, show you ads, or use it for marketing without your consent.</p>
           <p>
-            You can ask to see, correct or delete your information at any time by emailing <EmailLink />.
+            You can delete your account and information at any time in Settings, or email <EmailLink /> to see or
+            correct it.
           </p>
         </>
       }
@@ -184,16 +185,18 @@ export default function Privacy() {
 
       <Section id="retention" number={10} title="How long we keep it">
         <p>
-          We keep your information for as long as you have an account. If you ask us to delete your account, we will
-          delete your personal information within 30 days, except for records we are required by law to keep, such as
-          payment records needed for tax purposes. Copies in routine backups are removed as those backups expire.
+          We keep your information for as long as you have an account. When you delete your account in Settings, your
+          personal information is deleted immediately; if you ask us by email instead, we&apos;ll do it within 30
+          days. Either way, we keep only records we are required by law to keep, such as payment records needed for
+          tax purposes, and copies in routine backups are removed as those backups expire.
         </p>
       </Section>
 
       <Section id="your-rights" number={11} title="Seeing, correcting and deleting your information">
         <p>
-          You can ask for a copy of the personal information we hold about you, ask us to correct it, or ask us to
-          delete your account, by emailing <EmailLink />. We&apos;ll need to confirm the request comes from you.
+          You can delete your account and all your information yourself at any time, in Settings. You can also ask for
+          a copy of the personal information we hold about you, or ask us to correct or delete it, by emailing{" "}
+          <EmailLink />. We&apos;ll need to confirm an email request comes from you.
         </p>
         <p>
           We&apos;ll respond within 30 days and there&apos;s no charge. If we ever can&apos;t do what you ask, we&apos;ll

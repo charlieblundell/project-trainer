@@ -162,8 +162,8 @@ export default function Terms() {
       <Section id="your-data" number={11} title="Your information">
         <p>
           The workouts, answers and other information you put into the app remain yours. You allow us to store and
-          use them only to provide the app to you, as described in our Privacy Policy. You can ask us to delete your
-          account and information at any time by emailing <EmailLink />.
+          use them only to provide the app to you, as described in our Privacy Policy. You can delete your account and
+          information yourself at any time in Settings, or ask us to by emailing <EmailLink />.
         </p>
       </Section>
 
@@ -189,7 +189,7 @@ export default function Terms() {
 
       <Section id="ending" number={14} title="Closing an account">
         <p>
-          You can stop using the app and cancel your subscription at any time, and ask us to delete your account.
+          You can stop using the app and cancel your subscription at any time, and delete your account in Settings. Deleting your account cancels your subscription immediately.
         </p>
         <p>
           We may suspend or close an account if its owner seriously or repeatedly breaches these terms, uses the app
