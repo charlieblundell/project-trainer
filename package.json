@@ -14,7 +14,8 @@
     "preview:progress": "tsx scripts/preview-progress.ts",
     "check:evidence": "tsx scripts/check-evidence.ts",
     "check:billing": "tsx scripts/check-billing.ts",
-    "check:webhook": "tsx scripts/check-webhook.ts"
+    "check:webhook": "tsx scripts/check-webhook.ts",
+    "check:weekly": "tsx scripts/check-weekly.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.124.0",

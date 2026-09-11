@@ -162,7 +162,7 @@ export function trainingTotals(
 }
 
 /** Monday of the week a date falls in, at midnight. */
-function weekStart(date: Date): Date {
+export function weekStart(date: Date): Date {
   const d = new Date(date);
   d.setHours(0, 0, 0, 0);
   d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
@@ -196,4 +196,96 @@ export function sessionsPerWeek(
     });
   }
   return bars;
+}
+
+/* ------------------------------------------------------------------ *
+ * Weekly consistency
+ * ------------------------------------------------------------------ */
+
+/** Monday-first day index (0 = Monday) for each day this week with a logged workout. */
+export function daysTrainedThisWeek(records: WorkoutRecord[], now = new Date()): Set<number> {
+  const start = weekStart(now).getTime();
+  const days = new Set<number>();
+  for (const record of records) {
+    const date = new Date(record.completedAt);
+    if (weekStart(date).getTime() === start) days.add((date.getDay() + 6) % 7);
+  }
+  return days;
+}
+
+/**
+ * Weeks in a row the plan's weekly target was met.
+ *
+ * Weekly rather than daily, because rest days are part of the plan and a daily
+ * streak would punish doing it properly. The current week only counts once its
+ * target has already been reached, so the streak never appears broken just
+ * because the week isn't over yet.
+ */
+export function weeklyStreak(records: WorkoutRecord[], target: number, now = new Date()): number {
+  if (target <= 0) return 0;
+
+  const counts = new Map<number, number>();
+  for (const record of records) {
+    const key = weekStart(new Date(record.completedAt)).getTime();
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+
+  const current = weekStart(now);
+  let streak = (counts.get(current.getTime()) ?? 0) >= target ? 1 : 0;
+
+  // setDate rather than subtracting milliseconds keeps each step on a local
+  // Monday midnight across daylight-saving changes.
+  const cursor = new Date(current);
+  for (let i = 0; i < 520; i++) {
+    cursor.setDate(cursor.getDate() - 7);
+    if ((counts.get(cursor.getTime()) ?? 0) >= target) streak += 1;
+    else break;
+  }
+  return streak;
+}
+
+export type WeekSummary = {
+  sessions: number;
+  target: number;
+  sets: number;
+  /** Bests set last week on exercises they had already done before it. */
+  newBests: PersonalRecord[];
+};
+
+/** The last full Monday-to-Sunday week, or null if they hadn't started training by then. */
+export function lastWeekSummary(
+  records: WorkoutRecord[],
+  target: number,
+  now = new Date()
+): WeekSummary | null {
+  const thisStart = weekStart(now).getTime();
+  const lastStartDate = weekStart(now);
+  lastStartDate.setDate(lastStartDate.getDate() - 7);
+  const lastStart = lastStartDate.getTime();
+
+  const time = (iso: string) => new Date(iso).getTime();
+  const before = records.filter((r) => time(r.completedAt) < thisStart);
+  if (before.length === 0) return null;
+
+  const lastWeek = before.filter((r) => time(r.completedAt) >= lastStart);
+  const sets = lastWeek.reduce(
+    (sum, r) => sum + Object.values(r.loggedSets).reduce((s, logged) => s + logged.length, 0),
+    0
+  );
+
+  // A first ever attempt is trivially a "best", so only exercises already done
+  // before last week count — otherwise week one would claim a dozen records.
+  const seenEarlier = new Set<string>();
+  for (const record of before) {
+    if (time(record.completedAt) >= lastStart) continue;
+    for (const [exerciseId, logged] of Object.entries(record.loggedSets)) {
+      if (logged.length > 0) seenEarlier.add(exerciseId);
+    }
+  }
+
+  const newBests = personalRecords(before).filter(
+    (pr) => time(pr.achievedAt) >= lastStart && seenEarlier.has(pr.exerciseId)
+  );
+
+  return { sessions: lastWeek.length, target, sets, newBests };
 }
