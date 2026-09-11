@@ -67,7 +67,7 @@ function profileRows(o: OnboardingData): [string, string][] {
 }
 
 function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+  return new Date(iso).toLocaleDateString("en-AU", { day: "numeric", month: "long", year: "numeric" });
 }
 
 /** What to say about someone's subscription, and what they can do about it. */

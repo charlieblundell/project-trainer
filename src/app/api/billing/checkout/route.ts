@@ -67,7 +67,8 @@ export async function POST(req: NextRequest) {
       // the person it belongs to without trusting anything in the event.
       subscription_data: { metadata: { user_id: user.id } },
       allow_promotion_codes: true,
-      locale: "en-GB",
+      // Stripe has no Australian English locale; plain English is the closest.
+      locale: "en",
       success_url: `${base}/billing/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${base}/upgrade`,
     });

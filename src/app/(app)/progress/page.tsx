@@ -150,9 +150,9 @@ export default function Progress() {
         <div className="flex flex-col gap-3">
           <div className="grid grid-cols-2 gap-3">
             {[
-              ["Workouts", totals.workouts.toLocaleString("en-GB")],
-              ["Sets logged", totals.sets.toLocaleString("en-GB")],
-              ["Weight lifted", `${totals.volumeKg.toLocaleString("en-GB")} kg`],
+              ["Workouts", totals.workouts.toLocaleString("en-AU")],
+              ["Sets logged", totals.sets.toLocaleString("en-AU")],
+              ["Weight lifted", `${totals.volumeKg.toLocaleString("en-AU")} kg`],
               [
                 "Consistency",
                 totals.consistency === null

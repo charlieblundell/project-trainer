@@ -6,6 +6,6 @@ import type { PlanInterval } from "./entitlement";
  * environment, so if a price changes in Stripe it has to change here too.
  */
 export const PLANS: Record<PlanInterval, { label: string; price: string; per: string; note?: string }> = {
-  month: { label: "Monthly", price: "£9.99", per: "a month" },
-  year: { label: "Yearly", price: "£99.99", per: "a year", note: "Two months free" },
+  month: { label: "Monthly", price: "A$14.99", per: "a month" },
+  year: { label: "Yearly", price: "A$149.99", per: "a year", note: "Two months free" },
 };

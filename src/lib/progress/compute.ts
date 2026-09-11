@@ -191,7 +191,7 @@ export function sessionsPerWeek(
     start.setDate(start.getDate() - i * 7);
     bars.push({
       weekStart: start.toISOString(),
-      label: `${start.getDate()} ${start.toLocaleString("en-GB", { month: "short" })}`,
+      label: `${start.getDate()} ${start.toLocaleString("en-AU", { month: "short" })}`,
       count: counts.get(start.getTime()) ?? 0,
     });
   }
