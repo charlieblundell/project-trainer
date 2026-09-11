@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Mail } from "lucide-react";
 import { TypeMark } from "@/components/TypeMark";
 import { RedirectIfSignedIn } from "@/components/RedirectIfSignedIn";
+import { GoogleSignInButton } from "@/components/GoogleSignInButton";
 import { marketingFontClasses } from "@/lib/fonts/marketing";
 import { supabase } from "@/lib/supabase";
 import { isRunningInstalled } from "@/lib/install";
@@ -107,13 +108,17 @@ export default function SignUp() {
   );
 
   const googleButton = (
-    <button
-      onClick={signInWithGoogle}
-      className="flex w-full items-center justify-center gap-2.5 rounded-md border border-line bg-surface py-3.5 text-[15px] font-semibold text-ink transition hover:border-ink"
-    >
-      <GoogleIcon />
-      Continue with Google
-    </button>
+    <GoogleSignInButton
+      fallback={
+        <button
+          onClick={signInWithGoogle}
+          className="flex w-full items-center justify-center gap-2.5 rounded-md border border-line bg-surface py-3.5 text-[15px] font-semibold text-ink transition hover:border-ink"
+        >
+          <GoogleIcon />
+          Continue with Google
+        </button>
+      }
+    />
   );
 
   return (
