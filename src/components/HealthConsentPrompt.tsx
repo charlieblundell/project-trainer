@@ -37,7 +37,7 @@ export function HealthConsentPrompt({
         <button
           onClick={onAgree}
           disabled={busy}
-          className="w-full rounded-md bg-ink py-3.5 text-[15px] font-semibold text-background disabled:opacity-60"
+          className="w-full rounded-md bg-accent py-3.5 text-body font-semibold text-accent-ink disabled:opacity-60"
         >
           Yes, keep using them
         </button>

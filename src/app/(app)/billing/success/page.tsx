@@ -65,14 +65,14 @@ export default function BillingSuccess() {
 
       {state === "waiting" && (
         <>
-          <h1 className="mb-2 mt-6 text-title1 font-bold text-ink">Confirming your payment…</h1>
+          <h1 className="mb-2 mt-6 text-largetitle font-bold text-ink">Confirming your payment…</h1>
           <p className="text-subhead leading-relaxed text-muted">This usually takes a few seconds.</p>
         </>
       )}
 
       {state === "done" && (
         <>
-          <h1 className="mb-2 mt-6 text-title1 font-bold text-ink">You&apos;re subscribed.</h1>
+          <h1 className="mb-2 mt-6 text-largetitle font-bold text-ink">You&apos;re subscribed.</h1>
           <p className="mb-6 text-subhead leading-relaxed text-muted">
             Thanks for backing this. Everything&apos;s unlocked — your plan is right where you left it.
           </p>
@@ -87,7 +87,7 @@ export default function BillingSuccess() {
 
       {state === "slow" && (
         <>
-          <h1 className="mb-2 mt-6 text-title1 font-bold text-ink">Almost there.</h1>
+          <h1 className="mb-2 mt-6 text-largetitle font-bold text-ink">Almost there.</h1>
           <p className="text-subhead leading-relaxed text-muted">
             Your payment went through, but activating it is taking longer than usual. It normally
             finishes within a minute — refresh this page shortly. You won&apos;t be charged twice.

@@ -59,7 +59,7 @@ export default function Progress() {
   if (records === null) {
     return (
       <div>
-        <h1 className="mb-5 text-title1 font-bold text-ink">Your progress</h1>
+        <h1 className="mb-5 text-largetitle font-bold text-ink">Your progress</h1>
         <p className="text-subhead text-muted">Loading what you&apos;ve logged…</p>
       </div>
     );
@@ -68,7 +68,7 @@ export default function Progress() {
   if (records.length === 0) {
     return (
       <div>
-        <h1 className="mb-5 text-title1 font-bold text-ink">Your progress</h1>
+        <h1 className="mb-5 text-largetitle font-bold text-ink">Your progress</h1>
         <div className="rounded-[20px] bg-surface p-6 text-center">
           <p className="mb-1 text-subhead font-semibold text-ink">Nothing logged yet.</p>
           <p className="mb-5 text-subhead leading-relaxed text-muted">
@@ -77,7 +77,7 @@ export default function Progress() {
           </p>
           <button
             onClick={() => router.push("/plan")}
-            className="rounded-[20px] bg-ink px-5 py-3 text-subhead font-semibold text-background"
+            className="min-h-[44px] rounded-[12px] bg-accent px-5 text-body font-semibold text-accent-ink"
           >
             Go to my plan
           </button>
@@ -88,16 +88,16 @@ export default function Progress() {
 
   return (
     <div>
-      <h1 className="mb-5 text-title1 font-bold text-ink">Your progress</h1>
+      <h1 className="mb-5 text-largetitle font-bold text-ink">Your progress</h1>
 
-      <div className="mb-6 flex gap-1.5 rounded-[12px] bg-surface p-1">
+      <div className="mb-6 flex gap-1 rounded-[10px] bg-fill p-[3px]">
         {(["Strength", "Training"] as const).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
             className={clsx(
-              "flex-1 rounded-lg py-2 text-subhead font-semibold transition",
-              tab === t ? "bg-ink text-background" : "text-muted"
+              "min-h-[36px] flex-1 rounded-[8px] text-subhead font-semibold transition",
+              tab === t ? "bg-surface text-ink shadow-[0_1px_3px_rgba(0,0,0,0.12)]" : "text-muted"
             )}
           >
             {t}

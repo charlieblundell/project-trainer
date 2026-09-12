@@ -80,7 +80,7 @@ export function CheckIn({
                     onClick={() => setAnswers((a) => ({ ...a, [question.key]: option.value }))}
                     className={clsx(
                       "rounded-md border py-3 text-subhead font-semibold transition",
-                      selected ? "border-ink bg-ink text-background" : "border-line bg-surface text-ink"
+                      selected ? "border-accent bg-accent text-accent-ink" : "border-line bg-surface text-ink"
                     )}
                   >
                     {option.label}

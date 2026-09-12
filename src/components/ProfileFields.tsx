@@ -162,7 +162,7 @@ export function SingleSelect({
             aria-pressed={selected}
             className={clsx(
               "flex items-center gap-3 rounded-[20px] border px-4 py-3.5 text-left text-subhead font-medium",
-              selected ? "border-ink bg-ink text-background" : "border-line bg-surface text-ink"
+              selected ? "border-accent bg-accent text-accent-ink" : "border-line bg-surface text-ink"
             )}
           >
             {Icon && (
@@ -207,7 +207,7 @@ export function EquipmentPicker({
             aria-pressed={isSelected}
             className={clsx(
               "flex items-center justify-between rounded-[20px] border px-4 py-3.5 text-left text-subhead font-medium",
-              isSelected ? "border-ink bg-ink text-background" : "border-line bg-surface text-ink"
+              isSelected ? "border-accent bg-accent text-accent-ink" : "border-line bg-surface text-ink"
             )}
           >
             {EQUIPMENT_LABELS[eq]}
@@ -249,7 +249,7 @@ export function WeekdayPicker({
               aria-label={d.id}
               className={clsx(
                 "flex h-11 w-11 items-center justify-center rounded-full border text-subhead font-semibold",
-                isSelected ? "border-ink bg-ink text-background" : "border-line bg-surface text-muted"
+                isSelected ? "border-accent bg-accent text-accent-ink" : "border-line bg-surface text-muted"
               )}
             >
               {d.label}
@@ -371,7 +371,7 @@ export function SexPicker({ value, onChange }: { value: Sex | null; onChange: (s
               aria-pressed={selected}
               className={clsx(
                 "rounded-full border px-3.5 py-2 text-subhead font-medium",
-                selected ? "border-ink bg-ink text-background" : "border-line bg-surface text-ink"
+                selected ? "border-accent bg-accent text-accent-ink" : "border-line bg-surface text-ink"
               )}
             >
               {opt.label}

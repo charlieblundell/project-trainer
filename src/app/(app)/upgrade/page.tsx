@@ -26,7 +26,7 @@ export default function Upgrade() {
   if (billing && isSubscribed(billing)) {
     return (
       <div className="mx-auto max-w-sm">
-        <h1 className="mb-2 text-title1 font-bold text-ink">You&apos;re subscribed.</h1>
+        <h1 className="mb-2 text-largetitle font-bold text-ink">You&apos;re subscribed.</h1>
         <p className="mb-6 text-subhead leading-relaxed text-muted">
           Change your plan, update your card or cancel from Settings.
         </p>
@@ -43,7 +43,7 @@ export default function Upgrade() {
   if (!PAYMENTS_OPEN) {
     return (
       <div className="mx-auto max-w-sm">
-        <h1 className="mb-2 text-title1 font-bold text-ink">Subscriptions open soon.</h1>
+        <h1 className="mb-2 text-largetitle font-bold text-ink">Subscriptions open soon.</h1>
         <p className="mb-6 text-subhead leading-relaxed text-muted">
           We&apos;re not taking payments yet, so your plan, your coach and your progress are all free for now. When
           subscriptions open, you&apos;ll have at least 7 more days free before you&apos;d need to subscribe.
@@ -113,7 +113,7 @@ export default function Upgrade() {
 
   return (
     <div className="mx-auto max-w-sm">
-      <h1 className="mb-2 text-title1 font-bold text-ink">
+      <h1 className="mb-2 text-largetitle font-bold text-ink">
         {trialActive ? "Keep your plan going." : "Your free trial has ended."}
       </h1>
       <p className="mb-6 text-subhead leading-relaxed text-muted">

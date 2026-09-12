@@ -1,15 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import { useAuthStore } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 import { CLEARED_HEALTH_FIELDS, withdrawHealthConsent } from "@/lib/health-consent";
 import { InstallPrompt } from "@/components/InstallPrompt";
 import { InviteFriends } from "@/components/InviteFriends";
+import { ListButton, ListLink, ListRow, ListSection } from "@/components/List";
 import { EQUIPMENT_LABELS, EXERCISES_BY_ID, type Equipment } from "@/lib/exercises";
 import type { OnboardingData } from "@/lib/types";
 import { PLANS } from "@/lib/billing/plans";
@@ -230,7 +230,7 @@ function HealthDetails() {
               <button
                 onClick={withdraw}
                 disabled={busy}
-                className="flex-1 rounded-[12px] bg-ink py-2.5 text-subhead font-semibold text-background disabled:opacity-60"
+                className="flex-1 rounded-[12px] bg-accent py-2.5 text-body font-semibold text-accent-ink disabled:opacity-60"
               >
                 {busy ? "Deleting" : "Delete them"}
               </button>
@@ -397,11 +397,14 @@ export default function Settings() {
 
   return (
     <div className="mx-auto max-w-sm">
-      <button onClick={() => router.push("/home")} className="mb-4 flex items-center text-muted">
-        <ChevronLeft size={18} />
+      <button
+        onClick={() => router.push("/home")}
+        className="-ml-1 mb-3 flex min-h-[44px] items-center gap-0.5 text-body text-accent"
+      >
+        <ChevronLeft size={22} strokeWidth={2.2} /> Home
       </button>
-      <h1 className="mb-1 text-title1 font-bold text-ink">Settings</h1>
-      {user?.email && <p className="mb-5 text-subhead text-muted">{user.email}</p>}
+      <h1 className="mb-1 text-largetitle font-bold text-ink">Settings</h1>
+      {user?.email && <p className="mb-6 text-subhead text-muted">{user.email}</p>}
 
       <div className="mb-2 text-footnote font-semibold text-muted">Subscription</div>
       <div className="mb-6 rounded-[20px] bg-surface px-4 py-3.5">
@@ -414,7 +417,7 @@ export default function Settings() {
         {summary.action === "none" ? null : summary.action === "subscribe" ? (
           <button
             onClick={() => router.push("/upgrade")}
-            className="w-full rounded-[12px] bg-ink py-2.5 text-subhead font-semibold text-background"
+            className="w-full rounded-[12px] bg-accent py-2.5 text-body font-semibold text-accent-ink"
           >
             Subscribe
           </button>
@@ -430,58 +433,35 @@ export default function Settings() {
         {billingError && <p className="mt-2 text-footnote text-warning">{billingError}</p>}
       </div>
 
-      <div className="mb-2 text-footnote font-semibold text-muted">Your profile</div>
-      <div className="mb-6 flex flex-col gap-3">
-        {profileGroups(onboarding).map((group) => (
-          <section
-            key={group.href}
-            aria-label={group.title}
-            className="rounded-[20px] bg-surface pb-2"
-          >
-            <div className="flex items-center justify-between gap-4 px-4 pb-1 pt-3.5">
-              <h2 className="text-subhead font-semibold text-ink">{group.title}</h2>
-              <Link href={group.href} className="text-subhead font-semibold text-accent">
-                Edit
-              </Link>
-            </div>
-            {group.rows.map(([label, value]) => (
-              <div key={label} className="flex justify-between gap-6 px-4 py-2 text-subhead">
-                <span className="flex-shrink-0 text-muted">{label}</span>
-                <span className="text-right text-ink">{value}</span>
-              </div>
-            ))}
-          </section>
-        ))}
-      </div>
+      {profileGroups(onboarding).map((group) => (
+        <ListSection key={group.href} header={group.title}>
+          {group.rows.map(([label, value]) => (
+            <ListRow key={label} label={label} value={value} />
+          ))}
+          <ListLink href={group.href} title={`Change ${group.title.toLowerCase()}`} />
+        </ListSection>
+      ))}
 
-      <div className="mb-2 text-footnote font-semibold text-muted">APP</div>
+      <ListSection header="App">
+        <ListLink
+          onClick={() => router.push("/evidence")}
+          title="The evidence behind your plan"
+          detail="The research your plan and coach are built on, with sources"
+        />
+      </ListSection>
+
       <InstallPrompt className="mb-3" showInstalled />
       <InviteFriends className="mb-6" />
 
       <HealthDetails />
 
-      <div className="mb-2 text-footnote font-semibold text-muted">Reference</div>
-      <button
-        onClick={() => router.push("/evidence")}
-        className="mb-6 flex w-full items-center justify-between gap-4 rounded-[20px] bg-surface px-4 py-3.5 text-left"
-      >
-        <div>
-          <div className="text-subhead font-semibold text-ink">The evidence behind your plan</div>
-          <div className="text-footnote text-muted">
-            The research your plan and coach are built on, with sources
-          </div>
-        </div>
-        <ChevronRight size={18} className="flex-shrink-0 text-muted" />
-      </button>
-
       <DeleteAccount />
 
-      <button
-        onClick={logOut}
-        className="w-full rounded-[20px] border border-line py-3.5 text-subhead font-semibold text-warning"
-      >
-        Log out
-      </button>
+      <ListSection>
+        <ListButton onClick={logOut} destructive>
+          Log out
+        </ListButton>
+      </ListSection>
     </div>
   );
 }

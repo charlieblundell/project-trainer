@@ -261,7 +261,7 @@ function ExercisePanel({
   return (
     <div>
       <div className="mb-1 flex items-start justify-between gap-3">
-        <h1 className="text-title1 font-bold text-ink">{def?.name ?? activeId}</h1>
+        <h1 className="text-largetitle font-bold text-ink">{def?.name ?? activeId}</h1>
         <div className="flex flex-shrink-0 gap-1.5">
           {def?.cues && (
             <button

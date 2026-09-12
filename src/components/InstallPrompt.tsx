@@ -85,7 +85,7 @@ export function InstallPrompt({
       ) : promptEvent ? (
         <button
           onClick={install}
-          className="w-full rounded-[12px] bg-ink py-2.5 text-subhead font-semibold text-background"
+          className="w-full rounded-[12px] bg-accent py-2.5 text-body font-semibold text-accent-ink"
         >
           Install the app
         </button>

@@ -59,7 +59,7 @@ export default function Plan() {
   return (
     <div className="relative">
       <div className="mb-1 text-footnote font-semibold text-muted">Your program</div>
-      <h1 className="mb-1 text-title1 font-bold text-ink">{plan.goal}</h1>
+      <h1 className="mb-1 text-largetitle font-bold text-ink">{plan.goal}</h1>
       <div className="tabular mb-5 text-subhead text-muted">
         Week {weekNumber(plan)} ·{" "}
         {done === 0 ? "nothing logged yet" : `${done} session${done > 1 ? "s" : ""} done`}
@@ -173,7 +173,7 @@ export default function Plan() {
       <AnimatePresence>
         {preview && (
           <motion.div
-            className="fixed inset-0 z-30 flex items-end justify-center bg-ink/45 md:items-center"
+            className="fixed inset-0 z-30 flex items-end justify-center bg-black/40 md:items-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}

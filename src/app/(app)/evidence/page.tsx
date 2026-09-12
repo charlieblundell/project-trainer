@@ -111,7 +111,7 @@ function EvidenceBody() {
   return (
     <div>
       <div className="mb-1 text-footnote font-semibold text-muted">The evidence</div>
-      <h1 className="mb-2 text-title1 font-bold text-ink">Why the app says what it says</h1>
+      <h1 className="mb-2 text-largetitle font-bold text-ink">Why the app says what it says</h1>
       <p className="mb-5 text-subhead leading-relaxed text-muted">
         {FINDINGS.length} findings behind your plan and your coach. Every one links to the paper it
         came from, and says plainly how strong the evidence actually is — including where it&apos;s
@@ -125,7 +125,7 @@ function EvidenceBody() {
             onClick={() => setTopic(t.id)}
             className={clsx(
               "flex-shrink-0 rounded-[12px] px-3.5 py-2 text-subhead font-semibold transition",
-              topic === t.id ? "bg-ink text-background" : "bg-surface text-muted"
+              topic === t.id ? "bg-accent text-accent-ink" : "bg-surface text-muted"
             )}
           >
             {t.label}

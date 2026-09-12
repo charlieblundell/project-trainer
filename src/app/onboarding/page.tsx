@@ -249,7 +249,7 @@ export default function Onboarding() {
             className={clsx(
               "h-1.5 rounded-full transition-all",
               i === step ? "w-4" : "w-1.5",
-              i <= step ? "bg-ink" : "bg-line"
+              i <= step ? "bg-accent" : "bg-line"
             )}
           />
         ))}
@@ -349,7 +349,7 @@ export default function Onboarding() {
                       }
                       className={clsx(
                         "flex items-center justify-between rounded-[20px] border px-4 py-3.5 text-left text-subhead font-medium",
-                        selected ? "border-ink bg-ink text-background" : "border-line bg-surface text-ink"
+                        selected ? "border-accent bg-accent text-accent-ink" : "border-line bg-surface text-ink"
                       )}
                     >
                       {option.label}
@@ -424,7 +424,7 @@ export default function Onboarding() {
                       onClick={() => setBuildOwn(option.value)}
                       className={clsx(
                         "rounded-[20px] border px-4 py-3.5 text-left",
-                        selected ? "border-ink bg-ink text-background" : "border-line bg-surface text-ink"
+                        selected ? "border-accent bg-accent text-accent-ink" : "border-line bg-surface text-ink"
                       )}
                     >
                       <div className="flex items-center justify-between gap-3">

@@ -61,9 +61,9 @@ export default function Coach() {
               initial={{ opacity: 0, y: 10, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ type: "spring", stiffness: 500, damping: 40 }}
-              className={`max-w-[85%] rounded-[20px] px-4 py-2.5 text-subhead leading-relaxed ${
+              className={`max-w-[85%] rounded-[20px] px-4 py-2.5 text-body leading-relaxed ${
                 m.role === "user"
-                  ? "self-end bg-ink text-background"
+                  ? "self-end bg-accent text-accent-ink"
                   : "self-start bg-surface text-ink"
               }`}
             >
@@ -100,7 +100,7 @@ export default function Coach() {
               transition={{ delay: i * 0.05 }}
               whileTap={{ scale: 0.96 }}
               onClick={() => send(p)}
-              className="rounded-full bg-surface px-3.5 py-2 text-footnote text-ink"
+              className="min-h-[36px] rounded-full bg-surface px-3.5 text-subhead text-accent"
             >
               {p}
             </motion.button>
@@ -118,14 +118,14 @@ export default function Coach() {
           placeholder="Ask your coach..."
           // Matches the server's limit, so the box stops you rather than an error does.
           maxLength={2000}
-          className="flex-1 rounded-full border border-line px-4 py-3 text-subhead"
+          className="min-h-[44px] flex-1 rounded-full bg-surface px-4 text-body"
         />
         <motion.button
           whileTap={{ scale: 0.92 }}
           onClick={() => input.trim() && send(input.trim())}
-          className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-ink"
+          className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-accent disabled:bg-fill-strong"
         >
-          <Send size={17} className="text-background" />
+          <Send size={17} className="text-accent-ink" />
         </motion.button>
       </div>
     </div>

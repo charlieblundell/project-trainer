@@ -194,7 +194,7 @@ function SessionCard({
                   className={clsx(
                     "flex h-10 flex-1 items-center justify-center rounded-lg border text-footnote font-semibold",
                     selected
-                      ? "border-ink bg-ink text-background"
+                      ? "border-accent bg-accent text-accent-ink"
                       : taken
                         ? "border-line bg-background text-muted"
                         : "border-line bg-surface text-ink"
@@ -446,7 +446,7 @@ function AddExercisePanel({
 
   return (
     <motion.div
-      className="fixed inset-0 z-30 flex items-end justify-center bg-ink/45 md:items-center"
+      className="fixed inset-0 z-30 flex items-end justify-center bg-black/40 md:items-center"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
