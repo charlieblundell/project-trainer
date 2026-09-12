@@ -35,6 +35,19 @@ export function PlanEditor() {
 
   const [draft, setDraft] = useState<Plan | null>(plan);
   const [openId, setOpenId] = useState<string | null>(plan?.sessions[0]?.id ?? null);
+  /*
+   * The plan is fetched after the app shell renders, so opening this screen
+   * directly — a refresh, a bookmark, a slow connection — can mount the editor
+   * before the plan exists. Seeding the draft only at mount left those people
+   * looking at "there's no plan to edit yet", with a button that would build
+   * them a new one over the top of the plan they already had.
+   */
+  const [seededFrom, setSeededFrom] = useState(plan);
+  if (plan !== seededFrom) {
+    setSeededFrom(plan);
+    setDraft(plan);
+    setOpenId(plan?.sessions[0]?.id ?? null);
+  }
   const [status, setStatus] = useState<"editing" | "saving" | "saved">("editing");
   const [error, setError] = useState<string | null>(null);
 

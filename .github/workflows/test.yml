@@ -1,0 +1,53 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    # The browser build the app runs in needs the same two public values the
+    # app needs in a browser. They're the anon pair, safe to expose to a client,
+    # but they live in repo secrets rather than in the tree.
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Check the rules the app is built on
+        run: |
+          npm run check:evidence
+          npm run check:billing
+          npm run check:weekly
+          npm run check:readiness
+          npm run check:rebuild
+          npm run check:warmup
+          npm run check:plan-edit
+
+      - run: npx tsc --noEmit
+      - run: npm run lint
+
+      - name: Install the browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Drive the app in a browser
+        run: npm run test:e2e
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14

@@ -19,7 +19,9 @@
     "check:readiness": "tsx scripts/check-readiness.ts",
     "check:rebuild": "tsx scripts/check-rebuild.ts",
     "check:warmup": "tsx scripts/check-warmup.ts",
-    "check:plan-edit": "tsx scripts/check-plan-edit.ts"
+    "check:plan-edit": "tsx scripts/check-plan-edit.ts",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.124.0",
@@ -34,6 +36,7 @@
     "zustand": "^5.0.15"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
