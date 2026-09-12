@@ -7,6 +7,8 @@ import { ChevronLeft, Check, Info, MoreHorizontal, Lightbulb } from "lucide-reac
 import { EXERCISES_BY_ID, substitutesFor, type Equipment } from "@/lib/exercises";
 import { useAppStore } from "@/lib/store";
 import { RpeSelector } from "@/components/RpeSelector";
+import { SetStepper } from "@/components/SetStepper";
+import { clsx } from "@/lib/clsx";
 import { ExerciseInfoModal } from "@/components/ExerciseInfoModal";
 import { ExerciseSwapPanel } from "@/components/ExerciseSwapPanel";
 import { sessionById, targetLabel } from "@/lib/plan/helpers";
@@ -260,23 +262,23 @@ function ExercisePanel({
     <div>
       <div className="mb-1 flex items-start justify-between gap-3">
         <h1 className="text-title1 font-bold text-ink">{def?.name ?? activeId}</h1>
-        <div className="flex flex-shrink-0 gap-1.5 pt-1">
+        <div className="flex flex-shrink-0 gap-1.5">
           {def?.cues && (
             <button
               onClick={() => setShowInfo(true)}
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-surface text-muted"
+              className="flex h-11 w-11 items-center justify-center rounded-full bg-fill text-ink"
               aria-label="Exercise info"
             >
-              <Info size={15} />
+              <Info size={18} strokeWidth={1.9} />
             </button>
           )}
           {alternatives.length > 0 && (
             <button
               onClick={() => setShowSwap(true)}
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-surface text-muted"
+              className="flex h-11 w-11 items-center justify-center rounded-full bg-fill text-ink"
               aria-label="Swap exercise"
             >
-              <MoreHorizontal size={15} />
+              <MoreHorizontal size={18} strokeWidth={1.9} />
             </button>
           )}
         </div>
@@ -292,7 +294,7 @@ function ExercisePanel({
         !override && <div className="mb-4" />
       )}
 
-      {needsCalibration && (
+      {needsCalibration && logs.length === 0 && (
         <div className="mb-5 flex gap-2.5 rounded-[20px] bg-accent-soft p-4">
           <Lightbulb size={16} className="mt-0.5 flex-shrink-0 text-accent" />
           <p className="text-subhead leading-relaxed text-ink">
@@ -302,70 +304,102 @@ function ExercisePanel({
         </div>
       )}
 
-      <div className="mb-5 overflow-hidden rounded-[20px] bg-surface">
-        <div className="grid grid-cols-[1fr_2fr_2fr_1fr] border-b border-line px-4 py-2.5 text-footnote font-semibold text-muted">
-          <span>Set</span>
-          <span>{tracksWeight ? "Weight" : ""}</span>
-          <span>{isTimed ? "Minutes" : "Reps"}</span>
-          <span />
-        </div>
+      {/*
+        Every set in the exercise at a glance: what's done, with the numbers,
+        and what's left. The old four-row table spent most of the screen
+        showing em-dashes for sets nobody had done yet.
+      */}
+      <ol className="mb-5 flex flex-wrap gap-1.5">
         {Array.from({ length: planned.sets }).map((_, i) => {
           const done = logs[i];
+          const current = !done && i === logs.length;
           return (
-            <div
+            <li
               key={i}
-              className="tabular grid grid-cols-[1fr_2fr_2fr_1fr] items-center border-b border-line px-4 py-3 text-subhead last:border-b-0"
+              aria-label={
+                done
+                  ? `Set ${i + 1}, done: ${tracksWeight ? `${done.w} kg, ` : ""}${done.r} ${isTimed ? "minutes" : "reps"}`
+                  : `Set ${i + 1}, not done yet`
+              }
+              className={clsx(
+                "tabular flex min-h-[38px] flex-1 basis-[70px] items-center justify-center gap-1 rounded-[12px] px-2 text-footnote font-semibold",
+                done
+                  ? "bg-success-soft text-ink"
+                  : current
+                    ? "bg-accent-soft text-accent"
+                    : "bg-fill text-faint"
+              )}
             >
-              <span>{i + 1}</span>
-              <span>{done && tracksWeight ? `${done.w} kg` : tracksWeight ? "—" : ""}</span>
-              <span>{done ? done.r : "—"}</span>
-              <span>
-                {done && (
-                  <motion.span
-                    initial={{ scale: 0, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ type: "spring", stiffness: 500, damping: 20 }}
-                    className="inline-flex"
-                  >
-                    <Check size={16} className="text-success" />
-                  </motion.span>
-                )}
-              </span>
-            </div>
+              {done ? (
+                <>
+                  <Check size={13} className="flex-shrink-0 text-success" aria-hidden />
+                  <span>
+                    {tracksWeight ? `${done.w}×${done.r}` : done.r}
+                  </span>
+                </>
+              ) : (
+                <span>{i + 1}</span>
+              )}
+            </li>
           );
         })}
-      </div>
+      </ol>
 
       {restEndsAt !== null && logs.length < planned.sets && !saving && (
         <div
           role="timer"
-          className="mb-4 flex items-center justify-between gap-3 rounded-[20px] bg-surface px-4 py-3"
+          className={clsx(
+            "mb-4 rounded-[20px] px-4 py-4 transition-colors",
+            restDone ? "bg-success-soft" : "bg-surface"
+          )}
         >
-          <div>
-            <div className="text-footnote font-semibold text-muted">{restDone ? "REST DONE" : "REST"}</div>
-            <div className="tabular text-title1 font-bold text-ink">
-              {restDone ? "Next set" : formatRest(restLeft)}
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <div
+                className={clsx(
+                  "text-footnote font-semibold",
+                  restDone ? "text-success" : "text-muted"
+                )}
+              >
+                {restDone ? "Rest done" : "Resting"}
+              </div>
+              <div className="tabular text-largetitle font-bold text-ink">
+                {restDone ? "Go" : formatRest(restLeft)}
+              </div>
+            </div>
+            <div className="flex gap-2">
+              {!restDone && (
+                <button
+                  onClick={() => addRest(30)}
+                  className="min-h-[44px] rounded-[12px] bg-fill px-4 text-subhead font-semibold text-ink"
+                >
+                  +30s
+                </button>
+              )}
+              <button
+                onClick={() => setRestEndsAt(null)}
+                className="min-h-[44px] rounded-[12px] bg-fill px-4 text-subhead font-semibold text-ink"
+              >
+                {restDone ? "Dismiss" : "Skip"}
+              </button>
             </div>
           </div>
+
+          {/* How much is left, without having to read the numbers. */}
+          {!restDone && (
+            <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-fill">
+              <div
+                className="h-full rounded-full bg-accent transition-[width] duration-300 ease-linear"
+                style={{
+                  width: `${Math.max(0, Math.min(100, (restLeft / Math.max(1, planned.restSeconds)) * 100))}%`,
+                }}
+              />
+            </div>
+          )}
+
           <span className="sr-only" aria-live="polite">
             {restDone ? "Rest finished. Time for your next set." : ""}
           </span>
-          <div className="flex gap-2">
-            {!restDone && (
-              <button
-                onClick={() => addRest(30)}
-                className="rounded-[12px] border border-line px-3 py-2 text-subhead font-semibold text-ink"
-              >
-                +30s
-              </button>
-            )}
-            <button
-              onClick={() => setRestEndsAt(null)}
-              className="rounded-[12px] border border-line px-3 py-2 text-subhead font-semibold text-ink"
-            >
-              {restDone ? "Dismiss" : "Skip"}
-            </button>
-          </div>
         </div>
       )}
 
@@ -374,29 +408,25 @@ function ExercisePanel({
       ) : !awaitingRpe ? (
         logs.length < planned.sets && (
           <>
-            <div className="mb-3.5 flex gap-2.5">
+            <div className="mb-4 flex flex-col gap-3">
               {tracksWeight && (
-                <div className="flex-1">
-                  <label className="text-footnote text-muted">Weight (kg)</label>
-                  <input
-                    type="number"
-                    inputMode="decimal"
-                    value={input.w}
-                    onChange={(e) => setInput({ ...input, w: e.target.value })}
-                    className="tabular mt-1 w-full rounded-[12px] border border-line px-3 py-2.5 text-subhead"
-                  />
-                </div>
-              )}
-              <div className="flex-1">
-                <label className="text-footnote text-muted">{isTimed ? "Minutes" : "Reps"}</label>
-                <input
-                  type="number"
-                  inputMode="numeric"
-                  value={input.r}
-                  onChange={(e) => setInput({ ...input, r: e.target.value })}
-                  className="tabular mt-1 w-full rounded-[12px] border border-line px-3 py-2.5 text-subhead"
+                <SetStepper
+                  label="Weight"
+                  suffix="kg"
+                  value={input.w}
+                  onChange={(w) => setInput({ ...input, w })}
+                  step={2.5}
+                  max={500}
                 />
-              </div>
+              )}
+              <SetStepper
+                label={isTimed ? "Minutes" : "Reps"}
+                value={input.r}
+                onChange={(r) => setInput({ ...input, r })}
+                step={1}
+                min={1}
+                max={isTimed ? 120 : 50}
+              />
             </div>
             {tracksWeight && !(weightValue > 0) && (
               <p className="mb-2.5 text-footnote text-muted">Enter the weight you used to log this set.</p>
@@ -405,7 +435,7 @@ function ExercisePanel({
               whileTap={canLog ? { scale: 0.98 } : undefined}
               onClick={handleLogSet}
               disabled={!canLog}
-              className="w-full rounded-[20px] bg-ink py-4 text-[15px] font-semibold text-background disabled:bg-line disabled:text-muted"
+              className="min-h-[54px] w-full rounded-[14px] bg-accent text-body font-semibold text-accent-ink disabled:bg-fill-strong disabled:text-faint"
             >
               {isTimed ? "Log it" : "Log set"}
             </motion.button>
