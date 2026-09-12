@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { TypeMark } from "@/components/TypeMark";
 import { RedirectIfSignedIn } from "@/components/RedirectIfSignedIn";
@@ -7,11 +8,23 @@ import { FINDINGS, FINDINGS_BY_ID, sourceUrl, type Finding } from "@/lib/evidenc
 import { PLANS } from "@/lib/billing/plans";
 
 /*
- * Everything on this page is real. The exercise counts are computed from the
- * library, the research is quoted from the evidence base with its sources,
- * and the notes on the training sheet are the progression engine's own
- * wording for those numbers. Nothing is a placeholder dressed up as a result.
+ * Everything on this page is real: the screenshots are the app, the exercise
+ * counts are computed from the library, the research is quoted from the
+ * evidence base with its sources, and the notes on the training sheet are the
+ * progression engine's own wording. Nothing is a placeholder dressed up as a
+ * result.
+ *
+ * The hero band is deliberately dark and sets its colours literally rather
+ * than through the theme tokens, which flip with the viewer's system setting —
+ * the screenshots are of the app's dark mode and need a dark ground under them.
  */
+
+const DARK = "#17120f";
+const DARK_SURFACE = "#241d19";
+const DARK_LINE = "#3a302a";
+const ON_DARK = "#f4efe9";
+const ON_DARK_MUTED = "#a0948b";
+const ON_DARK_ACCENT = "#ef7d4e";
 
 type Week = { label: string; kg: number; reps: number[]; note: string };
 
@@ -57,13 +70,69 @@ function shortCitation(finding: Finding): { text: string; href: string } {
 const focusRing =
   "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink";
 
-function StartButton({ className = "" }: { className?: string }) {
+/* ------------------------------------------------------------------ *
+ * Screenshots
+ * ------------------------------------------------------------------ */
+
+const SHOT_WIDTH = 1170;
+const SHOT_HEIGHT = 2532;
+/**
+ * The phone's own status bar, which doesn't belong on a landing page. These
+ * are taken from the installed app, so what sits at the bottom is the app's
+ * own navigation — that stays.
+ */
+const STATUS_BAR = 120;
+
+/**
+ * One app screenshot in a phone frame, cropped without touching the file:
+ * the wrapper keeps the cropped aspect ratio and the image is nudged up by
+ * exactly the part being hidden.
+ */
+function Screen({
+  src,
+  alt,
+  cropTop = STATUS_BAR,
+  eager = false,
+  className = "",
+}: {
+  src: string;
+  alt: string;
+  cropTop?: number;
+  eager?: boolean;
+  className?: string;
+}) {
+  const visible = SHOT_HEIGHT - cropTop;
+
+  return (
+    <div
+      className={`overflow-hidden rounded-[1.6rem] border-[3px] shadow-[0_30px_60px_-30px_rgba(0,0,0,0.75)] ${className}`}
+      style={{ borderColor: DARK_LINE, background: DARK_SURFACE, aspectRatio: `${SHOT_WIDTH} / ${visible}` }}
+    >
+      <Image
+        src={src}
+        alt={alt}
+        width={SHOT_WIDTH}
+        height={SHOT_HEIGHT}
+        sizes="(min-width: 1024px) 300px, 44vw"
+        loading={eager ? "eager" : "lazy"}
+        fetchPriority={eager ? "high" : undefined}
+        className="block w-full"
+        style={{ transform: `translateY(${-(cropTop / SHOT_HEIGHT) * 100}%)` }}
+      />
+    </div>
+  );
+}
+
+function StartButton({ className = "", dark = false }: { className?: string; dark?: boolean }) {
   return (
     <Link
       href="/signup"
-      className={`inline-flex items-center justify-center rounded-md bg-ink px-6 py-3.5 text-[15px] font-semibold text-background transition hover:opacity-90 ${focusRing} ${className}`}
+      className={`inline-flex items-center justify-center rounded-md px-6 py-3.5 text-[15px] font-semibold transition hover:opacity-90 ${
+        dark ? "" : `bg-ink text-background ${focusRing}`
+      } ${className}`}
+      style={dark ? { background: ON_DARK, color: DARK } : undefined}
     >
-      Start 10 days free
+      Start free
     </Link>
   );
 }
@@ -71,9 +140,9 @@ function StartButton({ className = "" }: { className?: string }) {
 function TrainingSheet() {
   return (
     <figure className="rounded-sm border border-line bg-surface shadow-[0_1px_0_var(--line),0_18px_40px_-28px_rgba(30,25,22,0.35)]">
-      <div className="flex items-baseline justify-between gap-4 border-b border-line px-5 py-4">
+      <div className="flex items-baseline justify-between gap-4 border-b border-line px-5 py-3.5">
         <div>
-          <div className="font-marketing-display text-lg font-bold text-ink [font-stretch:90%]">Goblet squat</div>
+          <div className="font-marketing-display text-lg font-bold text-ink [font-stretch:105%]">Goblet squat</div>
           <div className="text-sm text-muted">3 sets of 8–10</div>
         </div>
         <div className="text-right text-xs uppercase tracking-[0.12em] text-muted">Training log</div>
@@ -139,8 +208,7 @@ function TrainingSheet() {
       </div>
 
       <figcaption className="border-t border-line px-5 py-3 text-xs leading-relaxed text-muted">
-        An example run through the app&apos;s real progression rules. The notes in the bottom row
-        are its own words.
+        An example run through the app&apos;s real progression rules. The notes in the bottom row are its own words.
       </figcaption>
     </figure>
   );
@@ -150,66 +218,105 @@ export default function Landing() {
   return (
     <div className={`${marketingFontClasses} font-marketing-body bg-background text-ink`}>
       <RedirectIfSignedIn />
-      <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
-        <TypeMark />
-        <nav className="flex items-center gap-6 text-[15px]">
-          <Link href="/signup" className={`text-muted transition hover:text-ink ${focusRing}`}>
-            Sign in
-          </Link>
-          <Link
-            href="/signup"
-            className={`hidden rounded-md border border-ink px-4 py-2 font-semibold text-ink transition hover:bg-ink hover:text-background sm:inline-flex ${focusRing}`}
-          >
-            Start free
-          </Link>
-        </nav>
-      </header>
 
-      <main>
-        {/* The claim, and the proof of it, side by side. */}
-        <section className="mx-auto grid max-w-6xl gap-12 px-6 pb-20 pt-10 md:pt-16 lg:grid-cols-12 lg:items-center lg:gap-10">
-          <div className="lg:col-span-5">
-            <h1 className="font-marketing-display text-[clamp(2.7rem,7vw,4.6rem)] font-extrabold leading-[0.95] tracking-[-0.015em] text-ink [font-stretch:78%] [text-wrap:balance]">
+      {/* The claim, and the app itself, on the ground the screenshots were taken on. */}
+      <div style={{ background: DARK, color: ON_DARK }}>
+        <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
+          {/* The wordmark carries the theme's ink colour, which is near-black on this ground. */}
+          <span style={{ color: ON_DARK }}>
+            <TypeMark className="!text-inherit" />
+          </span>
+          <nav className="flex items-center gap-6 text-[15px]">
+            <Link href="/signup" className="transition hover:opacity-70" style={{ color: ON_DARK_MUTED }}>
+              Sign in
+            </Link>
+            <Link
+              href="/signup"
+              className="hidden rounded-md border px-4 py-2 font-semibold transition hover:opacity-80 sm:inline-flex"
+              style={{ borderColor: DARK_LINE, color: ON_DARK }}
+            >
+              Start free
+            </Link>
+          </nav>
+        </header>
+
+        <section className="mx-auto grid max-w-6xl items-center gap-10 px-6 pb-14 pt-6 lg:grid-cols-12 lg:gap-8 lg:pb-20 lg:pt-10">
+          <div className="lg:col-span-6">
+            <div
+              className="mb-5 inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em]"
+              style={{ background: "rgba(239,125,78,0.14)", color: ON_DARK_ACCENT }}
+            >
+              Free while we&apos;re in early access
+            </div>
+            <h1
+              className="font-marketing-display text-[clamp(2.5rem,6vw,4.1rem)] font-extrabold leading-[0.98] tracking-[-0.02em] [font-stretch:112%] [text-wrap:balance]"
+              style={{ color: ON_DARK }}
+            >
               Every set you log changes the next one.
             </h1>
-            <p className="mt-6 max-w-[34rem] text-lg leading-relaxed text-muted">
-              Tell it your goal, the kit you have and how long you&apos;ve got. It writes your week,
-              then moves every target from what you actually lift — and shows you the research
-              behind its advice.
+            <p className="mt-5 max-w-[32rem] text-[17px] leading-relaxed" style={{ color: ON_DARK_MUTED }}>
+              Tell it your goal, the kit you have and how long you&apos;ve got. It writes your week, then moves every
+              target from what you actually lift — and shows you the research behind its advice.
             </p>
-            <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
-              <StartButton />
-              <span className="text-[15px] text-muted">No card needed.</span>
+            <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3">
+              <StartButton dark />
+              <span className="text-[15px]" style={{ color: ON_DARK_MUTED }}>
+                No card needed.
+              </span>
             </div>
           </div>
 
-          <div className="lg:col-span-7">
-            <TrainingSheet />
+          <div className="grid grid-cols-2 gap-4 sm:gap-5 lg:col-span-6 lg:gap-4">
+            {/* Cropped below the greeting: the name there belongs to whoever took the screenshot. */}
+            <Screen src="/screens/home.png" alt="The app's home screen: today's session, with the week below it." cropTop={400} eager />
+            <Screen
+              src="/screens/train.png"
+              alt="Logging a set during a workout, with the rest timer counting down."
+              className="mt-8"
+            />
+          </div>
+        </section>
+      </div>
+
+      <main>
+        <section className="border-b border-line">
+          <div className="mx-auto grid max-w-6xl items-center gap-8 px-6 py-14 lg:grid-cols-12 lg:gap-10">
+            <div className="lg:col-span-5">
+              <h2 className="font-marketing-display text-[clamp(1.9rem,3.4vw,2.6rem)] font-extrabold leading-[1.02] text-ink [font-stretch:110%] [text-wrap:balance]">
+                It reads what you lifted, then moves the target.
+              </h2>
+              <p className="mt-4 max-w-md text-[16px] leading-relaxed text-muted">
+                Hit the top of the rep range on every set and the weight goes up. Fall short and it holds. You never
+                have to work out what to do next — but you can change any of it whenever you like.
+              </p>
+            </div>
+            <div className="lg:col-span-7">
+              <TrainingSheet />
+            </div>
           </div>
         </section>
 
-        <section className="border-t border-line">
-          <div className="mx-auto grid max-w-6xl gap-10 px-6 py-20 lg:grid-cols-12">
+        <section className="border-b border-line">
+          <div className="mx-auto grid max-w-6xl gap-8 px-6 py-14 lg:grid-cols-12 lg:gap-10">
             <div className="lg:col-span-5">
-              <h2 className="font-marketing-display text-4xl font-extrabold leading-none text-ink [font-stretch:80%] [text-wrap:balance]">
+              <h2 className="font-marketing-display text-[clamp(1.9rem,3.4vw,2.6rem)] font-extrabold leading-[1.02] text-ink [font-stretch:110%] [text-wrap:balance]">
                 Built around the kit you&apos;ve actually got.
               </h2>
-              <p className="mt-5 max-w-md text-[17px] leading-relaxed text-muted">
-                {EXERCISES.length} exercises, each tagged with the joints it loads — so a sore knee
-                or shoulder changes what you&apos;re given, and you&apos;re never handed something you
-                can&apos;t do where you are.
+              <p className="mt-4 max-w-md text-[16px] leading-relaxed text-muted">
+                {EXERCISES.length} exercises, each tagged with the joints it loads — so a sore knee or shoulder changes
+                what you&apos;re given, and you&apos;re never handed something you can&apos;t do where you are.
               </p>
             </div>
 
             <dl className="lg:col-span-6 lg:col-start-7">
               {KIT.map((kit) => (
-                <div key={kit.label} className="flex items-baseline justify-between gap-6 border-b border-line py-5 first:pt-0">
+                <div key={kit.label} className="flex items-baseline justify-between gap-6 border-b border-line py-4 first:border-t">
                   <dt>
-                    <div className="text-lg font-semibold text-ink">{kit.label}</div>
+                    <div className="text-[17px] font-semibold text-ink">{kit.label}</div>
                     <div className="text-[15px] text-muted">{kit.detail}</div>
                   </dt>
                   <dd className="text-right">
-                    <span className="tabular font-marketing-display text-4xl font-extrabold text-ink [font-stretch:80%]">
+                    <span className="tabular font-marketing-display text-3xl font-extrabold text-ink [font-stretch:105%]">
                       {kit.count}
                     </span>
                     <span className="ml-2 text-[15px] text-muted">exercises</span>
@@ -220,72 +327,96 @@ export default function Landing() {
           </div>
         </section>
 
-        <section className="border-t border-line bg-surface">
-          <div className="mx-auto max-w-6xl px-6 py-20">
-            <div className="grid gap-6 lg:grid-cols-12">
-              <h2 className="font-marketing-display text-4xl font-extrabold leading-none text-ink [font-stretch:80%] lg:col-span-5 [text-wrap:balance]">
-                Advice you can check.
+        <section className="border-b border-line bg-surface">
+          <div className="mx-auto grid max-w-6xl gap-8 px-6 py-14 lg:grid-cols-12 lg:gap-10">
+            <div className="lg:col-span-7">
+              <h2 className="font-marketing-display text-[clamp(1.9rem,3.4vw,2.6rem)] font-extrabold leading-[1.02] text-ink [font-stretch:110%] [text-wrap:balance]">
+                A coach that shows its sources.
               </h2>
-              <p className="max-w-xl text-[17px] leading-relaxed text-muted lg:col-span-6 lg:col-start-7">
-                The coach works from {FINDINGS.length} findings from published research, each linked
-                to its paper and marked with how strong the evidence really is — including where
-                it&apos;s thin. A few of them:
+              <p className="mt-4 max-w-xl text-[16px] leading-relaxed text-muted">
+                Ask it anything about your training and it answers from your own plan, your equipment and{" "}
+                {FINDINGS.length} findings from published research — each linked to its paper and marked with how
+                strong the evidence really is, including where it&apos;s thin.
               </p>
+
+              <ul className="mt-8 grid gap-6 sm:grid-cols-2">
+                {FEATURED_FINDINGS.slice(0, 2).map((finding) => {
+                  const cite = shortCitation(finding);
+                  return (
+                    <li key={finding.id} className="border-t-2 border-ink pt-4">
+                      <p className="font-marketing-display text-[19px] font-bold leading-snug text-ink [font-stretch:105%]">
+                        {finding.claim}
+                      </p>
+                      <p className="mt-2.5 text-[15px] leading-relaxed text-muted">{finding.practical}</p>
+                      <a
+                        href={cite.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`mt-3 inline-block text-sm text-accent underline decoration-accent/40 underline-offset-4 hover:decoration-accent ${focusRing}`}
+                      >
+                        {cite.text}
+                      </a>
+                    </li>
+                  );
+                })}
+              </ul>
+
+              <Link
+                href="/research"
+                className={`mt-8 inline-block text-[15px] font-semibold text-ink underline decoration-ink/30 underline-offset-4 hover:decoration-ink ${focusRing}`}
+              >
+                Read all {FINDINGS.length} findings
+              </Link>
             </div>
 
-            <ul className="mt-12 grid gap-x-10 gap-y-10 md:grid-cols-3">
-              {FEATURED_FINDINGS.map((finding) => {
-                const cite = shortCitation(finding);
-                return (
-                  <li key={finding.id} className="border-t-2 border-ink pt-5">
-                    <p className="font-marketing-display text-xl font-bold leading-snug text-ink [font-stretch:92%]">
-                      {finding.claim}
-                    </p>
-                    <p className="mt-3 text-[15px] leading-relaxed text-muted">{finding.practical}</p>
-                    <a
-                      href={cite.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={`mt-4 inline-block text-sm text-accent underline decoration-accent/40 underline-offset-4 hover:decoration-accent ${focusRing}`}
-                    >
-                      {cite.text}
-                    </a>
-                  </li>
-                );
-              })}
-            </ul>
-
-            <Link
-              href="/research"
-              className={`mt-12 inline-block text-[15px] font-semibold text-ink underline decoration-ink/30 underline-offset-4 hover:decoration-ink ${focusRing}`}
-            >
-              Read all {FINDINGS.length} findings
-            </Link>
+            <div className="mx-auto w-full max-w-[16rem] lg:col-span-4 lg:col-start-9 lg:max-w-none">
+              <Screen src="/screens/coach.png" alt="The coach answering a question about swapping an exercise." />
+            </div>
           </div>
         </section>
 
-        <section className="border-t border-line">
-          <div className="mx-auto grid max-w-6xl gap-10 px-6 py-20 lg:grid-cols-12 lg:items-end">
-            <div className="lg:col-span-5">
-              <h2 className="font-marketing-display text-4xl font-extrabold leading-none text-ink [font-stretch:80%] [text-wrap:balance]">
-                Ten days free. Then decide.
+        <section className="border-b border-line">
+          <div className="mx-auto grid max-w-6xl gap-8 px-6 py-14 lg:grid-cols-12 lg:items-center lg:gap-10">
+            <div className="mx-auto w-full max-w-[16rem] lg:col-span-4 lg:max-w-none">
+              <Screen src="/screens/plan.png" alt="The week view, showing which day each session falls on." />
+            </div>
+
+            <div className="lg:col-span-7 lg:col-start-6">
+              <h2 className="font-marketing-display text-[clamp(1.9rem,3.4vw,2.6rem)] font-extrabold leading-[1.02] text-ink [font-stretch:110%] [text-wrap:balance]">
+                Your week, and it&apos;s yours to change.
               </h2>
-              <p className="mt-5 max-w-md text-[17px] leading-relaxed text-muted">
-                Everything, from the first day. No card until you choose to subscribe, and you can
-                cancel whenever you like.
+              <p className="mt-4 max-w-xl text-[16px] leading-relaxed text-muted">
+                Move sessions to different days, rename them, add or drop exercises, and set your own sets, reps and
+                rest. Already have a program you like? Skip the written plan and build your week yourself — the app
+                still tracks it and still moves your targets.
               </p>
-              <StartButton className="mt-8" />
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <div className="mx-auto grid max-w-6xl gap-8 px-6 py-14 lg:grid-cols-12 lg:items-end lg:gap-10">
+            <div className="lg:col-span-5">
+              <h2 className="font-marketing-display text-[clamp(1.9rem,3.4vw,2.6rem)] font-extrabold leading-[1.02] text-ink [font-stretch:110%] [text-wrap:balance]">
+                Free while we&apos;re in early access.
+              </h2>
+              <p className="mt-4 max-w-md text-[16px] leading-relaxed text-muted">
+                Everything, from the first day, with no card. Subscriptions aren&apos;t open yet — when they are,
+                you&apos;ll get at least seven more days free before you&apos;d need to decide.
+              </p>
+              <StartButton className="mt-7" />
             </div>
 
             <dl className="lg:col-span-6 lg:col-start-7">
+              <div className="mb-1 text-xs font-semibold uppercase tracking-[0.12em] text-muted">What it will cost</div>
               {(["month", "year"] as const).map((id) => (
-                <div key={id} className="flex items-baseline justify-between gap-6 border-b border-line py-5 first:border-t">
+                <div key={id} className="flex items-baseline justify-between gap-6 border-b border-line py-4 first:border-t">
                   <dt>
-                    <div className="text-lg font-semibold text-ink">{PLANS[id].label}</div>
+                    <div className="text-[17px] font-semibold text-ink">{PLANS[id].label}</div>
                     {PLANS[id].note && <div className="text-[15px] text-accent">{PLANS[id].note}</div>}
                   </dt>
                   <dd className="text-right">
-                    <span className="tabular font-marketing-display text-4xl font-extrabold text-ink [font-stretch:80%]">
+                    <span className="tabular font-marketing-display text-3xl font-extrabold text-ink [font-stretch:105%]">
                       {PLANS[id].price}
                     </span>
                     <span className="ml-2 text-[15px] text-muted">{PLANS[id].per}</span>
@@ -298,7 +429,7 @@ export default function Landing() {
       </main>
 
       <footer className="border-t border-line">
-        <div className="mx-auto flex max-w-6xl flex-col gap-3 px-6 py-8 text-sm text-muted sm:flex-row sm:items-center sm:justify-between">
+        <div className="mx-auto flex max-w-6xl flex-col gap-3 px-6 py-7 text-sm text-muted sm:flex-row sm:items-center sm:justify-between">
           <TypeMark />
           <div className="flex flex-col gap-2 sm:items-end">
             <p>Training guidance, not medical advice. If something hurts, see a clinician.</p>
