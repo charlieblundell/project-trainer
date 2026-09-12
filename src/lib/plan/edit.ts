@@ -29,6 +29,32 @@ function clamp(value: number, { min, max }: { min: number; max: number }): numbe
   return Math.min(max, Math.max(min, value));
 }
 
+/**
+ * What a hand-typed box should hold once someone has finished with it.
+ *
+ * Clamping each keystroke instead makes the box impossible to use: clearing it
+ * to type a new number reads as zero, snaps to the minimum, and whatever gets
+ * typed next lands beside that. Half-typed and empty states have to survive
+ * until the person moves on.
+ *
+ * Returns `previous` when there's nothing usable to commit, so an abandoned
+ * edit leaves the plan as it was.
+ */
+export function commitTyped(
+  raw: string,
+  previous: number | null,
+  limits: { min: number; max: number },
+  allowEmpty = false
+): number | null {
+  const trimmed = raw.trim();
+  if (trimmed === "") return allowEmpty ? null : previous;
+
+  const parsed = Number(trimmed);
+  if (!Number.isFinite(parsed)) return previous;
+
+  return clamp(parsed, limits);
+}
+
 /** Rebuilds what the app works out for itself: how long a session takes, and which half of the body it trains. */
 function settle(session: PlannedSession): PlannedSession {
   return {

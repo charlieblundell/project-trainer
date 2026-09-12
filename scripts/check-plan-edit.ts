@@ -6,8 +6,10 @@
  * Run with: npm run check:plan-edit
  */
 import {
+  LIMITS,
   addExercise,
   addSession,
+  commitTyped,
   emptyWeek,
   moveExercise,
   moveSession,
@@ -92,6 +94,22 @@ expect("removing work shortens the session", shorter.sessions[0].estMinutes < fi
 
 const gone = removeSession(plan, sessionId);
 expect("removing a session updates the day count", [gone.sessions.length, gone.daysPerWeek], [1, 1]);
+
+/*
+ * Typing into the boxes. Clamping each keystroke made the sets box impossible
+ * to change: clearing it read as zero, snapped to the minimum, and the next
+ * keystroke landed beside that. A real user hit this.
+ */
+console.log("\nTyping a number in\n");
+expect("clearing a required box keeps what was there", commitTyped("", 3, LIMITS.sets), 3);
+expect("a half-typed box is left alone until finished", commitTyped("", 8, LIMITS.reps), 8);
+expect("clearing the weight empties the target", commitTyped("", 60, LIMITS.weightKg, true), null);
+expect("a normal number goes through", commitTyped("4", 3, LIMITS.sets), 4);
+expect("spaces around it are fine", commitTyped(" 5 ", 3, LIMITS.sets), 5);
+expect("above the limit still clamps", commitTyped("99", 3, LIMITS.sets), 12);
+expect("below the limit still clamps", commitTyped("0", 3, LIMITS.sets), 1);
+expect("nonsense keeps what was there", commitTyped("abc", 3, LIMITS.sets), 3);
+expect("half-kilos survive", commitTyped("62.5", 60, LIMITS.weightKg, true), 62.5);
 
 console.log(failures === 0 ? "\nAll checks passed.\n" : `\n${failures} failure(s).\n`);
 process.exit(failures === 0 ? 0 : 1);

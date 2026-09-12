@@ -8,8 +8,10 @@ import { useAppStore } from "@/lib/store";
 import { availableExercises, searchExercises, type Equipment } from "@/lib/exercises";
 import { WEEKDAY_LABELS, WEEKDAY_ORDER, exerciseName } from "@/lib/plan/helpers";
 import {
+  LIMITS,
   addExercise,
   addSession,
+  commitTyped,
   moveExercise,
   moveSession,
   removeExercise,
@@ -241,23 +243,54 @@ function SessionCard({
   );
 }
 
+/**
+ * A typed number that only takes effect once the person has finished with it.
+ * While it has focus the box holds whatever they've typed, including nothing,
+ * so clearing it to type a new figure works the way it looks like it should.
+ * Tapping in selects what's there, so typing replaces rather than appends.
+ *
+ * Callers key this on the committed value, so a change made elsewhere — a rep
+ * range correcting itself, say — remounts the box with the new figure rather
+ * than being synced across by an effect.
+ */
 function NumberBox({
   label,
   value,
-  onChange,
+  limits,
+  allowEmpty = false,
+  onCommit,
 }: {
   label: string;
   value: number | null;
-  onChange: (value: number) => void;
+  limits: { min: number; max: number };
+  allowEmpty?: boolean;
+  onCommit: (value: number | null) => void;
 }) {
+  const asText = (n: number | null) => (n == null ? "" : String(n));
+  const [draft, setDraft] = useState(() => asText(value));
+
+  function commit() {
+    const next = commitTyped(draft, value, limits, allowEmpty);
+    setDraft(asText(next));
+    if (next !== value) onCommit(next);
+  }
+
   return (
     <label className="flex-1">
       <span className="text-[11px] text-muted">{label}</span>
       <input
         type="number"
         inputMode="numeric"
-        value={value ?? ""}
-        onChange={(e) => onChange(Number(e.target.value))}
+        enterKeyHint="done"
+        min={limits.min}
+        max={limits.max}
+        value={draft}
+        onFocus={(e) => e.target.select()}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") e.currentTarget.blur();
+        }}
         className="tabular mt-0.5 w-full rounded-lg border border-line bg-background px-2 py-2 text-sm"
       />
     </label>
@@ -314,32 +347,57 @@ function ExerciseRow({
       </div>
 
       <div className="flex gap-2">
-        <NumberBox label="Sets" value={exercise.sets} onChange={(sets) => patch({ sets })} />
+        <NumberBox
+          key={`sets-${exercise.sets}`}
+          label="Sets"
+          value={exercise.sets}
+          limits={LIMITS.sets}
+          onCommit={(sets) => sets != null && patch({ sets })}
+        />
         {timed ? (
           <NumberBox
+            key={`mins-${exercise.seconds}`}
             label="Minutes"
             value={Math.round((exercise.seconds ?? 0) / 60)}
-            onChange={(minutes) => patch({ minutes })}
+            limits={LIMITS.minutes}
+            onCommit={(minutes) => minutes != null && patch({ minutes })}
           />
         ) : (
           <>
-            <NumberBox label="Reps from" value={exercise.repMin ?? null} onChange={(repMin) => patch({ repMin })} />
-            <NumberBox label="to" value={exercise.repMax ?? null} onChange={(repMax) => patch({ repMax })} />
+            <NumberBox
+              key={`repmin-${exercise.repMin}`}
+              label="Reps from"
+              value={exercise.repMin ?? null}
+              limits={LIMITS.reps}
+              onCommit={(repMin) => repMin != null && patch({ repMin })}
+            />
+            <NumberBox
+              key={`repmax-${exercise.repMax}`}
+              label="to"
+              value={exercise.repMax ?? null}
+              limits={LIMITS.reps}
+              onCommit={(repMax) => repMax != null && patch({ repMax })}
+            />
           </>
         )}
         <NumberBox
+          key={`rest-${exercise.restSeconds}`}
           label="Rest (s)"
           value={exercise.restSeconds}
-          onChange={(restSeconds) => patch({ restSeconds })}
+          limits={LIMITS.restSeconds}
+          onCommit={(restSeconds) => restSeconds != null && patch({ restSeconds })}
         />
       </div>
 
       {weighted && (
         <div className="mt-2 flex items-end gap-2">
           <NumberBox
+            key={`weight-${exercise.targetWeightKg}`}
             label="Target weight (kg)"
             value={exercise.targetWeightKg}
-            onChange={(targetWeightKg) => patch({ targetWeightKg })}
+            limits={LIMITS.weightKg}
+            allowEmpty
+            onCommit={(targetWeightKg) => patch({ targetWeightKg })}
           />
           {exercise.targetWeightKg != null && (
             <button
