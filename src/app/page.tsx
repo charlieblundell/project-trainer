@@ -19,12 +19,17 @@ import { PLANS } from "@/lib/billing/plans";
  * the screenshots are of the app's dark mode and need a dark ground under them.
  */
 
-const DARK = "#17120f";
-const DARK_SURFACE = "#241d19";
-const DARK_LINE = "#3a302a";
-const ON_DARK = "#f4efe9";
-const ON_DARK_MUTED = "#a0948b";
-const ON_DARK_ACCENT = "#ef7d4e";
+/*
+ * The dark half of the landing page, in the system's dark-mode values rather
+ * than a set invented for it — the same greys and the same blue the app is
+ * built from, so signing up doesn't change the furniture.
+ */
+const DARK = "#000000"; /* systemBackground, dark */
+const DARK_SURFACE = "#1c1c1e"; /* secondarySystemBackground, dark */
+const DARK_LINE = "#38383a"; /* separator, dark */
+const ON_DARK = "#ffffff"; /* label, dark */
+const ON_DARK_MUTED = "rgba(235,235,245,0.6)"; /* secondaryLabel, dark */
+const ON_DARK_ACCENT = "#0a84ff"; /* systemBlue, dark */
 
 type Week = { label: string; kg: number; reps: number[]; note: string };
 
@@ -244,7 +249,7 @@ export default function Landing() {
           <div className="lg:col-span-6">
             <div
               className="mb-5 inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em]"
-              style={{ background: "rgba(239,125,78,0.14)", color: ON_DARK_ACCENT }}
+              style={{ background: "rgba(10,132,255,0.16)", color: ON_DARK_ACCENT }}
             >
               Free while we&apos;re in early access
             </div>

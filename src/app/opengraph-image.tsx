@@ -10,10 +10,10 @@ export const alt = "Your Personal Trainer: every set you log changes the next on
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-const INK = "#1e1916";
-const PAPER = "#faf7f3";
+const INK = "#000000";
+const PAPER = "#f2f2f7";
 const MUTED = "#7a706a";
-const TERRACOTTA = "#b8492a";
+const TERRACOTTA = "#007aff";
 const LINE = "#eae2da";
 
 export default function Image() {
