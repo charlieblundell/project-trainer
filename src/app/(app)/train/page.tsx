@@ -110,9 +110,9 @@ export default function Train() {
     <div className="relative">
       <button
         onClick={() => router.push("/home")}
-        className="mb-4 flex items-center gap-1 text-subhead text-muted"
+        className="-ml-1 mb-2 flex min-h-[44px] items-center gap-0.5 text-body text-accent"
       >
-        <ChevronLeft size={18} /> {planSession.name}
+        <ChevronLeft size={22} strokeWidth={2.2} /> {planSession.name}
       </button>
 
       <div className="mb-1 text-footnote text-muted">

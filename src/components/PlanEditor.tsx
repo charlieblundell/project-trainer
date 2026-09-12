@@ -80,9 +80,9 @@ export function PlanEditor() {
     <div>
       <button
         onClick={() => router.push("/plan")}
-        className="mb-4 flex items-center gap-1 text-subhead text-muted"
+        className="-ml-1 mb-2 flex min-h-[44px] items-center gap-0.5 text-body text-accent"
       >
-        <ChevronLeft size={18} /> Your plan
+        <ChevronLeft size={22} strokeWidth={2.2} /> Your plan
       </button>
 
       <h1 className="mb-1 text-title1 font-bold text-ink">Edit your week</h1>
@@ -117,7 +117,7 @@ export function PlanEditor() {
           setDraft(next);
           setOpenId(next.sessions[next.sessions.length - 1].id);
         }}
-        className="mt-2.5 flex w-full items-center justify-center gap-2 rounded-[20px] border border-line py-3.5 text-subhead font-semibold text-ink"
+        className="mt-2.5 flex w-full items-center justify-center gap-2 min-h-[48px] rounded-[20px] border border-line text-subhead font-semibold text-ink"
       >
         <Plus size={16} /> Add a session
       </button>
@@ -177,7 +177,7 @@ function SessionCard({
             id={`name-${session.id}`}
             value={session.name}
             onChange={(e) => onChange((plan) => renameSession(plan, session.id, e.target.value))}
-            className="mb-4 mt-1.5 w-full rounded-[12px] border border-line bg-background px-3 py-2.5 text-subhead"
+            className="mb-4 mt-1.5 min-h-[44px] w-full rounded-[12px] border border-line bg-background px-3 text-body"
           />
 
           <div className="mb-1.5 text-footnote font-semibold text-muted">Day</div>
@@ -192,7 +192,7 @@ function SessionCard({
                   aria-pressed={selected}
                   aria-label={`${WEEKDAY_LABELS[day]}${taken ? " (swaps with the session there)" : ""}`}
                   className={clsx(
-                    "flex h-10 flex-1 items-center justify-center rounded-lg border text-footnote font-semibold",
+                    "flex h-11 flex-1 items-center justify-center rounded-[10px] border text-footnote font-semibold",
                     selected
                       ? "border-accent bg-accent text-accent-ink"
                       : taken
@@ -226,16 +226,16 @@ function SessionCard({
 
           <button
             onClick={() => setAdding(true)}
-            className="mt-2.5 flex w-full items-center justify-center gap-2 rounded-[12px] border border-line py-2.5 text-subhead font-semibold text-ink"
+            className="mt-2.5 flex w-full items-center justify-center gap-2 min-h-[48px] rounded-[12px] border border-line text-subhead font-semibold text-ink"
           >
             <Plus size={15} /> Add an exercise
           </button>
 
           <button
             onClick={() => onChange((plan) => removeSession(plan, session.id))}
-            className="mt-2 flex w-full items-center justify-center gap-2 py-2.5 text-subhead font-semibold text-warning"
+            className="mt-2 flex min-h-[48px] w-full items-center justify-center gap-2 text-body text-warning"
           >
-            <Trash2 size={15} /> Delete this session
+            <Trash2 size={16} /> Delete this session
           </button>
 
           <AnimatePresence>
@@ -304,7 +304,7 @@ function NumberBox({
         onKeyDown={(e) => {
           if (e.key === "Enter") e.currentTarget.blur();
         }}
-        className="tabular mt-0.5 w-full rounded-lg border border-line bg-background px-2 py-2 text-subhead"
+        className="tabular mt-0.5 min-h-[44px] w-full rounded-[10px] border border-line bg-background px-2 text-body"
       />
     </label>
   );
@@ -337,7 +337,7 @@ function ExerciseRow({
             onClick={() => onChange((plan) => moveExercise(plan, sessionId, index, -1))}
             disabled={index === 0}
             aria-label="Move up"
-            className="flex h-7 w-7 items-center justify-center rounded-lg border border-line text-muted disabled:opacity-30"
+            className="flex h-11 w-11 items-center justify-center rounded-lg border border-line text-muted disabled:opacity-30"
           >
             <ChevronUp size={14} />
           </button>
@@ -345,14 +345,14 @@ function ExerciseRow({
             onClick={() => onChange((plan) => moveExercise(plan, sessionId, index, 1))}
             disabled={index === count - 1}
             aria-label="Move down"
-            className="flex h-7 w-7 items-center justify-center rounded-lg border border-line text-muted disabled:opacity-30"
+            className="flex h-11 w-11 items-center justify-center rounded-lg border border-line text-muted disabled:opacity-30"
           >
             <ChevronDown size={14} />
           </button>
           <button
             onClick={() => onChange((plan) => removeExercise(plan, sessionId, index))}
             aria-label={`Remove ${exerciseName(exercise)}`}
-            className="flex h-7 w-7 items-center justify-center rounded-lg border border-line text-warning"
+            className="flex h-11 w-11 items-center justify-center rounded-lg border border-line text-warning"
           >
             <X size={14} />
           </button>
@@ -415,7 +415,7 @@ function ExerciseRow({
           {exercise.targetWeightKg != null && (
             <button
               onClick={() => patch({ targetWeightKg: null })}
-              className="mb-0.5 rounded-lg border border-line px-2.5 py-2 text-footnote font-semibold text-muted"
+              className="mb-0.5 min-h-[44px] rounded-[10px] border border-line px-2.5 text-footnote font-semibold text-muted"
             >
               Clear
             </button>

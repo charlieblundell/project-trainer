@@ -85,7 +85,7 @@ export function InstallPrompt({
       ) : promptEvent ? (
         <button
           onClick={install}
-          className="w-full rounded-[12px] bg-accent py-2.5 text-body font-semibold text-accent-ink"
+          className="w-full min-h-[48px] rounded-[12px] bg-accent text-body font-semibold text-accent-ink"
         >
           Install the app
         </button>
@@ -127,7 +127,7 @@ export function InstallPrompt({
       )}
 
       {dismissible && (
-        <button onClick={notNow} className="mt-3 text-footnote font-semibold text-muted hover:text-ink">
+        <button onClick={notNow} className="mt-2 min-h-[44px] text-body text-accent">
           Not now
         </button>
       )}

@@ -205,7 +205,7 @@ function HealthDetails() {
         {!shared && (
           <button
             onClick={() => router.push("/settings/body")}
-            className="mt-3 w-full rounded-[12px] border border-line py-2.5 text-subhead font-semibold text-ink"
+            className="mt-3 w-full min-h-[48px] rounded-[12px] border border-line text-subhead font-semibold text-ink"
           >
             Share health details
           </button>
@@ -214,7 +214,7 @@ function HealthDetails() {
         {shared && !confirming && (
           <button
             onClick={() => setConfirming(true)}
-            className="mt-3 w-full rounded-[12px] border border-line py-2.5 text-subhead font-semibold text-ink"
+            className="mt-3 w-full min-h-[48px] rounded-[12px] border border-line text-subhead font-semibold text-ink"
           >
             Stop sharing health details
           </button>
@@ -230,14 +230,14 @@ function HealthDetails() {
               <button
                 onClick={withdraw}
                 disabled={busy}
-                className="flex-1 rounded-[12px] bg-accent py-2.5 text-body font-semibold text-accent-ink disabled:opacity-60"
+                className="flex-1 min-h-[48px] rounded-[12px] bg-accent text-body font-semibold text-accent-ink disabled:opacity-60"
               >
                 {busy ? "Deleting" : "Delete them"}
               </button>
               <button
                 onClick={() => setConfirming(false)}
                 disabled={busy}
-                className="flex-1 rounded-[12px] border border-line py-2.5 text-subhead font-semibold text-ink"
+                className="flex-1 min-h-[48px] rounded-[12px] border border-line text-subhead font-semibold text-ink"
               >
                 Keep them
               </button>
@@ -300,7 +300,7 @@ function DeleteAccount() {
         {!open ? (
           <button
             onClick={() => setOpen(true)}
-            className="mt-3 w-full rounded-[12px] border border-line py-2.5 text-subhead font-semibold text-warning"
+            className="mt-3 w-full min-h-[48px] rounded-[12px] border border-line text-subhead font-semibold text-warning"
           >
             Delete my account and data
           </button>
@@ -343,7 +343,7 @@ function DeleteAccount() {
                   setError(null);
                 }}
                 disabled={busy}
-                className="flex-1 rounded-[12px] border border-line py-2.5 text-subhead font-semibold text-ink"
+                className="flex-1 min-h-[48px] rounded-[12px] border border-line text-subhead font-semibold text-ink"
               >
                 Cancel
               </button>
@@ -417,7 +417,7 @@ export default function Settings() {
         {summary.action === "none" ? null : summary.action === "subscribe" ? (
           <button
             onClick={() => router.push("/upgrade")}
-            className="w-full rounded-[12px] bg-accent py-2.5 text-body font-semibold text-accent-ink"
+            className="w-full min-h-[48px] rounded-[12px] bg-accent text-body font-semibold text-accent-ink"
           >
             Subscribe
           </button>
@@ -425,7 +425,7 @@ export default function Settings() {
           <button
             onClick={manageBilling}
             disabled={opening}
-            className="w-full rounded-[12px] border border-line py-2.5 text-subhead font-semibold text-ink disabled:opacity-60"
+            className="w-full min-h-[48px] rounded-[12px] border border-line text-subhead font-semibold text-ink disabled:opacity-60"
           >
             {opening ? "Opening billing" : "Manage billing"}
           </button>

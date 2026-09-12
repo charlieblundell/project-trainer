@@ -100,7 +100,7 @@ export default function Coach() {
               transition={{ delay: i * 0.05 }}
               whileTap={{ scale: 0.96 }}
               onClick={() => send(p)}
-              className="min-h-[36px] rounded-full bg-surface px-3.5 text-subhead text-accent"
+              className="min-h-[44px] rounded-full bg-surface px-4 text-subhead text-accent"
             >
               {p}
             </motion.button>

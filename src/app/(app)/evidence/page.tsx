@@ -12,8 +12,8 @@ function StrengthBadge({ strength }: { strength: EvidenceStrength }) {
   return (
     <span
       className={clsx(
-        "flex-shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold",
-        strength === "strong" && "bg-success-soft text-success",
+        "flex-shrink-0 rounded-full px-2 py-1 text-[11px] font-semibold",
+        strength === "strong" && "bg-success-soft text-success-ink",
         strength === "moderate" && "bg-accent-soft text-accent",
         strength === "limited" && "border border-line text-muted"
       )}
@@ -124,7 +124,7 @@ function EvidenceBody() {
             key={t.id}
             onClick={() => setTopic(t.id)}
             className={clsx(
-              "flex-shrink-0 rounded-[12px] px-3.5 py-2 text-subhead font-semibold transition",
+              "flex min-h-[44px] flex-shrink-0 items-center rounded-[12px] px-3.5 text-subhead font-semibold transition",
               topic === t.id ? "bg-accent text-accent-ink" : "bg-surface text-muted"
             )}
           >

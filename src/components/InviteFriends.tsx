@@ -44,7 +44,7 @@ export function InviteFriends({ className }: { className?: string }) {
       </div>
       <button
         onClick={share}
-        className="mt-3 w-full rounded-[12px] border border-line py-2.5 text-subhead font-semibold text-ink"
+        className="mt-3 w-full min-h-[48px] rounded-[12px] border border-line text-subhead font-semibold text-ink"
       >
         {status === "copied" ? "Link copied" : "Share the app"}
       </button>

@@ -201,7 +201,7 @@ function Editor({ section, saved }: { section: ProfileSection; saved: Onboarding
         </button>
         <button
           onClick={() => router.push("/settings")}
-          className="w-full py-3 text-subhead font-semibold text-muted hover:text-ink"
+          className="min-h-[48px] w-full text-body text-accent"
         >
           Not now
         </button>

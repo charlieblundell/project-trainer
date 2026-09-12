@@ -19,25 +19,48 @@
   --surface: #ffffff; /* secondarySystemGroupedBackground */
   --surface-2: #f2f2f7; /* tertiarySystemGroupedBackground */
 
-  /* Labels. Apple's secondary/tertiary are translucent so they sit on any
-     background without picking a grey that only works on one of them. */
+  /*
+   * Labels. Translucent, so they sit on any background rather than being a
+   * grey that only works on one of them.
+   *
+   * Apple's own secondaryLabel is 60% and measures 3.44:1 on white — under
+   * the 4.5:1 that 13 and 15pt text needs. Everything here is used for real
+   * text, read in a gym in daylight, so the secondary and tertiary steps are
+   * darkened until they pass. Tertiary is only ever used on shapes, where the
+   * 3:1 graphics floor applies.
+   */
   --ink: #000000; /* label */
-  --muted: rgba(60, 60, 67, 0.6); /* secondaryLabel */
-  --faint: rgba(60, 60, 67, 0.3); /* tertiaryLabel */
+  /* A solid value rather than an opacity utility, so it resolves to a colour
+     a contrast check can read. */
+  --ink-soft: #3f3f43;
+  --muted: rgba(60, 60, 67, 0.78); /* secondaryLabel, darkened to pass 4.5:1 */
+  --faint: rgba(60, 60, 67, 0.45); /* tertiaryLabel — shapes only */
   --line: rgba(60, 60, 67, 0.29); /* separator */
 
   /* Fills, for segmented controls and inert chips. */
   --fill: rgba(120, 120, 128, 0.12); /* secondarySystemFill */
   --fill-strong: rgba(120, 120, 128, 0.2); /* systemFill */
 
-  --accent: #007aff; /* systemBlue */
+  /*
+   * systemBlue as Apple ships it (#007aff) measures 4.02:1 on white, under
+   * the 4.5:1 that 17pt link text needs. This is that blue taken down just
+   * far enough to pass — indistinguishable beside it, readable by people
+   * whose eyes aren't mine.
+   */
+  --accent: #0068e0;
   --accent-ink: #ffffff;
   --accent-soft: rgba(0, 122, 255, 0.12);
 
-  --success: #34c759; /* systemGreen */
+  --success: #34c759; /* systemGreen — shapes and fills */
+  /* systemGreen as text on a pale green is 2.22:1. This is the darker green
+     Apple uses where green has to be read rather than seen. */
+  --success-ink: #1c7a34;
   --success-soft: rgba(52, 199, 89, 0.14);
 
-  --warning: #ff3b30; /* systemRed */
+  /* systemRed is 3.55:1 on white; this is Apple's own darker red, which
+     passes. Destructive actions are the last thing that should be hard to
+     read. */
+  --warning: #d70015;
   --warning-soft: rgba(255, 59, 48, 0.12);
 
   /*
@@ -62,6 +85,7 @@
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
   --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
   --color-muted: var(--muted);
   --color-faint: var(--faint);
   --color-line: var(--line);
@@ -73,6 +97,7 @@
   --color-accent-soft: var(--accent-soft);
 
   --color-success: var(--success);
+  --color-success-ink: var(--success-ink);
   --color-success-soft: var(--success-soft);
 
   --color-warning: var(--warning);

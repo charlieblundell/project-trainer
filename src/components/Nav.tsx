@@ -44,13 +44,13 @@ export function Nav() {
                   <Icon
                     size={22}
                     strokeWidth={active ? 2.3 : 1.9}
-                    className={active ? "text-accent" : "text-muted"}
+                    className={active ? "text-accent" : "text-ink-soft"}
                   />
                 </motion.div>
                 <span
                   className={clsx(
-                    "text-[10px] leading-none",
-                    active ? "font-semibold text-accent" : "text-muted"
+                    "text-[11px] leading-none",
+                    active ? "font-semibold text-accent" : "font-medium text-ink-soft"
                   )}
                 >
                   {item.label}

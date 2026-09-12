@@ -92,7 +92,7 @@ export default function Plan() {
               whileTap={session ? { scale: 0.99 } : undefined}
               disabled={!session}
               onClick={() => session && setPreview(session)}
-              className={`flex w-full items-center justify-between rounded-[20px] border px-4 py-3.5 text-left ${
+              className={`flex min-h-[56px] w-full items-center justify-between rounded-[20px] border px-4 py-3 text-left ${
                 isToday ? "border-ink bg-ink" : "border-line bg-surface"
               }`}
             >
@@ -117,7 +117,7 @@ export default function Plan() {
 
       <button
         onClick={() => router.push("/plan/edit")}
-        className="mt-2.5 flex w-full items-center justify-center gap-2 rounded-[20px] border border-line py-3.5 text-subhead font-semibold text-ink"
+        className="mt-2.5 flex w-full items-center justify-center gap-2 min-h-[48px] rounded-[20px] border border-line text-subhead font-semibold text-ink"
       >
         <Pencil size={15} /> Edit my plan
       </button>
