@@ -62,7 +62,7 @@ export default function Plan() {
       <h1 className="mb-1 font-display text-2xl font-bold text-ink">{plan.goal}</h1>
       <div className="tabular mb-5 text-sm text-muted">
         Week {weekNumber(plan)} ·{" "}
-        {done === 0 ? "no sessions yet" : `${done} session${done > 1 ? "s" : ""} done`}
+        {done === 0 ? "nothing logged yet" : `${done} session${done > 1 ? "s" : ""} done`}
       </div>
 
       {plan.notes.length > 0 && (
