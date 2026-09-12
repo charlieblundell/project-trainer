@@ -84,10 +84,10 @@ export default function Train() {
   if (!planSession) {
     return (
       <div className="py-16 text-center">
-        <p className="mb-4 text-sm text-muted">No workout selected.</p>
+        <p className="mb-4 text-subhead text-muted">No workout selected.</p>
         <button
           onClick={() => router.push("/plan")}
-          className="rounded-2xl bg-ink px-5 py-3 text-sm font-semibold text-background"
+          className="rounded-[20px] bg-ink px-5 py-3 text-subhead font-semibold text-background"
         >
           Pick one from your plan
         </button>
@@ -108,12 +108,12 @@ export default function Train() {
     <div className="relative">
       <button
         onClick={() => router.push("/home")}
-        className="mb-4 flex items-center gap-1 text-sm text-muted"
+        className="mb-4 flex items-center gap-1 text-subhead text-muted"
       >
         <ChevronLeft size={18} /> {planSession.name}
       </button>
 
-      <div className="mb-1 text-xs text-muted">
+      <div className="mb-1 text-footnote text-muted">
         {Math.min(session.exerciseIdx + 1, planSession.exercises.length)} /{" "}
         {planSession.exercises.length} exercises
         {isLowReadiness(readiness) && " · lighter day: one fewer set each, from your check-in"}
@@ -127,7 +127,7 @@ export default function Train() {
           lastByExercise={lastByExercise}
         />
       ) : (
-        <div className="py-16 text-center text-sm text-muted">
+        <div className="py-16 text-center text-subhead text-muted">
           Nothing left in this session.{" "}
           <button className="underline" onClick={() => router.push("/home")}>
             Back home
@@ -259,12 +259,12 @@ function ExercisePanel({
   return (
     <div>
       <div className="mb-1 flex items-start justify-between gap-3">
-        <h1 className="font-display text-2xl font-bold text-ink">{def?.name ?? activeId}</h1>
+        <h1 className="text-title1 font-bold text-ink">{def?.name ?? activeId}</h1>
         <div className="flex flex-shrink-0 gap-1.5 pt-1">
           {def?.cues && (
             <button
               onClick={() => setShowInfo(true)}
-              className="flex h-8 w-8 items-center justify-center rounded-full border border-line bg-surface text-muted"
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-surface text-muted"
               aria-label="Exercise info"
             >
               <Info size={15} />
@@ -273,7 +273,7 @@ function ExercisePanel({
           {alternatives.length > 0 && (
             <button
               onClick={() => setShowSwap(true)}
-              className="flex h-8 w-8 items-center justify-center rounded-full border border-line bg-surface text-muted"
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-surface text-muted"
               aria-label="Swap exercise"
             >
               <MoreHorizontal size={15} />
@@ -285,25 +285,25 @@ function ExercisePanel({
       <div className="tabular mb-1 text-[15px] font-semibold text-accent">
         {targetLabel(planned)}
       </div>
-      {override && <div className="mb-4 text-xs font-semibold text-success">Swapped in for today</div>}
+      {override && <div className="mb-4 text-footnote font-semibold text-success">Swapped in for today</div>}
       {lastSets && lastSets.length > 0 ? (
-        <div className="tabular mb-4 text-xs text-muted">Last time: {describeSets(lastSets, planned.unit)}</div>
+        <div className="tabular mb-4 text-footnote text-muted">Last time: {describeSets(lastSets, planned.unit)}</div>
       ) : (
         !override && <div className="mb-4" />
       )}
 
       {needsCalibration && (
-        <div className="mb-5 flex gap-2.5 rounded-2xl bg-accent-soft p-4">
+        <div className="mb-5 flex gap-2.5 rounded-[20px] bg-accent-soft p-4">
           <Lightbulb size={16} className="mt-0.5 flex-shrink-0 text-accent" />
-          <p className="text-sm leading-relaxed text-ink">
+          <p className="text-subhead leading-relaxed text-ink">
             First time on this one. Work up to a weight where the last two reps are hard but your
             form holds, then log what you did — we&apos;ll take it from there.
           </p>
         </div>
       )}
 
-      <div className="mb-5 overflow-hidden rounded-2xl border border-line bg-surface">
-        <div className="grid grid-cols-[1fr_2fr_2fr_1fr] border-b border-line px-4 py-2.5 text-xs font-semibold text-muted">
+      <div className="mb-5 overflow-hidden rounded-[20px] bg-surface">
+        <div className="grid grid-cols-[1fr_2fr_2fr_1fr] border-b border-line px-4 py-2.5 text-footnote font-semibold text-muted">
           <span>Set</span>
           <span>{tracksWeight ? "Weight" : ""}</span>
           <span>{isTimed ? "Minutes" : "Reps"}</span>
@@ -314,7 +314,7 @@ function ExercisePanel({
           return (
             <div
               key={i}
-              className="tabular grid grid-cols-[1fr_2fr_2fr_1fr] items-center border-b border-line px-4 py-3 text-sm last:border-b-0"
+              className="tabular grid grid-cols-[1fr_2fr_2fr_1fr] items-center border-b border-line px-4 py-3 text-subhead last:border-b-0"
             >
               <span>{i + 1}</span>
               <span>{done && tracksWeight ? `${done.w} kg` : tracksWeight ? "—" : ""}</span>
@@ -339,11 +339,11 @@ function ExercisePanel({
       {restEndsAt !== null && logs.length < planned.sets && !saving && (
         <div
           role="timer"
-          className="mb-4 flex items-center justify-between gap-3 rounded-2xl border border-line bg-surface px-4 py-3"
+          className="mb-4 flex items-center justify-between gap-3 rounded-[20px] bg-surface px-4 py-3"
         >
           <div>
-            <div className="text-xs font-semibold tracking-widest text-muted">{restDone ? "REST DONE" : "REST"}</div>
-            <div className="tabular font-display text-2xl font-bold text-ink">
+            <div className="text-footnote font-semibold text-muted">{restDone ? "REST DONE" : "REST"}</div>
+            <div className="tabular text-title1 font-bold text-ink">
               {restDone ? "Next set" : formatRest(restLeft)}
             </div>
           </div>
@@ -354,14 +354,14 @@ function ExercisePanel({
             {!restDone && (
               <button
                 onClick={() => addRest(30)}
-                className="rounded-xl border border-line px-3 py-2 text-sm font-semibold text-ink"
+                className="rounded-[12px] border border-line px-3 py-2 text-subhead font-semibold text-ink"
               >
                 +30s
               </button>
             )}
             <button
               onClick={() => setRestEndsAt(null)}
-              className="rounded-xl border border-line px-3 py-2 text-sm font-semibold text-ink"
+              className="rounded-[12px] border border-line px-3 py-2 text-subhead font-semibold text-ink"
             >
               {restDone ? "Dismiss" : "Skip"}
             </button>
@@ -370,42 +370,42 @@ function ExercisePanel({
       )}
 
       {saving ? (
-        <p className="py-6 text-center text-sm text-muted">Saving your workout…</p>
+        <p className="py-6 text-center text-subhead text-muted">Saving your workout…</p>
       ) : !awaitingRpe ? (
         logs.length < planned.sets && (
           <>
             <div className="mb-3.5 flex gap-2.5">
               {tracksWeight && (
                 <div className="flex-1">
-                  <label className="text-xs text-muted">Weight (kg)</label>
+                  <label className="text-footnote text-muted">Weight (kg)</label>
                   <input
                     type="number"
                     inputMode="decimal"
                     value={input.w}
                     onChange={(e) => setInput({ ...input, w: e.target.value })}
-                    className="tabular mt-1 w-full rounded-xl border border-line px-3 py-2.5 text-sm"
+                    className="tabular mt-1 w-full rounded-[12px] border border-line px-3 py-2.5 text-subhead"
                   />
                 </div>
               )}
               <div className="flex-1">
-                <label className="text-xs text-muted">{isTimed ? "Minutes" : "Reps"}</label>
+                <label className="text-footnote text-muted">{isTimed ? "Minutes" : "Reps"}</label>
                 <input
                   type="number"
                   inputMode="numeric"
                   value={input.r}
                   onChange={(e) => setInput({ ...input, r: e.target.value })}
-                  className="tabular mt-1 w-full rounded-xl border border-line px-3 py-2.5 text-sm"
+                  className="tabular mt-1 w-full rounded-[12px] border border-line px-3 py-2.5 text-subhead"
                 />
               </div>
             </div>
             {tracksWeight && !(weightValue > 0) && (
-              <p className="mb-2.5 text-xs text-muted">Enter the weight you used to log this set.</p>
+              <p className="mb-2.5 text-footnote text-muted">Enter the weight you used to log this set.</p>
             )}
             <motion.button
               whileTap={canLog ? { scale: 0.98 } : undefined}
               onClick={handleLogSet}
               disabled={!canLog}
-              className="w-full rounded-2xl bg-ink py-4 text-[15px] font-semibold text-background disabled:bg-line disabled:text-muted"
+              className="w-full rounded-[20px] bg-ink py-4 text-[15px] font-semibold text-background disabled:bg-line disabled:text-muted"
             >
               {isTimed ? "Log it" : "Log set"}
             </motion.button>

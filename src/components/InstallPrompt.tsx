@@ -48,9 +48,9 @@ export function InstallPrompt({
   if (installed) {
     if (!showInstalled) return null;
     return (
-      <div className={clsx("rounded-2xl border border-line bg-surface px-4 py-3.5", className)}>
-        <div className="text-sm font-semibold text-ink">Installed</div>
-        <div className="text-xs leading-relaxed text-muted">You&apos;re using the app from your home screen.</div>
+      <div className={clsx("rounded-[20px] bg-surface px-4 py-3.5", className)}>
+        <div className="text-subhead font-semibold text-ink">Installed</div>
+        <div className="text-footnote leading-relaxed text-muted">You&apos;re using the app from your home screen.</div>
       </div>
     );
   }
@@ -70,14 +70,14 @@ export function InstallPrompt({
   }
 
   return (
-    <div className={clsx("rounded-2xl border border-line bg-surface p-4", className)}>
-      <div className="mb-1 text-sm font-semibold text-ink">Put it on your home screen</div>
-      <p className="mb-3 text-xs leading-relaxed text-muted">
+    <div className={clsx("rounded-[20px] bg-surface p-4", className)}>
+      <div className="mb-1 text-subhead font-semibold text-ink">Put it on your home screen</div>
+      <p className="mb-3 text-footnote leading-relaxed text-muted">
         Opens in one tap, full screen, straight into your plan — like any other app.
       </p>
 
       {device.inApp ? (
-        <p className="text-sm leading-relaxed text-ink">
+        <p className="text-subhead leading-relaxed text-ink">
           You&apos;re viewing this inside another app, which can&apos;t add it to your home screen. Tap the{" "}
           <span className="font-semibold">•••</span> menu, choose{" "}
           <span className="font-semibold">Open in browser</span>, then add it from Safari or Chrome.
@@ -85,12 +85,12 @@ export function InstallPrompt({
       ) : promptEvent ? (
         <button
           onClick={install}
-          className="w-full rounded-xl bg-ink py-2.5 text-sm font-semibold text-background"
+          className="w-full rounded-[12px] bg-ink py-2.5 text-subhead font-semibold text-background"
         >
           Install the app
         </button>
       ) : device.ios ? (
-        <ol className="flex flex-col gap-2.5 text-sm text-ink">
+        <ol className="flex flex-col gap-2.5 text-subhead text-ink">
           <li className="flex items-center gap-3">
             <Step n={1} />
             <span>
@@ -114,20 +114,20 @@ export function InstallPrompt({
           </li>
         </ol>
       ) : device.mobile ? (
-        <p className="text-sm leading-relaxed text-ink">
+        <p className="text-subhead leading-relaxed text-ink">
           In Chrome, tap <EllipsisVertical size={15} className="-mt-0.5 inline text-accent" aria-hidden="true" />{" "}
           the menu, then <span className="font-semibold">Add to Home screen</span> or{" "}
           <span className="font-semibold">Install app</span>.
         </p>
       ) : (
-        <p className="text-sm leading-relaxed text-ink">
+        <p className="text-subhead leading-relaxed text-ink">
           Open this site on your phone, sign in, and add it to your home screen from there — it&apos;s where the app
           works best.
         </p>
       )}
 
       {dismissible && (
-        <button onClick={notNow} className="mt-3 text-xs font-semibold text-muted hover:text-ink">
+        <button onClick={notNow} className="mt-3 text-footnote font-semibold text-muted hover:text-ink">
           Not now
         </button>
       )}
@@ -139,7 +139,7 @@ function Step({ n }: { n: number }) {
   return (
     <span
       aria-hidden="true"
-      className="tabular flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-md bg-accent-soft text-xs font-bold text-accent"
+      className="tabular flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-md bg-accent-soft text-footnote font-bold text-accent"
     >
       {n}
     </span>

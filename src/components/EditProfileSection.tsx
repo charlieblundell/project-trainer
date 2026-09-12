@@ -40,7 +40,7 @@ const TITLES: Record<ProfileSection, string> = {
 };
 
 function Label({ children }: { children: ReactNode }) {
-  return <div className="mb-2 mt-6 text-xs font-semibold tracking-widest text-muted first:mt-0">{children}</div>;
+  return <div className="mb-2 mt-6 text-footnote font-semibold text-muted first:mt-0">{children}</div>;
 }
 
 function toggle(list: string[], value: string): string[] {
@@ -137,10 +137,10 @@ function Editor({ section, saved }: { section: ProfileSection; saved: Onboarding
   if (status === "saved") {
     return (
       <div className="mx-auto max-w-sm">
-        <h1 className="mb-2 font-display text-2xl font-bold text-ink">
+        <h1 className="mb-2 text-title1 font-bold text-ink">
           {rebuilt ? "Saved, and your plan's updated." : "Saved."}
         </h1>
-        <p className="mb-6 text-sm leading-relaxed text-muted">
+        <p className="mb-6 text-subhead leading-relaxed text-muted">
           {rebuilt
             ? "Your plan has been rebuilt around your changes. Your workout history and personal bests are all still here, and exercises that stayed in your plan kept their weights."
             : "Your changes are saved."}
@@ -148,7 +148,7 @@ function Editor({ section, saved }: { section: ProfileSection; saved: Onboarding
         {rebuilt && (
           <button
             onClick={() => router.push("/plan")}
-            className="mb-2.5 w-full rounded-2xl bg-ink py-4 text-[15px] font-semibold text-background"
+            className="mb-2.5 w-full rounded-[20px] bg-ink py-4 text-[15px] font-semibold text-background"
           >
             See my plan
           </button>
@@ -157,8 +157,8 @@ function Editor({ section, saved }: { section: ProfileSection; saved: Onboarding
           onClick={() => router.push("/settings")}
           className={
             rebuilt
-              ? "w-full py-3 text-sm font-semibold text-muted hover:text-ink"
-              : "w-full rounded-2xl bg-ink py-4 text-[15px] font-semibold text-background"
+              ? "w-full py-3 text-subhead font-semibold text-muted hover:text-ink"
+              : "w-full rounded-[20px] bg-ink py-4 text-[15px] font-semibold text-background"
           }
         >
           Back to Settings
@@ -172,7 +172,7 @@ function Editor({ section, saved }: { section: ProfileSection; saved: Onboarding
       <button onClick={() => router.push("/settings")} className="mb-4 flex items-center text-muted" aria-label="Back to Settings">
         <ChevronLeft size={18} />
       </button>
-      <h1 className="mb-5 font-display text-2xl font-bold text-ink">{TITLES[section]}</h1>
+      <h1 className="mb-5 text-title1 font-bold text-ink">{TITLES[section]}</h1>
     </>
   );
 
@@ -180,7 +180,7 @@ function Editor({ section, saved }: { section: ProfileSection; saved: Onboarding
     return (
       <div className="mx-auto max-w-sm">
         {header}
-        <div className="mb-5 flex flex-col gap-3 text-sm leading-relaxed text-ink">
+        <div className="mb-5 flex flex-col gap-3 text-subhead leading-relaxed text-ink">
           <p>
             Your bodyweight, height, age, sex and any injuries, and the optional check-in before workouts about sleep
             and soreness, count as health information under Australian privacy law. We need your permission before
@@ -191,21 +191,21 @@ function Editor({ section, saved }: { section: ProfileSection; saved: Onboarding
             from a sore knee. Never for marketing, and never sold. You can stop sharing them at any time in Settings.
           </p>
         </div>
-        {error && <p className="mb-3 text-sm text-warning">{error}</p>}
+        {error && <p className="mb-3 text-subhead text-warning">{error}</p>}
         <button
           onClick={shareHealthDetails}
           disabled={consentBusy}
-          className="mb-2.5 w-full rounded-2xl bg-ink py-4 text-[15px] font-semibold text-background disabled:opacity-60"
+          className="mb-2.5 w-full rounded-[20px] bg-ink py-4 text-[15px] font-semibold text-background disabled:opacity-60"
         >
           {consentBusy ? "Saving…" : "Yes, use my health details"}
         </button>
         <button
           onClick={() => router.push("/settings")}
-          className="w-full py-3 text-sm font-semibold text-muted hover:text-ink"
+          className="w-full py-3 text-subhead font-semibold text-muted hover:text-ink"
         >
           Not now
         </button>
-        <p className="mt-4 text-xs leading-relaxed text-muted">
+        <p className="mt-4 text-footnote leading-relaxed text-muted">
           More detail in our{" "}
           <Link href="/privacy" target="_blank" className="underline underline-offset-4">
             Privacy Policy
@@ -271,7 +271,7 @@ function Editor({ section, saved }: { section: ProfileSection; saved: Onboarding
             />
             <Label>EQUIPMENT</Label>
             {isFullyEquipped(draft.environment) && (
-              <p className="mb-3 text-sm leading-relaxed text-muted">
+              <p className="mb-3 text-subhead leading-relaxed text-muted">
                 A full gym is assumed to have everything. Untick anything yours doesn&apos;t have.
               </p>
             )}
@@ -313,16 +313,16 @@ function Editor({ section, saved }: { section: ProfileSection; saved: Onboarding
               onChange={(e) => patch({ considerations: e.target.value })}
               rows={5}
               placeholder="e.g. dodgy left shoulder, so overhead pressing hurts"
-              className="w-full resize-none rounded-2xl border border-line bg-surface px-4 py-3 text-sm leading-relaxed"
+              className="w-full resize-none rounded-[20px] bg-surface px-4 py-3 text-subhead leading-relaxed"
             />
           </>
         )}
       </div>
 
-      {problem && changed && <p className="mb-3 text-sm text-warning">{problem}</p>}
-      {error && <p className="mb-3 text-sm text-warning">{error}</p>}
+      {problem && changed && <p className="mb-3 text-subhead text-warning">{problem}</p>}
+      {error && <p className="mb-3 text-subhead text-warning">{error}</p>}
       {rebuilds && !problem && (
-        <p className="mb-3 text-xs leading-relaxed text-muted">
+        <p className="mb-3 text-footnote leading-relaxed text-muted">
           Saving rebuilds your plan around this. Your workout history and personal bests stay, and exercises that stay
           in your plan keep their weights.
         </p>
@@ -330,7 +330,7 @@ function Editor({ section, saved }: { section: ProfileSection; saved: Onboarding
       <button
         onClick={save}
         disabled={!changed || !!problem || status === "saving"}
-        className="w-full rounded-2xl bg-ink py-4 text-[15px] font-semibold text-background transition disabled:cursor-not-allowed disabled:bg-line disabled:text-muted"
+        className="w-full rounded-[20px] bg-ink py-4 text-[15px] font-semibold text-background transition disabled:cursor-not-allowed disabled:bg-line disabled:text-muted"
       >
         {status === "saving" ? "Saving…" : rebuilds ? "Save and update my plan" : "Save changes"}
       </button>

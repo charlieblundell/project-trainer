@@ -54,10 +54,10 @@ export function PlanEditor() {
   if (!plan || !draft) {
     return (
       <div className="py-16 text-center">
-        <p className="mb-4 text-sm text-muted">There&apos;s no plan to edit yet.</p>
+        <p className="mb-4 text-subhead text-muted">There&apos;s no plan to edit yet.</p>
         <button
           onClick={() => router.push("/onboarding")}
-          className="rounded-2xl bg-ink px-5 py-3 text-sm font-semibold text-background"
+          className="rounded-[20px] bg-ink px-5 py-3 text-subhead font-semibold text-background"
         >
           Build my plan
         </button>
@@ -80,13 +80,13 @@ export function PlanEditor() {
     <div>
       <button
         onClick={() => router.push("/plan")}
-        className="mb-4 flex items-center gap-1 text-sm text-muted"
+        className="mb-4 flex items-center gap-1 text-subhead text-muted"
       >
         <ChevronLeft size={18} /> Your plan
       </button>
 
-      <h1 className="mb-1 font-display text-2xl font-bold text-ink">Edit your week</h1>
-      <p className="mb-5 text-sm leading-relaxed text-muted">
+      <h1 className="mb-1 text-title1 font-bold text-ink">Edit your week</h1>
+      <p className="mb-5 text-subhead leading-relaxed text-muted">
         Changes stick: this is the plan every future session comes from. Your logged workouts and
         personal bests stay as they are.
       </p>
@@ -106,7 +106,7 @@ export function PlanEditor() {
       </div>
 
       {draft.sessions.length === 0 && (
-        <p className="rounded-2xl border border-dashed border-line px-4 py-8 text-center text-sm text-muted">
+        <p className="rounded-[20px] border border-dashed border-line px-4 py-8 text-center text-subhead text-muted">
           No sessions yet. Add your first one below.
         </p>
       )}
@@ -117,19 +117,19 @@ export function PlanEditor() {
           setDraft(next);
           setOpenId(next.sessions[next.sessions.length - 1].id);
         }}
-        className="mt-2.5 flex w-full items-center justify-center gap-2 rounded-2xl border border-line py-3.5 text-sm font-semibold text-ink"
+        className="mt-2.5 flex w-full items-center justify-center gap-2 rounded-[20px] border border-line py-3.5 text-subhead font-semibold text-ink"
       >
         <Plus size={16} /> Add a session
       </button>
 
-      {error && <p className="mt-4 text-sm text-warning">{error}</p>}
+      {error && <p className="mt-4 text-subhead text-warning">{error}</p>}
 
       <div className="sticky bottom-20 mt-6 md:bottom-4">
         <motion.button
           whileTap={changed ? { scale: 0.98 } : undefined}
           onClick={save}
           disabled={!changed || status === "saving"}
-          className="w-full rounded-2xl bg-ink py-4 text-[15px] font-semibold text-background shadow-lg disabled:bg-line disabled:text-muted disabled:shadow-none"
+          className="w-full rounded-[20px] bg-ink py-4 text-[15px] font-semibold text-background shadow-lg disabled:bg-line disabled:text-muted disabled:shadow-none"
         >
           {status === "saving" ? "Saving…" : changed ? "Save my plan" : "No changes yet"}
         </motion.button>
@@ -156,11 +156,11 @@ function SessionCard({
   const [adding, setAdding] = useState(false);
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-line bg-surface">
+    <section className="overflow-hidden rounded-[20px] bg-surface">
       <button onClick={onToggle} className="flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left">
         <div>
-          <div className="text-sm font-semibold text-ink">{session.name}</div>
-          <div className="tabular text-xs text-muted">
+          <div className="text-subhead font-semibold text-ink">{session.name}</div>
+          <div className="tabular text-footnote text-muted">
             {WEEKDAY_LABELS[session.weekday]} · {session.exercises.length} exercise
             {session.exercises.length === 1 ? "" : "s"} · ~{session.estMinutes} min
           </div>
@@ -170,17 +170,17 @@ function SessionCard({
 
       {open && (
         <div className="border-t border-line px-4 pb-4 pt-3.5">
-          <label className="text-xs font-semibold tracking-widest text-muted" htmlFor={`name-${session.id}`}>
+          <label className="text-footnote font-semibold text-muted" htmlFor={`name-${session.id}`}>
             NAME
           </label>
           <input
             id={`name-${session.id}`}
             value={session.name}
             onChange={(e) => onChange((plan) => renameSession(plan, session.id, e.target.value))}
-            className="mb-4 mt-1.5 w-full rounded-xl border border-line bg-background px-3 py-2.5 text-sm"
+            className="mb-4 mt-1.5 w-full rounded-[12px] border border-line bg-background px-3 py-2.5 text-subhead"
           />
 
-          <div className="mb-1.5 text-xs font-semibold tracking-widest text-muted">DAY</div>
+          <div className="mb-1.5 text-footnote font-semibold text-muted">Day</div>
           <div className="mb-4 flex justify-between gap-1.5">
             {WEEKDAY_ORDER.map((day) => {
               const selected = session.weekday === day;
@@ -192,7 +192,7 @@ function SessionCard({
                   aria-pressed={selected}
                   aria-label={`${WEEKDAY_LABELS[day]}${taken ? " (swaps with the session there)" : ""}`}
                   className={clsx(
-                    "flex h-10 flex-1 items-center justify-center rounded-lg border text-xs font-semibold",
+                    "flex h-10 flex-1 items-center justify-center rounded-lg border text-footnote font-semibold",
                     selected
                       ? "border-ink bg-ink text-background"
                       : taken
@@ -206,7 +206,7 @@ function SessionCard({
             })}
           </div>
 
-          <div className="mb-1.5 text-xs font-semibold tracking-widest text-muted">EXERCISES</div>
+          <div className="mb-1.5 text-footnote font-semibold text-muted">Exercises</div>
           <div className="flex flex-col gap-2">
             {session.exercises.map((exercise, i) => (
               <ExerciseRow
@@ -221,19 +221,19 @@ function SessionCard({
           </div>
 
           {session.exercises.length === 0 && (
-            <p className="py-3 text-sm text-muted">Nothing in this session yet.</p>
+            <p className="py-3 text-subhead text-muted">Nothing in this session yet.</p>
           )}
 
           <button
             onClick={() => setAdding(true)}
-            className="mt-2.5 flex w-full items-center justify-center gap-2 rounded-xl border border-line py-2.5 text-sm font-semibold text-ink"
+            className="mt-2.5 flex w-full items-center justify-center gap-2 rounded-[12px] border border-line py-2.5 text-subhead font-semibold text-ink"
           >
             <Plus size={15} /> Add an exercise
           </button>
 
           <button
             onClick={() => onChange((plan) => removeSession(plan, session.id))}
-            className="mt-2 flex w-full items-center justify-center gap-2 py-2.5 text-sm font-semibold text-warning"
+            className="mt-2 flex w-full items-center justify-center gap-2 py-2.5 text-subhead font-semibold text-warning"
           >
             <Trash2 size={15} /> Delete this session
           </button>
@@ -304,7 +304,7 @@ function NumberBox({
         onKeyDown={(e) => {
           if (e.key === "Enter") e.currentTarget.blur();
         }}
-        className="tabular mt-0.5 w-full rounded-lg border border-line bg-background px-2 py-2 text-sm"
+        className="tabular mt-0.5 w-full rounded-lg border border-line bg-background px-2 py-2 text-subhead"
       />
     </label>
   );
@@ -329,9 +329,9 @@ function ExerciseRow({
     onChange((plan) => updateExercise(plan, sessionId, index, change));
 
   return (
-    <div className="rounded-xl border border-line bg-background p-3">
+    <div className="rounded-[12px] border border-line bg-background p-3">
       <div className="mb-2 flex items-start justify-between gap-2">
-        <span className="text-sm font-semibold text-ink">{exerciseName(exercise)}</span>
+        <span className="text-subhead font-semibold text-ink">{exerciseName(exercise)}</span>
         <div className="flex flex-shrink-0 gap-1">
           <button
             onClick={() => onChange((plan) => moveExercise(plan, sessionId, index, -1))}
@@ -415,7 +415,7 @@ function ExerciseRow({
           {exercise.targetWeightKg != null && (
             <button
               onClick={() => patch({ targetWeightKg: null })}
-              className="mb-0.5 rounded-lg border border-line px-2.5 py-2 text-xs font-semibold text-muted"
+              className="mb-0.5 rounded-lg border border-line px-2.5 py-2 text-footnote font-semibold text-muted"
             >
               Clear
             </button>
@@ -453,7 +453,7 @@ function AddExercisePanel({
       onClick={onClose}
     >
       <motion.div
-        className="max-h-[80%] w-full max-w-lg overflow-y-auto rounded-t-3xl bg-surface p-5 md:rounded-3xl"
+        className="max-h-[80%] w-full max-w-lg overflow-y-auto rounded-t-3xl bg-surface p-5 md:rounded-[20px]"
         initial={{ y: 40, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 40, opacity: 0 }}
@@ -461,7 +461,7 @@ function AddExercisePanel({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-3 flex items-center justify-between">
-          <h3 className="font-display text-lg font-bold text-ink">Add an exercise</h3>
+          <h3 className="text-title3 font-bold text-ink">Add an exercise</h3>
           <button onClick={onClose} className="text-muted" aria-label="Close">
             <X size={20} />
           </button>
@@ -474,11 +474,11 @@ function AddExercisePanel({
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search exercises"
             autoFocus
-            className="w-full rounded-2xl border border-line bg-background py-3 pl-10 pr-4 text-sm"
+            className="w-full rounded-[20px] border border-line bg-background py-3 pl-10 pr-4 text-subhead"
           />
         </div>
 
-        <p className="mb-3 text-xs leading-relaxed text-muted">
+        <p className="mb-3 text-footnote leading-relaxed text-muted">
           Only what your equipment allows. Add kit in Settings to see more.
         </p>
 
@@ -490,14 +490,14 @@ function AddExercisePanel({
               className="flex items-center justify-between gap-3 border-b border-line py-3 text-left last:border-b-0"
             >
               <span>
-                <span className="block text-sm text-ink">{exercise.name}</span>
-                <span className="block text-xs text-muted">{exercise.muscles.join(", ")}</span>
+                <span className="block text-subhead text-ink">{exercise.name}</span>
+                <span className="block text-footnote text-muted">{exercise.muscles.join(", ")}</span>
               </span>
               <Plus size={16} className="flex-shrink-0 text-accent" />
             </button>
           ))}
           {results.length === 0 && (
-            <p className="py-5 text-sm text-muted">Nothing matches that. Try a muscle group, like &ldquo;back&rdquo;.</p>
+            <p className="py-5 text-subhead text-muted">Nothing matches that. Try a muscle group, like &ldquo;back&rdquo;.</p>
           )}
         </div>
       </motion.div>

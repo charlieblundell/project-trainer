@@ -265,8 +265,8 @@ export default function Onboarding() {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.2 }}
         >
-          <h1 className="mb-2 font-display text-2xl font-bold text-ink">{current.question}</h1>
-          {current.hint && <p className="mb-5 text-sm leading-relaxed text-muted">{current.hint}</p>}
+          <h1 className="mb-2 text-title1 font-bold text-ink">{current.question}</h1>
+          {current.hint && <p className="mb-5 text-subhead leading-relaxed text-muted">{current.hint}</p>}
           {!current.hint && <div className="mb-5" />}
 
           {current.kind === "single" && (
@@ -314,7 +314,7 @@ export default function Onboarding() {
 
           {current.kind === "consent" && (
             <div>
-              <div className="mb-5 flex flex-col gap-3 text-sm leading-relaxed text-ink">
+              <div className="mb-5 flex flex-col gap-3 text-subhead leading-relaxed text-ink">
                 <p>
                   The next two questions ask for your bodyweight, height, age, sex and any injuries, and
                   before workouts you can optionally tell us how you slept and whether anything hurts.
@@ -348,7 +348,7 @@ export default function Onboarding() {
                         )
                       }
                       className={clsx(
-                        "flex items-center justify-between rounded-2xl border px-4 py-3.5 text-left text-sm font-medium",
+                        "flex items-center justify-between rounded-[20px] border px-4 py-3.5 text-left text-subhead font-medium",
                         selected ? "border-ink bg-ink text-background" : "border-line bg-surface text-ink"
                       )}
                     >
@@ -366,7 +366,7 @@ export default function Onboarding() {
                 })}
               </div>
 
-              <p className="mt-4 text-xs leading-relaxed text-muted">
+              <p className="mt-4 text-footnote leading-relaxed text-muted">
                 More detail in our{" "}
                 <a href="/privacy" target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">
                   Privacy Policy
@@ -423,12 +423,12 @@ export default function Onboarding() {
                       aria-checked={selected}
                       onClick={() => setBuildOwn(option.value)}
                       className={clsx(
-                        "rounded-2xl border px-4 py-3.5 text-left",
+                        "rounded-[20px] border px-4 py-3.5 text-left",
                         selected ? "border-ink bg-ink text-background" : "border-line bg-surface text-ink"
                       )}
                     >
                       <div className="flex items-center justify-between gap-3">
-                        <span className="text-sm font-semibold">{option.label}</span>
+                        <span className="text-subhead font-semibold">{option.label}</span>
                         <span
                           className={clsx(
                             "flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border",
@@ -438,14 +438,14 @@ export default function Onboarding() {
                           {selected && <Check size={13} className="text-ink" />}
                         </span>
                       </div>
-                      <div className={clsx("mt-1 text-xs leading-relaxed", selected ? "text-background/70" : "text-muted")}>
+                      <div className={clsx("mt-1 text-footnote leading-relaxed", selected ? "text-background/70" : "text-muted")}>
                         {option.detail}
                       </div>
                     </button>
                   );
                 })}
               </div>
-              {error && <p className="mt-3 text-sm text-warning">{error}</p>}
+              {error && <p className="mt-3 text-subhead text-warning">{error}</p>}
             </div>
           )}
 
@@ -455,7 +455,7 @@ export default function Onboarding() {
               onChange={(e) => setOnboarding({ considerations: e.target.value })}
               rows={5}
               placeholder="e.g. dodgy left shoulder, so overhead pressing hurts"
-              className="w-full resize-none rounded-2xl border border-line bg-surface px-4 py-3 text-sm leading-relaxed"
+              className="w-full resize-none rounded-[20px] bg-surface px-4 py-3 text-subhead leading-relaxed"
             />
           )}
         </motion.div>
@@ -466,7 +466,7 @@ export default function Onboarding() {
         <button
           disabled={!canContinue()}
           onClick={next}
-          className="w-full rounded-2xl bg-ink py-4 text-[15px] font-semibold text-background transition disabled:cursor-not-allowed disabled:bg-line disabled:text-muted"
+          className="w-full rounded-[20px] bg-ink py-4 text-[15px] font-semibold text-background transition disabled:cursor-not-allowed disabled:bg-line disabled:text-muted"
         >
           {step === steps.length - 1
             ? busy

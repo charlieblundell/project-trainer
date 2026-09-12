@@ -42,10 +42,10 @@ export default function Plan() {
   if (!plan) {
     return (
       <div className="py-16 text-center">
-        <p className="mb-4 text-sm text-muted">You don&apos;t have a plan yet.</p>
+        <p className="mb-4 text-subhead text-muted">You don&apos;t have a plan yet.</p>
         <button
           onClick={() => router.push("/onboarding")}
-          className="rounded-2xl bg-ink px-5 py-3 text-sm font-semibold text-background"
+          className="rounded-[20px] bg-ink px-5 py-3 text-subhead font-semibold text-background"
         >
           Build my plan
         </button>
@@ -58,21 +58,21 @@ export default function Plan() {
 
   return (
     <div className="relative">
-      <div className="mb-1 text-xs font-semibold tracking-widest text-muted">YOUR PROGRAM</div>
-      <h1 className="mb-1 font-display text-2xl font-bold text-ink">{plan.goal}</h1>
-      <div className="tabular mb-5 text-sm text-muted">
+      <div className="mb-1 text-footnote font-semibold text-muted">Your program</div>
+      <h1 className="mb-1 text-title1 font-bold text-ink">{plan.goal}</h1>
+      <div className="tabular mb-5 text-subhead text-muted">
         Week {weekNumber(plan)} ·{" "}
         {done === 0 ? "nothing logged yet" : `${done} session${done > 1 ? "s" : ""} done`}
       </div>
 
       {plan.notes.length > 0 && (
-        <div className="mb-6 rounded-2xl bg-accent-soft p-4">
-          <div className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-accent">
+        <div className="mb-6 rounded-[20px] bg-accent-soft p-4">
+          <div className="mb-2 flex items-center gap-1.5 text-footnote font-semibold text-accent">
             <Info size={13} /> HOW THIS WAS BUILT
           </div>
           <ul className="flex flex-col gap-1.5">
             {plan.notes.map((note) => (
-              <li key={note} className="text-sm leading-relaxed text-ink">
+              <li key={note} className="text-subhead leading-relaxed text-ink">
                 {note}
               </li>
             ))}
@@ -92,21 +92,21 @@ export default function Plan() {
               whileTap={session ? { scale: 0.99 } : undefined}
               disabled={!session}
               onClick={() => session && setPreview(session)}
-              className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3.5 text-left ${
+              className={`flex w-full items-center justify-between rounded-[20px] border px-4 py-3.5 text-left ${
                 isToday ? "border-ink bg-ink" : "border-line bg-surface"
               }`}
             >
               <div>
-                <div className={`mb-0.5 text-xs ${isToday ? "text-background/50" : "text-muted"}`}>
+                <div className={`mb-0.5 text-footnote ${isToday ? "text-background/50" : "text-muted"}`}>
                   {WEEKDAY_LABELS[weekday]}
                   {isToday ? " · Today" : ""}
                 </div>
-                <div className={`text-sm font-semibold ${isToday ? "text-background" : "text-ink"}`}>
+                <div className={`text-subhead font-semibold ${isToday ? "text-background" : "text-ink"}`}>
                   {session ? session.name : "Rest"}
                 </div>
               </div>
               {session && (
-                <div className={`tabular text-sm ${isToday ? "text-background/50" : "text-muted"}`}>
+                <div className={`tabular text-subhead ${isToday ? "text-background/50" : "text-muted"}`}>
                   ~{session.estMinutes} min
                 </div>
               )}
@@ -117,16 +117,16 @@ export default function Plan() {
 
       <button
         onClick={() => router.push("/plan/edit")}
-        className="mt-2.5 flex w-full items-center justify-center gap-2 rounded-2xl border border-line py-3.5 text-sm font-semibold text-ink"
+        className="mt-2.5 flex w-full items-center justify-center gap-2 rounded-[20px] border border-line py-3.5 text-subhead font-semibold text-ink"
       >
         <Pencil size={15} /> Edit my plan
       </button>
 
-      <div className="mt-6 rounded-2xl border border-line bg-surface p-4">
-        <div className="mb-1 flex items-center gap-1.5 text-sm font-semibold text-ink">
+      <div className="mt-6 rounded-[20px] bg-surface p-4">
+        <div className="mb-1 flex items-center gap-1.5 text-subhead font-semibold text-ink">
           <Shuffle size={14} className="text-accent" /> Getting stale?
         </div>
-        <p className="mb-3 text-sm leading-relaxed text-muted">
+        <p className="mb-3 text-subhead leading-relaxed text-muted">
           Swaps the isolation, core and mobility work for something different. Your main lifts stay
           put, along with every weight you&apos;ve built on them — you&apos;ll find a working weight
           for anything new on your next session.
@@ -139,28 +139,28 @@ export default function Plan() {
             await refreshPlan();
             setRefreshing(false);
           }}
-          className="flex w-full items-center justify-center gap-2 rounded-2xl border border-line py-3 text-sm font-semibold text-ink disabled:opacity-50"
+          className="flex w-full items-center justify-center gap-2 rounded-[20px] border border-line py-3 text-subhead font-semibold text-ink disabled:opacity-50"
         >
           <RefreshCw size={14} className={refreshing ? "animate-spin" : undefined} />
           {refreshing ? "Picking new work" : "Freshen up my accessories"}
         </motion.button>
 
         {lastRefresh && (
-          <div className="mt-3 rounded-xl bg-accent-soft p-3.5">
+          <div className="mt-3 rounded-[12px] bg-accent-soft p-3.5">
             <div className="mb-2 flex items-start justify-between gap-3">
-              <span className="text-xs font-semibold text-accent">LAST REFRESH</span>
+              <span className="text-footnote font-semibold text-accent">Last refresh</span>
               <button onClick={clearLastRefresh} className="text-accent" aria-label="Dismiss">
                 <X size={14} />
               </button>
             </div>
             {lastRefresh.length === 0 ? (
-              <p className="text-sm leading-relaxed text-ink">
+              <p className="text-subhead leading-relaxed text-ink">
                 Nothing to swap — your equipment doesn&apos;t leave another option for those slots.
               </p>
             ) : (
               <ul className="flex flex-col gap-1.5">
                 {lastRefresh.map((swap, i) => (
-                  <li key={`${swap.from}-${i}`} className="text-sm leading-relaxed text-ink">
+                  <li key={`${swap.from}-${i}`} className="text-subhead leading-relaxed text-ink">
                     <span className="text-muted">{swap.from}</span> → {swap.to}
                   </li>
                 ))}
@@ -180,7 +180,7 @@ export default function Plan() {
             onClick={() => setPreview(null)}
           >
             <motion.div
-              className="max-h-[80%] w-full max-w-lg overflow-y-auto rounded-t-3xl bg-surface p-6 md:rounded-3xl"
+              className="max-h-[80%] w-full max-w-lg overflow-y-auto rounded-t-3xl bg-surface p-6 md:rounded-[20px]"
               initial={{ y: 40, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 40, opacity: 0 }}
@@ -188,12 +188,12 @@ export default function Plan() {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="mb-1 flex items-start justify-between">
-                <h3 className="font-display text-lg font-bold text-ink">{preview.name}</h3>
+                <h3 className="text-title3 font-bold text-ink">{preview.name}</h3>
                 <button onClick={() => setPreview(null)} className="text-muted" aria-label="Close">
                   <X size={20} />
                 </button>
               </div>
-              <p className="mb-4 text-sm text-muted">
+              <p className="mb-4 text-subhead text-muted">
                 {preview.focus} · ~{preview.estMinutes} min
               </p>
 
@@ -201,10 +201,10 @@ export default function Plan() {
                 {preview.exercises.map((ex, i) => (
                   <div
                     key={`${ex.exerciseId}-${i}`}
-                    className="flex items-center justify-between gap-4 rounded-xl bg-background px-3 py-2.5"
+                    className="flex items-center justify-between gap-4 rounded-[12px] bg-background px-3 py-2.5"
                   >
-                    <span className="text-sm text-ink">{exerciseName(ex)}</span>
-                    <span className="tabular flex-shrink-0 text-xs text-muted">{targetLabel(ex)}</span>
+                    <span className="text-subhead text-ink">{exerciseName(ex)}</span>
+                    <span className="tabular flex-shrink-0 text-footnote text-muted">{targetLabel(ex)}</span>
                   </div>
                 ))}
               </div>
@@ -216,14 +216,14 @@ export default function Plan() {
                   setPreview(null);
                   router.push("/train");
                 }}
-                className="w-full rounded-2xl bg-ink py-4 text-[15px] font-semibold text-background"
+                className="w-full rounded-[20px] bg-ink py-4 text-[15px] font-semibold text-background"
               >
                 Start this workout
               </motion.button>
 
               <button
                 onClick={() => router.push(`/evidence?ids=${PRESCRIPTION_EVIDENCE.join(",")}`)}
-                className="mt-3 flex w-full items-center justify-center gap-2 py-2 text-sm font-semibold text-muted"
+                className="mt-3 flex w-full items-center justify-center gap-2 py-2 text-subhead font-semibold text-muted"
               >
                 <BookOpen size={14} />
                 Why these sets and reps?

@@ -119,7 +119,7 @@ export function GoogleSignInButton({ fallback }: { fallback: ReactNode }) {
   return (
     <div>
       <div ref={container} className="flex min-h-[44px] w-full justify-center" />
-      {error && <p className="mt-2 text-sm text-warning">{error}</p>}
+      {error && <p className="mt-2 text-subhead text-warning">{error}</p>}
     </div>
   );
 }

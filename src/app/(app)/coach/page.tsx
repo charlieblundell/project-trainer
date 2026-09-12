@@ -51,7 +51,7 @@ export default function Coach() {
 
   return (
     <div className="flex h-[calc(100vh-8rem)] flex-col md:h-[calc(100vh-5rem)]">
-      <h1 className="mb-4 font-display text-xl font-bold text-ink">Your Coach</h1>
+      <h1 className="mb-4 text-title2 font-bold text-ink">Your Coach</h1>
 
       <div className="flex flex-1 flex-col gap-2.5 overflow-y-auto pb-4">
         <AnimatePresence initial={false}>
@@ -61,10 +61,10 @@ export default function Coach() {
               initial={{ opacity: 0, y: 10, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ type: "spring", stiffness: 500, damping: 40 }}
-              className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
+              className={`max-w-[85%] rounded-[20px] px-4 py-2.5 text-subhead leading-relaxed ${
                 m.role === "user"
                   ? "self-end bg-ink text-background"
-                  : "self-start border border-line bg-surface text-ink"
+                  : "self-start bg-surface text-ink"
               }`}
             >
               {m.text}
@@ -75,7 +75,7 @@ export default function Coach() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="flex items-center gap-1 self-start rounded-2xl border border-line bg-surface px-4 py-3"
+            className="flex items-center gap-1 self-start rounded-[20px] bg-surface px-4 py-3"
           >
             {[0, 1, 2].map((i) => (
               <motion.span
@@ -100,7 +100,7 @@ export default function Coach() {
               transition={{ delay: i * 0.05 }}
               whileTap={{ scale: 0.96 }}
               onClick={() => send(p)}
-              className="rounded-full border border-line bg-surface px-3.5 py-2 text-xs text-ink"
+              className="rounded-full bg-surface px-3.5 py-2 text-footnote text-ink"
             >
               {p}
             </motion.button>
@@ -118,7 +118,7 @@ export default function Coach() {
           placeholder="Ask your coach..."
           // Matches the server's limit, so the box stops you rather than an error does.
           maxLength={2000}
-          className="flex-1 rounded-full border border-line px-4 py-3 text-sm"
+          className="flex-1 rounded-full border border-line px-4 py-3 text-subhead"
         />
         <motion.button
           whileTap={{ scale: 0.92 }}

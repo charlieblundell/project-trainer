@@ -59,8 +59,8 @@ export default function Progress() {
   if (records === null) {
     return (
       <div>
-        <h1 className="mb-5 font-display text-2xl font-bold text-ink">Your progress</h1>
-        <p className="text-sm text-muted">Loading what you&apos;ve logged…</p>
+        <h1 className="mb-5 text-title1 font-bold text-ink">Your progress</h1>
+        <p className="text-subhead text-muted">Loading what you&apos;ve logged…</p>
       </div>
     );
   }
@@ -68,16 +68,16 @@ export default function Progress() {
   if (records.length === 0) {
     return (
       <div>
-        <h1 className="mb-5 font-display text-2xl font-bold text-ink">Your progress</h1>
-        <div className="rounded-2xl border border-line bg-surface p-6 text-center">
-          <p className="mb-1 text-sm font-semibold text-ink">Nothing logged yet.</p>
-          <p className="mb-5 text-sm leading-relaxed text-muted">
+        <h1 className="mb-5 text-title1 font-bold text-ink">Your progress</h1>
+        <div className="rounded-[20px] bg-surface p-6 text-center">
+          <p className="mb-1 text-subhead font-semibold text-ink">Nothing logged yet.</p>
+          <p className="mb-5 text-subhead leading-relaxed text-muted">
             Finish a workout and everything here fills in from what you actually lifted — no
             estimates, no placeholders.
           </p>
           <button
             onClick={() => router.push("/plan")}
-            className="rounded-2xl bg-ink px-5 py-3 text-sm font-semibold text-background"
+            className="rounded-[20px] bg-ink px-5 py-3 text-subhead font-semibold text-background"
           >
             Go to my plan
           </button>
@@ -88,15 +88,15 @@ export default function Progress() {
 
   return (
     <div>
-      <h1 className="mb-5 font-display text-2xl font-bold text-ink">Your progress</h1>
+      <h1 className="mb-5 text-title1 font-bold text-ink">Your progress</h1>
 
-      <div className="mb-6 flex gap-1.5 rounded-xl border border-line bg-surface p-1">
+      <div className="mb-6 flex gap-1.5 rounded-[12px] bg-surface p-1">
         {(["Strength", "Training"] as const).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
             className={clsx(
-              "flex-1 rounded-lg py-2 text-sm font-semibold transition",
+              "flex-1 rounded-lg py-2 text-subhead font-semibold transition",
               tab === t ? "bg-ink text-background" : "text-muted"
             )}
           >
@@ -108,7 +108,7 @@ export default function Progress() {
       {tab === "Strength" ? (
         <>
           {series.length > SHOWN && (
-            <p className="mb-3 text-xs text-muted">
+            <p className="mb-3 text-footnote text-muted">
               The {SHOWN} movements you&apos;ve trained most recently, of {series.length}.
             </p>
           )}
@@ -118,20 +118,20 @@ export default function Progress() {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: Math.min(i, 6) * 0.03 }}
-              className="mb-3 rounded-2xl border border-line bg-surface p-4"
+              className="mb-3 rounded-[20px] bg-surface p-4"
             >
               <div className="mb-2 flex items-baseline justify-between gap-3">
-                <span className="text-sm font-semibold text-ink">{s.name}</span>
-                <span className="tabular flex-shrink-0 text-sm text-muted">
+                <span className="text-subhead font-semibold text-ink">{s.name}</span>
+                <span className="tabular flex-shrink-0 text-subhead text-muted">
                   {s.points[s.points.length - 1].label}
                 </span>
               </div>
               <Sparkline values={s.points.map((p) => p.value)} />
-              <div className="tabular mt-2 text-xs text-muted">{trendLabel(s)}</div>
+              <div className="tabular mt-2 text-footnote text-muted">{trendLabel(s)}</div>
             </motion.div>
           ))}
 
-          <div className="mb-2.5 mt-6 text-xs font-semibold tracking-widest text-muted">
+          <div className="mb-2.5 mt-6 text-footnote font-semibold text-muted">
             PERSONAL BESTS
           </div>
           {prs.slice(0, SHOWN).map((pr) => (
@@ -139,8 +139,8 @@ export default function Progress() {
               key={pr.exerciseId}
               className="flex items-center justify-between gap-4 border-t border-line py-2.5 first:border-t-0"
             >
-              <span className="text-sm text-ink">{pr.name}</span>
-              <span className="tabular flex-shrink-0 text-sm font-semibold text-ink">
+              <span className="text-subhead text-ink">{pr.name}</span>
+              <span className="tabular flex-shrink-0 text-subhead font-semibold text-ink">
                 {pr.label}
               </span>
             </div>
@@ -160,22 +160,22 @@ export default function Progress() {
                   : `${Math.round(totals.consistency * 100)}%`,
               ],
             ].map(([label, value]) => (
-              <div key={label} className="rounded-2xl border border-line bg-surface px-4 py-4">
-                <div className="tabular font-display text-xl font-bold text-ink">{value}</div>
-                <div className="mt-0.5 text-xs text-muted">{label}</div>
+              <div key={label} className="rounded-[20px] bg-surface px-4 py-4">
+                <div className="tabular text-title2 font-bold text-ink">{value}</div>
+                <div className="mt-0.5 text-footnote text-muted">{label}</div>
               </div>
             ))}
           </div>
 
           {totals.consistency !== null && (
-            <p className="px-1 text-xs leading-relaxed text-muted">
+            <p className="px-1 text-footnote leading-relaxed text-muted">
               Consistency is the last four weeks against the {plan?.daysPerWeek} sessions a week
               your plan asks for.
             </p>
           )}
 
-          <div className="rounded-2xl border border-line bg-surface p-4">
-            <div className="mb-3 text-xs font-semibold tracking-widest text-muted">
+          <div className="rounded-[20px] bg-surface p-4">
+            <div className="mb-3 text-footnote font-semibold text-muted">
               LAST 12 WEEKS
             </div>
             <div className="flex h-24 items-end gap-1.5">
@@ -195,7 +195,7 @@ export default function Progress() {
                 />
               ))}
             </div>
-            <div className="mt-2 flex justify-between text-xs text-muted">
+            <div className="mt-2 flex justify-between text-footnote text-muted">
               <span>{weeks[0].label}</span>
               <span>This week</span>
             </div>

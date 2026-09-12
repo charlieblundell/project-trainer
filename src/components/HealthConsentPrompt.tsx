@@ -19,7 +19,7 @@ export function HealthConsentPrompt({
 }) {
   return (
     <div className="mx-auto flex min-h-screen max-w-sm flex-col justify-center px-6 py-10">
-      <h1 className="mb-3 font-display text-2xl font-bold text-ink">
+      <h1 className="mb-3 text-title1 font-bold text-ink">
         Can we keep using your health details?
       </h1>
       <div className="mb-6 flex flex-col gap-3 text-[15px] leading-relaxed text-ink">
@@ -44,15 +44,15 @@ export function HealthConsentPrompt({
         <button
           onClick={onDecline}
           disabled={busy}
-          className="w-full rounded-md border border-line bg-surface py-3.5 text-[15px] font-semibold text-ink disabled:opacity-60"
+          className="w-full rounded-md bg-surface py-3.5 text-[15px] font-semibold text-ink disabled:opacity-60"
         >
           No, delete them
         </button>
       </div>
 
-      {error && <p className="mt-3 text-sm text-warning">{error}</p>}
+      {error && <p className="mt-3 text-subhead text-warning">{error}</p>}
 
-      <p className="mt-5 text-xs leading-relaxed text-muted">
+      <p className="mt-5 text-footnote leading-relaxed text-muted">
         More detail in our{" "}
         <Link href="/privacy" target="_blank" className="underline underline-offset-4">
           Privacy Policy

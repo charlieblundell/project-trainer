@@ -193,10 +193,10 @@ function HealthDetails() {
 
   return (
     <>
-      <div className="mb-2 text-xs font-semibold tracking-widest text-muted">HEALTH DETAILS</div>
-      <div className="mb-6 rounded-2xl border border-line bg-surface px-4 py-3.5">
-        <div className="text-sm font-semibold text-ink">{shared ? "Shared with your consent" : "Not shared"}</div>
-        <div className="text-xs leading-relaxed text-muted">
+      <div className="mb-2 text-footnote font-semibold text-muted">Health details</div>
+      <div className="mb-6 rounded-[20px] bg-surface px-4 py-3.5">
+        <div className="text-subhead font-semibold text-ink">{shared ? "Shared with your consent" : "Not shared"}</div>
+        <div className="text-footnote leading-relaxed text-muted">
           {shared
             ? "Your bodyweight, height, age, sex and injury notes are used to tailor your plan."
             : "Your plan doesn't use your bodyweight, height, age, sex or injury notes."}
@@ -205,7 +205,7 @@ function HealthDetails() {
         {!shared && (
           <button
             onClick={() => router.push("/settings/body")}
-            className="mt-3 w-full rounded-xl border border-line py-2.5 text-sm font-semibold text-ink"
+            className="mt-3 w-full rounded-[12px] border border-line py-2.5 text-subhead font-semibold text-ink"
           >
             Share health details
           </button>
@@ -214,7 +214,7 @@ function HealthDetails() {
         {shared && !confirming && (
           <button
             onClick={() => setConfirming(true)}
-            className="mt-3 w-full rounded-xl border border-line py-2.5 text-sm font-semibold text-ink"
+            className="mt-3 w-full rounded-[12px] border border-line py-2.5 text-subhead font-semibold text-ink"
           >
             Stop sharing health details
           </button>
@@ -222,7 +222,7 @@ function HealthDetails() {
 
         {shared && confirming && (
           <div className="mt-3">
-            <p className="mb-2.5 text-xs leading-relaxed text-ink">
+            <p className="mb-2.5 text-footnote leading-relaxed text-ink">
               This deletes your bodyweight, height, age, sex, injury notes and check-in answers, and removes anything your plan
               worked out from them. Your workouts and progress stay.
             </p>
@@ -230,14 +230,14 @@ function HealthDetails() {
               <button
                 onClick={withdraw}
                 disabled={busy}
-                className="flex-1 rounded-xl bg-ink py-2.5 text-sm font-semibold text-background disabled:opacity-60"
+                className="flex-1 rounded-[12px] bg-ink py-2.5 text-subhead font-semibold text-background disabled:opacity-60"
               >
                 {busy ? "Deleting" : "Delete them"}
               </button>
               <button
                 onClick={() => setConfirming(false)}
                 disabled={busy}
-                className="flex-1 rounded-xl border border-line py-2.5 text-sm font-semibold text-ink"
+                className="flex-1 rounded-[12px] border border-line py-2.5 text-subhead font-semibold text-ink"
               >
                 Keep them
               </button>
@@ -245,7 +245,7 @@ function HealthDetails() {
           </div>
         )}
 
-        {error && <p className="mt-2 text-xs text-warning">{error}</p>}
+        {error && <p className="mt-2 text-footnote text-warning">{error}</p>}
       </div>
     </>
   );
@@ -290,24 +290,24 @@ function DeleteAccount() {
 
   return (
     <>
-      <div className="mb-2 text-xs font-semibold tracking-widest text-muted">DELETE ACCOUNT</div>
-      <div className="mb-6 rounded-2xl border border-line bg-surface px-4 py-3.5">
-        <div className="text-sm font-semibold text-ink">Delete your account and data</div>
-        <div className="text-xs leading-relaxed text-muted">
+      <div className="mb-2 text-footnote font-semibold text-muted">Delete account</div>
+      <div className="mb-6 rounded-[20px] bg-surface px-4 py-3.5">
+        <div className="text-subhead font-semibold text-ink">Delete your account and data</div>
+        <div className="text-footnote leading-relaxed text-muted">
           Permanently removes your account and everything in it, and cancels any subscription.
         </div>
 
         {!open ? (
           <button
             onClick={() => setOpen(true)}
-            className="mt-3 w-full rounded-xl border border-line py-2.5 text-sm font-semibold text-warning"
+            className="mt-3 w-full rounded-[12px] border border-line py-2.5 text-subhead font-semibold text-warning"
           >
             Delete my account and data
           </button>
         ) : (
           <div className="mt-3">
-            <p className="mb-2 text-sm font-semibold text-ink">This can&apos;t be undone.</p>
-            <ul className="mb-3 flex list-disc flex-col gap-1 pl-4 text-xs leading-relaxed text-ink marker:text-muted">
+            <p className="mb-2 text-subhead font-semibold text-ink">This can&apos;t be undone.</p>
+            <ul className="mb-3 flex list-disc flex-col gap-1 pl-4 text-footnote leading-relaxed text-ink marker:text-muted">
               <li>Your profile, plan, logged workouts, progress and health details are deleted straight away.</li>
               <li>
                 Any subscription is cancelled immediately, so you won&apos;t be charged again. You&apos;ll lose any
@@ -316,7 +316,7 @@ function DeleteAccount() {
               <li>Stripe keeps a record of past payments, because payment records have to be kept for tax.</li>
             </ul>
 
-            <label htmlFor="confirm-delete" className="mb-1.5 block text-xs text-muted">
+            <label htmlFor="confirm-delete" className="mb-1.5 block text-footnote text-muted">
               Type DELETE to confirm
             </label>
             <input
@@ -325,14 +325,14 @@ function DeleteAccount() {
               onChange={(e) => setTyped(e.target.value)}
               autoComplete="off"
               autoCapitalize="characters"
-              className="mb-3 w-full rounded-xl border border-line bg-background px-3 py-2.5 text-sm"
+              className="mb-3 w-full rounded-[12px] border border-line bg-background px-3 py-2.5 text-subhead"
             />
 
             <div className="flex gap-2">
               <button
                 onClick={deleteAccount}
                 disabled={!confirmed || busy}
-                className="flex-1 rounded-xl bg-warning py-2.5 text-sm font-semibold text-background disabled:opacity-40"
+                className="flex-1 rounded-[12px] bg-warning py-2.5 text-subhead font-semibold text-background disabled:opacity-40"
               >
                 {busy ? "Deleting" : "Permanently delete"}
               </button>
@@ -343,7 +343,7 @@ function DeleteAccount() {
                   setError(null);
                 }}
                 disabled={busy}
-                className="flex-1 rounded-xl border border-line py-2.5 text-sm font-semibold text-ink"
+                className="flex-1 rounded-[12px] border border-line py-2.5 text-subhead font-semibold text-ink"
               >
                 Cancel
               </button>
@@ -351,7 +351,7 @@ function DeleteAccount() {
           </div>
         )}
 
-        {error && <p className="mt-2 text-xs text-warning">{error}</p>}
+        {error && <p className="mt-2 text-footnote text-warning">{error}</p>}
       </div>
     </>
   );
@@ -400,21 +400,21 @@ export default function Settings() {
       <button onClick={() => router.push("/home")} className="mb-4 flex items-center text-muted">
         <ChevronLeft size={18} />
       </button>
-      <h1 className="mb-1 font-display text-2xl font-bold text-ink">Settings</h1>
-      {user?.email && <p className="mb-5 text-sm text-muted">{user.email}</p>}
+      <h1 className="mb-1 text-title1 font-bold text-ink">Settings</h1>
+      {user?.email && <p className="mb-5 text-subhead text-muted">{user.email}</p>}
 
-      <div className="mb-2 text-xs font-semibold tracking-widest text-muted">SUBSCRIPTION</div>
-      <div className="mb-6 rounded-2xl border border-line bg-surface px-4 py-3.5">
+      <div className="mb-2 text-footnote font-semibold text-muted">Subscription</div>
+      <div className="mb-6 rounded-[20px] bg-surface px-4 py-3.5">
         <div className={summary.action === "none" ? "" : "mb-3"}>
-          <div className="text-sm font-semibold text-ink">{summary.title}</div>
-          <div className={`text-xs leading-relaxed ${summary.urgent ? "text-warning" : "text-muted"}`}>
+          <div className="text-subhead font-semibold text-ink">{summary.title}</div>
+          <div className={`text-footnote leading-relaxed ${summary.urgent ? "text-warning" : "text-muted"}`}>
             {summary.detail}
           </div>
         </div>
         {summary.action === "none" ? null : summary.action === "subscribe" ? (
           <button
             onClick={() => router.push("/upgrade")}
-            className="w-full rounded-xl bg-ink py-2.5 text-sm font-semibold text-background"
+            className="w-full rounded-[12px] bg-ink py-2.5 text-subhead font-semibold text-background"
           >
             Subscribe
           </button>
@@ -422,30 +422,30 @@ export default function Settings() {
           <button
             onClick={manageBilling}
             disabled={opening}
-            className="w-full rounded-xl border border-line py-2.5 text-sm font-semibold text-ink disabled:opacity-60"
+            className="w-full rounded-[12px] border border-line py-2.5 text-subhead font-semibold text-ink disabled:opacity-60"
           >
             {opening ? "Opening billing" : "Manage billing"}
           </button>
         )}
-        {billingError && <p className="mt-2 text-xs text-warning">{billingError}</p>}
+        {billingError && <p className="mt-2 text-footnote text-warning">{billingError}</p>}
       </div>
 
-      <div className="mb-2 text-xs font-semibold tracking-widest text-muted">YOUR PROFILE</div>
+      <div className="mb-2 text-footnote font-semibold text-muted">Your profile</div>
       <div className="mb-6 flex flex-col gap-3">
         {profileGroups(onboarding).map((group) => (
           <section
             key={group.href}
             aria-label={group.title}
-            className="rounded-2xl border border-line bg-surface pb-2"
+            className="rounded-[20px] bg-surface pb-2"
           >
             <div className="flex items-center justify-between gap-4 px-4 pb-1 pt-3.5">
-              <h2 className="text-sm font-semibold text-ink">{group.title}</h2>
-              <Link href={group.href} className="text-sm font-semibold text-accent">
+              <h2 className="text-subhead font-semibold text-ink">{group.title}</h2>
+              <Link href={group.href} className="text-subhead font-semibold text-accent">
                 Edit
               </Link>
             </div>
             {group.rows.map(([label, value]) => (
-              <div key={label} className="flex justify-between gap-6 px-4 py-2 text-sm">
+              <div key={label} className="flex justify-between gap-6 px-4 py-2 text-subhead">
                 <span className="flex-shrink-0 text-muted">{label}</span>
                 <span className="text-right text-ink">{value}</span>
               </div>
@@ -454,20 +454,20 @@ export default function Settings() {
         ))}
       </div>
 
-      <div className="mb-2 text-xs font-semibold tracking-widest text-muted">APP</div>
+      <div className="mb-2 text-footnote font-semibold text-muted">APP</div>
       <InstallPrompt className="mb-3" showInstalled />
       <InviteFriends className="mb-6" />
 
       <HealthDetails />
 
-      <div className="mb-2 text-xs font-semibold tracking-widest text-muted">REFERENCE</div>
+      <div className="mb-2 text-footnote font-semibold text-muted">Reference</div>
       <button
         onClick={() => router.push("/evidence")}
-        className="mb-6 flex w-full items-center justify-between gap-4 rounded-2xl border border-line bg-surface px-4 py-3.5 text-left"
+        className="mb-6 flex w-full items-center justify-between gap-4 rounded-[20px] bg-surface px-4 py-3.5 text-left"
       >
         <div>
-          <div className="text-sm font-semibold text-ink">The evidence behind your plan</div>
-          <div className="text-xs text-muted">
+          <div className="text-subhead font-semibold text-ink">The evidence behind your plan</div>
+          <div className="text-footnote text-muted">
             The research your plan and coach are built on, with sources
           </div>
         </div>
@@ -478,7 +478,7 @@ export default function Settings() {
 
       <button
         onClick={logOut}
-        className="w-full rounded-2xl border border-line py-3.5 text-sm font-semibold text-warning"
+        className="w-full rounded-[20px] border border-line py-3.5 text-subhead font-semibold text-warning"
       >
         Log out
       </button>

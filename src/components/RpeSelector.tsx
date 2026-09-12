@@ -8,8 +8,8 @@ export function RpeSelector({ onSubmit }: { onSubmit: (value: number) => void })
   const pct = ((value - 1) / 9) * 100;
 
   return (
-    <div className="rounded-2xl border border-line bg-surface p-5">
-      <div className="mb-3 text-sm font-semibold text-ink">How hard was that?</div>
+    <div className="rounded-[20px] bg-surface p-5">
+      <div className="mb-3 text-subhead font-semibold text-ink">How hard was that?</div>
       <input
         type="range"
         min={1}
@@ -24,7 +24,7 @@ export function RpeSelector({ onSubmit }: { onSubmit: (value: number) => void })
           appearance: "none",
         }}
       />
-      <div className="mb-4 flex justify-between text-xs text-muted">
+      <div className="mb-4 flex justify-between text-footnote text-muted">
         <span>Easy</span>
         <motion.span
           key={value}
@@ -39,7 +39,7 @@ export function RpeSelector({ onSubmit }: { onSubmit: (value: number) => void })
       <motion.button
         whileTap={{ scale: 0.98 }}
         onClick={() => onSubmit(value)}
-        className="w-full rounded-2xl bg-ink py-3.5 text-sm font-semibold text-background"
+        className="w-full rounded-[20px] bg-ink py-3.5 text-subhead font-semibold text-background"
       >
         Next exercise
       </motion.button>

@@ -27,7 +27,7 @@ function FindingCard({ finding, startOpen }: { finding: Finding; startOpen: bool
   const [open, setOpen] = useState(startOpen);
 
   return (
-    <div className="rounded-2xl border border-line bg-surface">
+    <div className="rounded-[20px] bg-surface">
       <button
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
@@ -37,7 +37,7 @@ function FindingCard({ finding, startOpen }: { finding: Finding; startOpen: bool
           <div className="mb-2 flex flex-wrap items-center gap-2">
             <StrengthBadge strength={finding.strength} />
           </div>
-          <p className="text-sm font-semibold leading-relaxed text-ink">{finding.claim}</p>
+          <p className="text-subhead font-semibold leading-relaxed text-ink">{finding.claim}</p>
         </div>
         <ChevronDown
           size={18}
@@ -51,16 +51,16 @@ function FindingCard({ finding, startOpen }: { finding: Finding; startOpen: bool
           animate={{ opacity: 1, y: 0 }}
           className="border-t border-line px-4 pb-4 pt-3"
         >
-          <p className="mb-3 text-sm leading-relaxed text-ink">{finding.practical}</p>
+          <p className="mb-3 text-subhead leading-relaxed text-ink">{finding.practical}</p>
 
           {finding.limits && (
-            <div className="mb-3 rounded-xl bg-background p-3">
-              <div className="mb-1 text-xs font-semibold text-muted">WHAT IT DOESN&apos;T SAY</div>
-              <p className="text-sm leading-relaxed text-muted">{finding.limits}</p>
+            <div className="mb-3 rounded-[12px] bg-background p-3">
+              <div className="mb-1 text-footnote font-semibold text-muted">WHAT IT DOESN&apos;T SAY</div>
+              <p className="text-subhead leading-relaxed text-muted">{finding.limits}</p>
             </div>
           )}
 
-          <div className="text-xs font-semibold tracking-widest text-muted">
+          <div className="text-footnote font-semibold text-muted">
             {finding.sources.length > 1 ? "SOURCES" : "SOURCE"}
           </div>
           <ul className="mt-1.5 flex flex-col gap-2">
@@ -70,7 +70,7 @@ function FindingCard({ finding, startOpen }: { finding: Finding; startOpen: bool
                   href={sourceUrl(source)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group flex items-start gap-1.5 text-xs leading-relaxed text-muted hover:text-accent"
+                  className="group flex items-start gap-1.5 text-footnote leading-relaxed text-muted hover:text-accent"
                 >
                   <span>{citation(source)}</span>
                   <ExternalLink size={12} className="mt-0.5 flex-shrink-0" />
@@ -110,9 +110,9 @@ function EvidenceBody() {
 
   return (
     <div>
-      <div className="mb-1 text-xs font-semibold tracking-widest text-muted">THE EVIDENCE</div>
-      <h1 className="mb-2 font-display text-2xl font-bold text-ink">Why the app says what it says</h1>
-      <p className="mb-5 text-sm leading-relaxed text-muted">
+      <div className="mb-1 text-footnote font-semibold text-muted">The evidence</div>
+      <h1 className="mb-2 text-title1 font-bold text-ink">Why the app says what it says</h1>
+      <p className="mb-5 text-subhead leading-relaxed text-muted">
         {FINDINGS.length} findings behind your plan and your coach. Every one links to the paper it
         came from, and says plainly how strong the evidence actually is — including where it&apos;s
         thin.
@@ -124,8 +124,8 @@ function EvidenceBody() {
             key={t.id}
             onClick={() => setTopic(t.id)}
             className={clsx(
-              "flex-shrink-0 rounded-xl px-3.5 py-2 text-sm font-semibold transition",
-              topic === t.id ? "bg-ink text-background" : "border border-line bg-surface text-muted"
+              "flex-shrink-0 rounded-[12px] px-3.5 py-2 text-subhead font-semibold transition",
+              topic === t.id ? "bg-ink text-background" : "bg-surface text-muted"
             )}
           >
             {t.label}
@@ -133,7 +133,7 @@ function EvidenceBody() {
         ))}
       </div>
 
-      <p className="mb-4 text-sm leading-relaxed text-muted">{active.blurb}</p>
+      <p className="mb-4 text-subhead leading-relaxed text-muted">{active.blurb}</p>
 
       <div className="flex flex-col gap-2.5">
         {shown.map((finding) => (
@@ -141,7 +141,7 @@ function EvidenceBody() {
         ))}
       </div>
 
-      <p className="mt-6 text-xs leading-relaxed text-muted">
+      <p className="mt-6 text-footnote leading-relaxed text-muted">
         This is a summary of published research, not medical advice. Training and nutrition
         decisions that interact with a health condition, an injury, medication or pregnancy belong
         with a qualified professional who can actually examine you.
@@ -152,7 +152,7 @@ function EvidenceBody() {
 
 export default function Evidence() {
   return (
-    <Suspense fallback={<p className="text-sm text-muted">Loading…</p>}>
+    <Suspense fallback={<p className="text-subhead text-muted">Loading…</p>}>
       <EvidenceBody />
     </Suspense>
   );

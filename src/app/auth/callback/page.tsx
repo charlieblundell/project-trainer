@@ -49,14 +49,14 @@ export default function AuthCallback() {
   if (failed) {
     return (
       <div className="mx-auto flex min-h-screen max-w-sm flex-col justify-center px-6 py-10">
-        <h1 className="mb-2 font-display text-2xl font-bold text-ink">That sign-in link didn&apos;t work.</h1>
-        <p className="mb-6 text-sm leading-relaxed text-muted">
+        <h1 className="mb-2 text-title1 font-bold text-ink">That sign-in link didn&apos;t work.</h1>
+        <p className="mb-6 text-subhead leading-relaxed text-muted">
           Sign-in links only work once, for a limited time, and in the same browser you asked for them from. Request
           a fresh one and open it on this device.
         </p>
         <Link
           href="/signup"
-          className="w-full rounded-2xl bg-ink py-4 text-center text-[15px] font-semibold text-background"
+          className="w-full rounded-[20px] bg-ink py-4 text-center text-[15px] font-semibold text-background"
         >
           Get a new sign-in link
         </Link>
@@ -67,7 +67,7 @@ export default function AuthCallback() {
   return (
     <div className="mx-auto flex min-h-screen max-w-sm flex-col items-center justify-center px-6 py-10 text-center">
       <LogoMark size={40} />
-      <p className="mt-4 text-sm text-muted">Signing you in...</p>
+      <p className="mt-4 text-subhead text-muted">Signing you in...</p>
     </div>
   );
 }

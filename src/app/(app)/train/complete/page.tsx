@@ -41,7 +41,7 @@ export default function TrainComplete() {
 
   return (
     <motion.div className="mx-auto max-w-sm" variants={container} initial="hidden" animate="show">
-      <motion.h1 variants={item} className="mb-5 font-display text-3xl font-bold text-ink">
+      <motion.h1 variants={item} className="mb-5 text-3xl font-bold text-ink">
         Workout complete.
       </motion.h1>
 
@@ -53,10 +53,10 @@ export default function TrainComplete() {
         ].map(([num, label]) => (
           <div
             key={label}
-            className="flex-1 rounded-2xl border border-line bg-surface py-4 text-center"
+            className="flex-1 rounded-[20px] bg-surface py-4 text-center"
           >
-            <div className="tabular font-display text-xl font-bold text-ink">{num}</div>
-            <div className="text-xs text-muted">{label}</div>
+            <div className="tabular text-title2 font-bold text-ink">{num}</div>
+            <div className="text-footnote text-muted">{label}</div>
           </div>
         ))}
       </motion.div>
@@ -67,27 +67,27 @@ export default function TrainComplete() {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ type: "spring", stiffness: 400, damping: 22, delay: 0.15 }}
-          className="mb-5 flex items-center gap-2 rounded-2xl bg-accent-soft px-4 py-3"
+          className="mb-5 flex items-center gap-2 rounded-[20px] bg-accent-soft px-4 py-3"
         >
           <Flame size={16} className="flex-shrink-0 text-accent" />
-          <span className="text-sm font-semibold text-ink">
+          <span className="text-subhead font-semibold text-ink">
             {upgrades.length} target{upgrades.length > 1 ? "s" : ""} going up next session.
           </span>
         </motion.div>
       )}
 
-      <motion.div variants={item} className="mb-6 rounded-2xl bg-success-soft p-5">
-        <div className="mb-3 flex items-center gap-1.5 text-xs font-semibold text-success">
+      <motion.div variants={item} className="mb-6 rounded-[20px] bg-success-soft p-5">
+        <div className="mb-3 flex items-center gap-1.5 text-footnote font-semibold text-success">
           <TrendingUp size={13} /> WHAT CHANGES NEXT TIME
         </div>
         {changes.length === 0 ? (
-          <p className="text-sm leading-relaxed text-ink">
+          <p className="text-subhead leading-relaxed text-ink">
             That&apos;s logged. Next session will build on what you did today.
           </p>
         ) : (
           <ul className="flex flex-col gap-2.5">
             {changes.map((c) => (
-              <li key={c.exerciseId} className="text-sm leading-relaxed text-ink">
+              <li key={c.exerciseId} className="text-subhead leading-relaxed text-ink">
                 <span className="font-semibold">{c.exerciseName}</span>
                 <span className="text-muted"> — {c.reason}</span>
               </li>
@@ -103,7 +103,7 @@ export default function TrainComplete() {
         variants={item}
         whileTap={{ scale: 0.98 }}
         onClick={() => router.push("/home")}
-        className="w-full rounded-2xl bg-ink py-4 text-[15px] font-semibold text-background"
+        className="w-full rounded-[20px] bg-ink py-4 text-[15px] font-semibold text-background"
       >
         Done
       </motion.button>

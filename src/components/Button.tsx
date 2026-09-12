@@ -11,10 +11,10 @@ export function Button({
   return (
     <button
       className={clsx(
-        "w-full rounded-2xl py-4 text-[15px] font-semibold transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50",
+        "w-full rounded-[20px] py-4 text-[15px] font-semibold transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50",
         variant === "primary" && "bg-ink text-background hover:opacity-90",
         variant === "secondary" &&
-          "border border-line bg-surface text-ink hover:border-ink/30",
+          "bg-surface text-ink hover:border-ink/30",
         variant === "ghost" && "bg-transparent text-muted hover:text-ink",
         variant === "danger" && "border border-line bg-transparent text-warning hover:bg-warning-soft",
         className

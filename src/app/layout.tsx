@@ -1,19 +1,8 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Manrope } from "next/font/google";
 import { AuthProvider } from "@/components/AuthProvider";
 import { SiteAnalytics } from "@/components/SiteAnalytics";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 import "./globals.css";
-
-const inter = Inter({
-  variable: "--font-body",
-  subsets: ["latin"],
-});
-
-const manrope = Manrope({
-  variable: "--font-display",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -41,15 +30,12 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   // One colour, because the app is light whatever the phone is set to.
-  themeColor: "#faf7f3",
+  themeColor: "#f2f2f7",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html
-      lang="en"
-      className={`${inter.variable} ${manrope.variable} h-full antialiased`}
-    >
+    <html lang="en" className="h-full antialiased">
       <body className="min-h-full bg-background text-ink">
         <AuthProvider>{children}</AuthProvider>
         <SiteAnalytics />

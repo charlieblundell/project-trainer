@@ -1,46 +1,74 @@
 @import "tailwindcss";
 
+/*
+ * iOS 26 semantics, on the web.
+ *
+ * The token names are the ones the app already uses, so screens keep reading
+ * the same way; what changed is what they resolve to. Values are Apple's own
+ * system colours rather than anything invented here, because the point is to
+ * sit inside the platform rather than beside it.
+ *
+ * Light only. A second palette nobody has checked on a phone in a gym is worse
+ * than one that's right, and that decision predates this redesign.
+ */
 :root {
-  /* One palette, whatever the phone is set to: the warm paper look is the
-     brand, and a second dark version would be a design nobody has vetted.
-     Declaring the scheme keeps native controls — inputs, scrollbars, pickers —
-     light too, rather than following the system and clashing. */
   color-scheme: light;
 
-  /* Neutrals carry a slight warm bias so they sit with the accent rather than
-     fighting it — a true grey next to terracotta reads as unconsidered. */
-  --background: #faf7f3;
-  --surface: #ffffff;
-  --ink: #1e1916;
-  --muted: #7a706a;
-  --line: #eae2da;
+  /* Backgrounds. Content sits on grouped grey; cards are the white above it. */
+  --background: #f2f2f7; /* systemGroupedBackground */
+  --surface: #ffffff; /* secondarySystemGroupedBackground */
+  --surface-2: #f2f2f7; /* tertiarySystemGroupedBackground */
 
-  --accent: #b8492a;
-  --accent-2: #e0912f;
+  /* Labels. Apple's secondary/tertiary are translucent so they sit on any
+     background without picking a grey that only works on one of them. */
+  --ink: #000000; /* label */
+  --muted: rgba(60, 60, 67, 0.6); /* secondaryLabel */
+  --faint: rgba(60, 60, 67, 0.3); /* tertiaryLabel */
+  --line: rgba(60, 60, 67, 0.29); /* separator */
+
+  /* Fills, for segmented controls and inert chips. */
+  --fill: rgba(120, 120, 128, 0.12); /* secondarySystemFill */
+  --fill-strong: rgba(120, 120, 128, 0.2); /* systemFill */
+
+  --accent: #007aff; /* systemBlue */
   --accent-ink: #ffffff;
-  --accent-soft: #fbe9e0;
+  --accent-soft: rgba(0, 122, 255, 0.12);
 
-  --success: #1a8757;
-  --success-soft: #e2f2e9;
+  --success: #34c759; /* systemGreen */
+  --success-soft: rgba(52, 199, 89, 0.14);
 
-  /* Destructive actions need to be unmistakably not the accent, so this sits
-     on the cool side of red rather than sharing terracotta's orange. */
-  --warning: #c4183f;
-  --warning-soft: #fbe3e8;
+  --warning: #ff3b30; /* systemRed */
+  --warning-soft: rgba(255, 59, 48, 0.12);
 
-  --font-display: "Manrope", sans-serif;
-  --font-body: "Inter", sans-serif;
+  /*
+   * San Francisco on Apple hardware, Roboto on Android, Segoe on Windows —
+   * whatever the person's own system uses for everything else. A downloaded
+   * face is the fastest way to feel like a website pretending to be an app.
+   */
+  --font-body: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto,
+    system-ui, sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto,
+    system-ui, sans-serif;
+
+  /* Corners. Cards and sheets nest inside the phone's own curvature, so the
+     outer radius is generous and inner elements step down from it. */
+  --radius-card: 20px;
+  --radius-inner: 12px;
+  --radius-control: 12px;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
   --color-ink: var(--ink);
   --color-muted: var(--muted);
+  --color-faint: var(--faint);
   --color-line: var(--line);
+  --color-fill: var(--fill);
+  --color-fill-strong: var(--fill-strong);
 
   --color-accent: var(--accent);
-  --color-accent-2: var(--accent-2);
   --color-accent-ink: var(--accent-ink);
   --color-accent-soft: var(--accent-soft);
 
@@ -56,12 +84,77 @@
   /* Only defined inside elements carrying marketingFontClasses. */
   --font-marketing-display: var(--font-archivo), "Arial Narrow", system-ui, sans-serif;
   --font-marketing-body: var(--font-source-sans), system-ui, sans-serif;
+
+  /*
+   * Apple's type scale, named as Apple names it. Sizes are the default
+   * (Large) Dynamic Type sizes; line heights and tracking follow the system
+   * faces, which tighten as they get bigger.
+   */
+  --text-largetitle: 2.125rem; /* 34 */
+  --text-largetitle--line-height: 2.5625rem;
+  --text-largetitle--letter-spacing: 0.0137rem;
+  --text-title1: 1.75rem; /* 28 */
+  --text-title1--line-height: 2.125rem;
+  --text-title2: 1.375rem; /* 22 */
+  --text-title2--line-height: 1.75rem;
+  --text-title3: 1.25rem; /* 20 */
+  --text-title3--line-height: 1.5625rem;
+  --text-headline: 1.0625rem; /* 17 semibold */
+  --text-headline--line-height: 1.375rem;
+  --text-body: 1.0625rem; /* 17 */
+  --text-body--line-height: 1.375rem;
+  --text-callout: 1rem; /* 16 */
+  --text-callout--line-height: 1.3125rem;
+  --text-subhead: 0.9375rem; /* 15 */
+  --text-subhead--line-height: 1.25rem;
+  --text-footnote: 0.8125rem; /* 13 */
+  --text-footnote--line-height: 1.125rem;
+  --text-caption: 0.75rem; /* 12 */
+  --text-caption--line-height: 1rem;
 }
 
 body {
   font-family: var(--font-body);
+  /* Body text is 17px on iOS, not 16. Everything inherits from here. */
+  font-size: var(--text-body);
+  line-height: var(--text-body--line-height);
+  -webkit-font-smoothing: antialiased;
 }
 
 .tabular {
   font-variant-numeric: tabular-nums;
+}
+
+/*
+ * The functional layer: navigation and controls that float above content and
+ * take their appearance from whatever scrolls underneath. Used on the tab bar
+ * and nowhere in the content layer — glass over glass has nothing to sample
+ * and the hierarchy stops reading.
+ */
+/* The blur itself is applied with Tailwind's own backdrop utilities on the
+   element, so it lands in the right layer; this only handles the setting that
+   turns the material off. */
+@media (prefers-reduced-transparency: reduce) {
+  .glass {
+    background: var(--surface) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Every tap target clears Apple's 44pt floor, and nothing flashes grey on tap. */
+button,
+a,
+[role="button"] {
+  -webkit-tap-highlight-color: transparent;
 }

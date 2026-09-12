@@ -161,7 +161,7 @@ export function SingleSelect({
             onClick={() => onSelect(opt)}
             aria-pressed={selected}
             className={clsx(
-              "flex items-center gap-3 rounded-2xl border px-4 py-3.5 text-left text-sm font-medium",
+              "flex items-center gap-3 rounded-[20px] border px-4 py-3.5 text-left text-subhead font-medium",
               selected ? "border-ink bg-ink text-background" : "border-line bg-surface text-ink"
             )}
           >
@@ -206,7 +206,7 @@ export function EquipmentPicker({
             onClick={() => onToggle(eq)}
             aria-pressed={isSelected}
             className={clsx(
-              "flex items-center justify-between rounded-2xl border px-4 py-3.5 text-left text-sm font-medium",
+              "flex items-center justify-between rounded-[20px] border px-4 py-3.5 text-left text-subhead font-medium",
               isSelected ? "border-ink bg-ink text-background" : "border-line bg-surface text-ink"
             )}
           >
@@ -248,7 +248,7 @@ export function WeekdayPicker({
               aria-pressed={isSelected}
               aria-label={d.id}
               className={clsx(
-                "flex h-11 w-11 items-center justify-center rounded-full border text-sm font-semibold",
+                "flex h-11 w-11 items-center justify-center rounded-full border text-subhead font-semibold",
                 isSelected ? "border-ink bg-ink text-background" : "border-line bg-surface text-muted"
               )}
             >
@@ -257,7 +257,7 @@ export function WeekdayPicker({
           );
         })}
       </div>
-      <p className="mt-4 text-sm text-muted">
+      <p className="mt-4 text-subhead text-muted">
         {selected.length} of {days} days picked
         {selected.length === days && " — that's the lot."}
       </p>
@@ -286,17 +286,17 @@ export function ExercisePicker({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search exercises"
-          className="w-full rounded-2xl border border-line bg-surface py-3 pl-10 pr-4 text-sm"
+          className="w-full rounded-[20px] bg-surface py-3 pl-10 pr-4 text-subhead"
         />
       </div>
 
       {selected.length > 0 && (
-        <p className="mb-3 text-xs font-semibold text-accent">{selected.length} selected</p>
+        <p className="mb-3 text-footnote font-semibold text-accent">{selected.length} selected</p>
       )}
 
-      <div className="max-h-[46vh] overflow-y-auto rounded-2xl border border-line">
+      <div className="max-h-[46vh] overflow-y-auto rounded-[20px] border border-line">
         {results.length === 0 && (
-          <p className="px-4 py-5 text-sm text-muted">
+          <p className="px-4 py-5 text-subhead text-muted">
             Nothing matches that. Try a muscle group, like &ldquo;chest&rdquo;.
           </p>
         )}
@@ -310,8 +310,8 @@ export function ExercisePicker({
               className="flex w-full items-center justify-between border-b border-line bg-surface px-4 py-3 text-left last:border-b-0"
             >
               <span>
-                <span className="block text-sm text-ink">{ex.name}</span>
-                <span className="block text-xs text-muted">{ex.muscles.join(", ")}</span>
+                <span className="block text-subhead text-ink">{ex.name}</span>
+                <span className="block text-footnote text-muted">{ex.muscles.join(", ")}</span>
               </span>
               <span
                 className={clsx(
@@ -342,16 +342,16 @@ export function NumberField({
 }) {
   return (
     <label className="flex items-center justify-between gap-4">
-      <span className="text-sm text-ink">{label}</span>
+      <span className="text-subhead text-ink">{label}</span>
       <span className="flex items-center gap-2">
         <input
           type="number"
           inputMode="decimal"
           value={value ?? ""}
           onChange={(e) => onChange(e.target.value === "" ? null : Number(e.target.value))}
-          className="tabular w-24 rounded-xl border border-line bg-surface px-3 py-2.5 text-right text-sm"
+          className="tabular w-24 rounded-[12px] bg-surface px-3 py-2.5 text-right text-subhead"
         />
-        <span className="w-10 text-xs text-muted">{unit}</span>
+        <span className="w-10 text-footnote text-muted">{unit}</span>
       </span>
     </label>
   );
@@ -360,7 +360,7 @@ export function NumberField({
 export function SexPicker({ value, onChange }: { value: Sex | null; onChange: (sex: Sex | null) => void }) {
   return (
     <div>
-      <div className="mb-2 text-xs font-semibold tracking-widest text-muted">SEX</div>
+      <div className="mb-2 text-footnote font-semibold text-muted">SEX</div>
       <div className="flex flex-wrap gap-2">
         {SEX_OPTIONS.map((opt) => {
           const selected = value === opt.id;
@@ -370,7 +370,7 @@ export function SexPicker({ value, onChange }: { value: Sex | null; onChange: (s
               onClick={() => onChange(selected ? null : opt.id)}
               aria-pressed={selected}
               className={clsx(
-                "rounded-full border px-3.5 py-2 text-sm font-medium",
+                "rounded-full border px-3.5 py-2 text-subhead font-medium",
                 selected ? "border-ink bg-ink text-background" : "border-line bg-surface text-ink"
               )}
             >

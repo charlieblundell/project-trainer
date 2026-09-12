@@ -37,19 +37,19 @@ export function InviteFriends({ className }: { className?: string }) {
   }
 
   return (
-    <div className={clsx("rounded-2xl border border-line bg-surface px-4 py-3.5", className)}>
-      <div className="text-sm font-semibold text-ink">Know someone who&apos;d use this?</div>
-      <div className="text-xs leading-relaxed text-muted">
+    <div className={clsx("rounded-[20px] bg-surface px-4 py-3.5", className)}>
+      <div className="text-subhead font-semibold text-ink">Know someone who&apos;d use this?</div>
+      <div className="text-footnote leading-relaxed text-muted">
         Send them a link. They answer their own questions and get a plan built for them.
       </div>
       <button
         onClick={share}
-        className="mt-3 w-full rounded-xl border border-line py-2.5 text-sm font-semibold text-ink"
+        className="mt-3 w-full rounded-[12px] border border-line py-2.5 text-subhead font-semibold text-ink"
       >
         {status === "copied" ? "Link copied" : "Share the app"}
       </button>
       {status === "failed" && (
-        <p className="mt-2 select-all break-all text-xs text-muted">Copy this link: {link}</p>
+        <p className="mt-2 select-all break-all text-footnote text-muted">Copy this link: {link}</p>
       )}
     </div>
   );
