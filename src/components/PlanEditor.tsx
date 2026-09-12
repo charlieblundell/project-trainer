@@ -57,7 +57,7 @@ export function PlanEditor() {
         <p className="mb-4 text-subhead text-muted">There&apos;s no plan to edit yet.</p>
         <button
           onClick={() => router.push("/onboarding")}
-          className="rounded-[20px] bg-ink px-5 py-3 text-subhead font-semibold text-background"
+          className="min-h-[48px] rounded-[12px] bg-accent px-5 text-body font-semibold text-accent-ink"
         >
           Build my plan
         </button>
@@ -129,7 +129,7 @@ export function PlanEditor() {
           whileTap={changed ? { scale: 0.98 } : undefined}
           onClick={save}
           disabled={!changed || status === "saving"}
-          className="w-full rounded-[20px] bg-ink py-4 text-[15px] font-semibold text-background shadow-lg disabled:bg-line disabled:text-muted disabled:shadow-none"
+          className="min-h-[54px] w-full rounded-[14px] bg-accent text-body font-semibold text-accent-ink shadow-lg disabled:bg-line disabled:text-muted disabled:shadow-none"
         >
           {status === "saving" ? "Saving…" : changed ? "Save my plan" : "No changes yet"}
         </motion.button>

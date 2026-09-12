@@ -466,7 +466,7 @@ export default function Onboarding() {
         <button
           disabled={!canContinue()}
           onClick={next}
-          className="w-full rounded-[20px] bg-ink py-4 text-[15px] font-semibold text-background transition disabled:cursor-not-allowed disabled:bg-line disabled:text-muted"
+          className="min-h-[54px] w-full rounded-[14px] bg-accent text-body font-semibold text-accent-ink transition disabled:cursor-not-allowed disabled:bg-line disabled:text-muted"
         >
           {step === steps.length - 1
             ? busy

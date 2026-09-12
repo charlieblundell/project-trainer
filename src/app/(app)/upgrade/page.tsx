@@ -32,7 +32,7 @@ export default function Upgrade() {
         </p>
         <button
           onClick={() => router.push("/settings")}
-          className="w-full rounded-[20px] bg-ink py-4 text-[15px] font-semibold text-background"
+          className="min-h-[54px] w-full rounded-[14px] bg-accent text-body font-semibold text-accent-ink"
         >
           Go to Settings
         </button>
@@ -72,7 +72,7 @@ export default function Upgrade() {
 
         <button
           onClick={() => router.push("/home")}
-          className="w-full rounded-[20px] bg-ink py-4 text-[15px] font-semibold text-background"
+          className="min-h-[54px] w-full rounded-[14px] bg-accent text-body font-semibold text-accent-ink"
         >
           Back to my plan
         </button>
@@ -174,7 +174,7 @@ export default function Upgrade() {
       <button
         onClick={checkout}
         disabled={busy}
-        className="w-full rounded-[20px] bg-ink py-4 text-[15px] font-semibold text-background disabled:opacity-60"
+        className="min-h-[54px] w-full rounded-[14px] bg-accent text-body font-semibold text-accent-ink disabled:opacity-60"
       >
         {busy ? "Opening secure checkout" : "Continue to payment"}
       </button>

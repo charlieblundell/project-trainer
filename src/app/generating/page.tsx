@@ -131,7 +131,7 @@ export default function Generating() {
         </p>
         <button
           onClick={buildAndSave}
-          className="w-full rounded-[20px] bg-ink py-4 text-[15px] font-semibold text-background"
+          className="min-h-[54px] w-full rounded-[14px] bg-accent text-body font-semibold text-accent-ink"
         >
           Try again
         </button>
@@ -318,7 +318,7 @@ function PlanReveal({
       {first ? (
         <button
           onClick={() => onStart(first.id)}
-          className="mb-2.5 w-full rounded-[20px] bg-ink py-4 text-[15px] font-semibold text-background"
+          className="mb-2.5 min-h-[54px] w-full rounded-[14px] bg-accent text-body font-semibold text-accent-ink"
         >
           {today ? "Start today's session" : `Start ${first.name} now`}
         </button>

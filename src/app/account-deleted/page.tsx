@@ -38,7 +38,7 @@ export default function AccountDeleted() {
           </div>
           <Link
             href="/"
-            className="w-full rounded-md bg-ink py-3.5 text-center text-[15px] font-semibold text-background"
+            className="flex min-h-[54px] w-full items-center justify-center rounded-[14px] bg-accent text-[15px] font-semibold text-accent-ink"
           >
             Back to the homepage
           </Link>

@@ -148,7 +148,7 @@ function Editor({ section, saved }: { section: ProfileSection; saved: Onboarding
         {rebuilt && (
           <button
             onClick={() => router.push("/plan")}
-            className="mb-2.5 w-full rounded-[20px] bg-ink py-4 text-[15px] font-semibold text-background"
+            className="mb-2.5 min-h-[54px] w-full rounded-[14px] bg-accent text-body font-semibold text-accent-ink"
           >
             See my plan
           </button>
@@ -158,7 +158,7 @@ function Editor({ section, saved }: { section: ProfileSection; saved: Onboarding
           className={
             rebuilt
               ? "w-full py-3 text-subhead font-semibold text-muted hover:text-ink"
-              : "w-full rounded-[20px] bg-ink py-4 text-[15px] font-semibold text-background"
+              : "min-h-[54px] w-full rounded-[14px] bg-accent text-body font-semibold text-accent-ink"
           }
         >
           Back to Settings
@@ -195,7 +195,7 @@ function Editor({ section, saved }: { section: ProfileSection; saved: Onboarding
         <button
           onClick={shareHealthDetails}
           disabled={consentBusy}
-          className="mb-2.5 w-full rounded-[20px] bg-ink py-4 text-[15px] font-semibold text-background disabled:opacity-60"
+          className="mb-2.5 min-h-[54px] w-full rounded-[14px] bg-accent text-body font-semibold text-accent-ink disabled:opacity-60"
         >
           {consentBusy ? "Saving…" : "Yes, use my health details"}
         </button>
@@ -330,7 +330,7 @@ function Editor({ section, saved }: { section: ProfileSection; saved: Onboarding
       <button
         onClick={save}
         disabled={!changed || !!problem || status === "saving"}
-        className="w-full rounded-[20px] bg-ink py-4 text-[15px] font-semibold text-background transition disabled:cursor-not-allowed disabled:bg-line disabled:text-muted"
+        className="min-h-[54px] w-full rounded-[14px] bg-accent text-body font-semibold text-accent-ink transition disabled:cursor-not-allowed disabled:bg-line disabled:text-muted"
       >
         {status === "saving" ? "Saving…" : rebuilds ? "Save and update my plan" : "Save changes"}
       </button>

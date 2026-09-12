@@ -56,7 +56,7 @@ export default function AuthCallback() {
         </p>
         <Link
           href="/signup"
-          className="w-full rounded-[20px] bg-ink py-4 text-center text-[15px] font-semibold text-background"
+          className="flex min-h-[54px] w-full items-center justify-center rounded-[14px] bg-accent text-body font-semibold text-accent-ink"
         >
           Get a new sign-in link
         </Link>

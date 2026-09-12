@@ -101,7 +101,7 @@ export default function SignUp() {
   const emailButton = (
     <button
       onClick={() => setShowEmailForm(true)}
-      className="w-full rounded-md bg-ink py-3.5 text-[15px] font-semibold text-background transition hover:opacity-90"
+      className="min-h-[54px] w-full rounded-[14px] bg-accent text-[15px] font-semibold text-accent-ink transition hover:opacity-90"
     >
       Continue with email
     </button>
@@ -165,7 +165,7 @@ export default function SignUp() {
               <button
                 onClick={verifyCode}
                 disabled={status === "verifying" || code.length < 6}
-                className="w-full rounded-md bg-ink py-3.5 text-[15px] font-semibold text-background transition hover:opacity-90 disabled:opacity-50"
+                className="min-h-[54px] w-full rounded-[14px] bg-accent text-[15px] font-semibold text-accent-ink transition hover:opacity-90 disabled:opacity-50"
               >
                 {status === "verifying" ? "Signing in…" : "Sign in"}
               </button>
@@ -209,7 +209,7 @@ export default function SignUp() {
               <button
                 onClick={sendCode}
                 disabled={status === "sending" || !email.trim()}
-                className="w-full rounded-md bg-ink py-3.5 text-[15px] font-semibold text-background transition hover:opacity-90 disabled:opacity-50"
+                className="min-h-[54px] w-full rounded-[14px] bg-accent text-[15px] font-semibold text-accent-ink transition hover:opacity-90 disabled:opacity-50"
               >
                 {status === "sending" ? "Sending…" : "Email me a sign-in code"}
               </button>

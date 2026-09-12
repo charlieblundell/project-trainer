@@ -126,7 +126,7 @@ export function CheckIn({
       <button
         onClick={() => readiness && onDone(readiness)}
         disabled={!readiness}
-        className="w-full rounded-[20px] bg-ink py-4 text-[15px] font-semibold text-background disabled:bg-line disabled:text-muted"
+        className="min-h-[54px] w-full rounded-[14px] bg-accent text-body font-semibold text-accent-ink disabled:bg-line disabled:text-muted"
       >
         {readiness?.jointPain === "sharp" ? "Continue carefully" : "Start workout"}
       </button>

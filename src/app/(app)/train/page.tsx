@@ -89,7 +89,7 @@ export default function Train() {
         <p className="mb-4 text-subhead text-muted">No workout selected.</p>
         <button
           onClick={() => router.push("/plan")}
-          className="rounded-[20px] bg-ink px-5 py-3 text-subhead font-semibold text-background"
+          className="min-h-[48px] rounded-[12px] bg-accent px-5 text-body font-semibold text-accent-ink"
         >
           Pick one from your plan
         </button>

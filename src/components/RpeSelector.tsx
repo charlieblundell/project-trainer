@@ -39,7 +39,7 @@ export function RpeSelector({ onSubmit }: { onSubmit: (value: number) => void })
       <motion.button
         whileTap={{ scale: 0.98 }}
         onClick={() => onSubmit(value)}
-        className="w-full rounded-[20px] bg-ink py-3.5 text-subhead font-semibold text-background"
+        className="min-h-[54px] w-full rounded-[14px] bg-accent text-body font-semibold text-accent-ink"
       >
         Next exercise
       </motion.button>

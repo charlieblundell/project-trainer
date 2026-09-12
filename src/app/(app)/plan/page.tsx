@@ -45,7 +45,7 @@ export default function Plan() {
         <p className="mb-4 text-subhead text-muted">You don&apos;t have a plan yet.</p>
         <button
           onClick={() => router.push("/onboarding")}
-          className="rounded-[20px] bg-ink px-5 py-3 text-subhead font-semibold text-background"
+          className="min-h-[48px] rounded-[12px] bg-accent px-5 text-body font-semibold text-accent-ink"
         >
           Build my plan
         </button>
@@ -216,7 +216,7 @@ export default function Plan() {
                   setPreview(null);
                   router.push("/train");
                 }}
-                className="w-full rounded-[20px] bg-ink py-4 text-[15px] font-semibold text-background"
+                className="min-h-[54px] w-full rounded-[14px] bg-accent text-body font-semibold text-accent-ink"
               >
                 Start this workout
               </motion.button>

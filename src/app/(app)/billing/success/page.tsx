@@ -78,7 +78,7 @@ export default function BillingSuccess() {
           </p>
           <button
             onClick={() => router.push("/home")}
-            className="w-full rounded-[20px] bg-ink py-4 text-[15px] font-semibold text-background"
+            className="min-h-[54px] w-full rounded-[14px] bg-accent text-body font-semibold text-accent-ink"
           >
             Back to training
           </button>
