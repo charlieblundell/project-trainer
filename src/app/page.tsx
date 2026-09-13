@@ -86,7 +86,12 @@ const SHOT_HEIGHT = 2532;
  * are taken from the installed app, so what sits at the bottom is the app's
  * own navigation — that stays.
  */
-const STATUS_BAR = 120;
+/*
+ * The screenshots are taken by scripts/marketing-screens.ts in a headless
+ * browser, so there's no phone status bar to hide any more. Cropping is now
+ * only ever a framing choice, and nothing needs cropping by default.
+ */
+const STATUS_BAR = 0;
 
 /**
  * One app screenshot in a phone frame, cropped without touching the file:
@@ -273,7 +278,7 @@ export default function Landing() {
 
           <div className="grid grid-cols-2 gap-4 sm:gap-5 lg:col-span-6 lg:gap-4">
             {/* Cropped below the greeting: the name there belongs to whoever took the screenshot. */}
-            <Screen src="/screens/home.png" alt="The app's home screen: today's session, with the week below it." cropTop={400} eager />
+            <Screen src="/screens/home.png" alt="The app's home screen: today's session, with the week below it." eager />
             <Screen
               src="/screens/train.png"
               alt="Logging a set during a workout, with the rest timer counting down."

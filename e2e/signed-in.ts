@@ -79,7 +79,7 @@ const PROFILE = {
   health_consent_at: "2026-09-01T00:00:00.000Z",
 };
 
-const USER = {
+export const TEST_USER = {
   id: USER_ID,
   aud: "authenticated",
   role: "authenticated",
@@ -95,7 +95,7 @@ const USER = {
  * for the browser; the test runner is a separate process that doesn't, so we
  * read it here rather than guessing and silently landing on the sign-in page.
  */
-function supabaseProjectRef(): string {
+export function supabaseProjectRef(): string {
   const fromEnv = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const fromFile = fromEnv
     ? null
@@ -123,7 +123,7 @@ export async function stubSupabase(page: Page, plan: Plan | null) {
   const saved: Plan[] = [];
 
   await page.route("**/auth/v1/**", (route) =>
-    route.fulfill(json(route.request().url().includes("/user") ? USER : { user: USER }))
+    route.fulfill(json(route.request().url().includes("/user") ? TEST_USER : { user: TEST_USER }))
   );
 
   await page.route("**/rest/v1/**", (route) => {
@@ -180,7 +180,7 @@ export const test = base.extend<Fixtures>({
           })
         );
       },
-      { ref: projectRef, user: USER }
+      { ref: projectRef, user: TEST_USER }
     );
 
     await page.goto(baseURL!);
