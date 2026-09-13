@@ -6,6 +6,7 @@ import { Send } from "lucide-react";
 import { COACH_PROMPTS } from "@/lib/data";
 import { useAppStore } from "@/lib/store";
 import { supabase } from "@/lib/supabase";
+import { track } from "@/lib/analytics";
 
 export default function Coach() {
   const messages = useAppStore((s) => s.messages);
@@ -28,6 +29,8 @@ export default function Coach() {
       data: { session },
     } = await supabase.auth.getSession();
 
+    // That a question was asked, never what it said.
+    track("coach_asked");
     try {
       const res = await fetch("/api/coach", {
         method: "POST",

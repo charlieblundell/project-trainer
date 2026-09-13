@@ -12,6 +12,7 @@ import { saveSetupProfile } from "@/lib/setup";
 import { emptyWeek } from "@/lib/plan/edit";
 import { experienceToLevel } from "@/lib/plan/generate";
 import { savePlan } from "@/lib/plan/storage";
+import { track } from "@/lib/analytics";
 import {
   EQUIPMENT_BY_ENVIRONMENT,
   availableExercises,
@@ -207,6 +208,7 @@ export default function Onboarding() {
       await saveSetupProfile(signedIn.id, onboarding);
       const plan = emptyWeek(onboarding.goal ?? "Build muscle", experienceToLevel(onboarding.experience));
       await savePlan(signedIn.id, plan);
+      track("plan_built", { from: "setup" });
       setPlan(plan);
       completeOnboarding();
       router.push("/plan/edit");

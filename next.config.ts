@@ -20,6 +20,18 @@ const nextConfig: NextConfig = {
   headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
+  /*
+   * PostHog (EU) reached through the app's own address, so analytics blockers
+   * aimed at posthog.com don't hide whole groups of people from the numbers.
+   */
+  rewrites() {
+    return [
+      { source: "/ingest/static/:path*", destination: "https://eu-assets.i.posthog.com/static/:path*" },
+      { source: "/ingest/:path*", destination: "https://eu.i.posthog.com/:path*" },
+    ];
+  },
+  // PostHog's API paths end in a slash; Next's redirect would break them.
+  skipTrailingSlashRedirect: true,
 };
 
 export default nextConfig;

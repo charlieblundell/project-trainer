@@ -6,6 +6,7 @@ import { supabase } from "./supabase";
 import type { Plan } from "./plan/types";
 import { applyProgression, type Change } from "./plan/progress";
 import { savePlan } from "./plan/storage";
+import { track } from "./analytics";
 import { normalizePlan } from "./plan/normalize";
 import { profileFromOnboarding, refreshAccessories } from "./plan/generate";
 import type { Equipment } from "./exercises";
@@ -104,7 +105,10 @@ export const useAppStore = create<AppState>()(
       completeOnboarding: () => set({ onboardingComplete: true }),
 
       session: emptySession(""),
-      startWorkout: (workoutId) => set({ session: emptySession(workoutId) }),
+      startWorkout: (workoutId) => {
+        track("workout_started");
+        set({ session: emptySession(workoutId) });
+      },
       logSet: (exerciseId, log) =>
         set((s) => {
           const current = s.session.loggedSets[exerciseId] ?? [];
@@ -135,6 +139,7 @@ export const useAppStore = create<AppState>()(
         const equipment = get().onboarding.equipment as Equipment[];
 
         set({ lastCompletedSummary: { workoutId: s.workoutId, loggedSets: s.loggedSets } });
+        track("workout_completed", { sets: Object.values(s.loggedSets).reduce((n, l) => n + l.length, 0) });
 
         const { data } = await supabase.auth.getUser();
         if (!data.user) return;

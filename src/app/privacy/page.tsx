@@ -76,9 +76,18 @@ export default function Privacy() {
         <p>
           <strong>Technical information.</strong> Our hosting providers keep standard server logs, which can include
           your IP address, browser type and the time of a request, for security and fixing faults. The app stores data
-          in your browser to keep you signed in and remember where you were. We don&apos;t use advertising or tracking
-          cookies. We count visits to each page with Vercel Web Analytics, which doesn&apos;t use cookies and
-          doesn&apos;t identify you.
+          in your browser to keep you signed in and remember where you were. We don&apos;t use advertising cookies.
+          We count visits to each page with Vercel Web Analytics, which doesn&apos;t use cookies and doesn&apos;t
+          identify you.
+        </p>
+        <p>
+          <strong>How the app is used.</strong> To learn which parts of the app help people and where they give up,
+          we use PostHog to record which pages you open and a few actions: building a plan, starting and finishing
+          a workout (with the number of sets), asking the coach a question, sharing the app, and starting checkout.
+          These are linked to a random account number, stored in your browser rather than a cookie, and never to
+          your name or email. They don&apos;t include what you type, your weights, injuries, check-in answers or
+          what you ask the coach, and we don&apos;t record your screen. Links keep only the tag saying where a visit
+          came from, such as a social post.
         </p>
       </Section>
 
@@ -147,6 +156,7 @@ export default function Privacy() {
           items={[
             <><strong>Supabase</strong> — stores your account, profile and training data, and sends sign-in emails.</>,
             <><strong>Vercel</strong> — hosts the app, runs its servers and counts page visits.</>,
+            <><strong>PostHog</strong> — records the pages and actions described in section 2, stored in the European Union.</>,
             <><strong>Anthropic</strong> — generates the AI coach&apos;s replies from your message and the training details sent with it.</>,
             <><strong>Stripe</strong> — processes subscriptions and payments, and emails receipts and yearly renewal reminders.</>,
             <><strong>Google</strong> — sends our account emails, such as sign-in codes, through Gmail, and handles sign-in if you choose to sign in with Google.</>,
@@ -161,7 +171,8 @@ export default function Privacy() {
       <Section id="overseas" number={8} title="Information stored overseas">
         <p>
           Several of these providers are based in, or store data in, other countries. Your information is likely to be
-          disclosed to recipients in the United States, and in Singapore, where our database is hosted.
+          disclosed to recipients in the United States; in Singapore, where our database is hosted; and in Germany, where
+          PostHog stores usage records.
         </p>
         <p>
           We choose established providers that are bound by their own privacy and security commitments, and we

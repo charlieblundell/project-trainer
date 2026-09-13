@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Check } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import { supabase } from "@/lib/supabase";
+import { track } from "@/lib/analytics";
 import { PLANS } from "@/lib/billing/plans";
 import { PAYMENTS_OPEN, inTrial, isSubscribed, trialDaysLeft, type PlanInterval } from "@/lib/billing/entitlement";
 import { clsx } from "@/lib/clsx";
@@ -84,6 +85,7 @@ export default function Upgrade() {
   const daysLeft = billing ? trialDaysLeft(billing) : 0;
 
   async function checkout() {
+    track("checkout_started");
     setBusy(true);
     setError(null);
     const {

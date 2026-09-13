@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { clsx } from "@/lib/clsx";
 import { SITE_NAME } from "@/lib/site";
+import { track } from "@/lib/analytics";
 
 /**
  * Opens the phone's own share sheet with a link to the app, or copies the link
@@ -17,6 +18,7 @@ export function InviteFriends({ className }: { className?: string }) {
   async function share() {
     const url = `${window.location.origin}/?ref=invite`;
     setLink(url);
+    track("invite_shared");
 
     if (navigator.share) {
       try {

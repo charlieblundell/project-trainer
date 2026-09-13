@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import type { User } from "@supabase/supabase-js";
 import { supabase } from "./supabase";
+import { forget, identify } from "./analytics";
 
 type AuthState = {
   user: User | null;
@@ -23,11 +24,14 @@ export function startAuthListener() {
   listenerStarted = true;
 
   supabase.auth.getSession().then(({ data }) => {
+    if (data.session?.user) identify(data.session.user.id);
     useAuthStore.getState().setUser(data.session?.user ?? null);
     useAuthStore.getState().setInitialized(true);
   });
 
-  supabase.auth.onAuthStateChange((_event, session) => {
+  supabase.auth.onAuthStateChange((event, session) => {
+    if (session?.user) identify(session.user.id);
+    if (event === "SIGNED_OUT") forget();
     useAuthStore.getState().setUser(session?.user ?? null);
     useAuthStore.getState().setInitialized(true);
   });

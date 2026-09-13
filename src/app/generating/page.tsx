@@ -10,6 +10,7 @@ import { LogoMark } from "@/components/Wordmark";
 import { supabase } from "@/lib/supabase";
 import { generatePlan } from "@/lib/plan/generate";
 import { savePlan } from "@/lib/plan/storage";
+import { track } from "@/lib/analytics";
 import { saveSetupProfile } from "@/lib/setup";
 import { signedInUser } from "@/lib/session";
 import { InstallPrompt } from "@/components/InstallPrompt";
@@ -80,6 +81,7 @@ export default function Generating() {
         age: consented ? onboarding.age : null,
       });
       await savePlan(signedIn.id, plan);
+      track("plan_built", { from: "generating" });
       setPlan(plan);
       completeOnboarding();
 
