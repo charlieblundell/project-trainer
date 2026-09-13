@@ -26,7 +26,7 @@ So ask before you invest any time. Email connect-support@developer.garmin.com:
 >
 > Thanks,
 > [first name]
-> Your Personal Trainer — project-trainer-inky.vercel.app
+> Your Personal Trainer — yourpersonaltrainer.vercel.app
 
 ---
 
@@ -34,7 +34,7 @@ So ask before you invest any time. Email connect-support@developer.garmin.com:
 
 - **Company name:** [Your registered business name once the ABN is through —
   until then, your own name: Charles James Blundell]
-- **Website:** https://project-trainer-inky.vercel.app
+- **Website:** https://yourpersonaltrainer.vercel.app
 - **Contact:** [first name] [surname], cblundell38@gmail.com
 - **Country:** Australia
 - **Company size:** 1
@@ -138,7 +138,7 @@ Connecting Garmin would be its own explicit opt-in, off by default, listing
 exactly what is collected and why. Our privacy policy would name Garmin as a
 recipient and disclose that the data is handled overseas.
 
-Privacy policy: https://project-trainer-inky.vercel.app/privacy
+Privacy policy: https://yourpersonaltrainer.vercel.app/privacy
 
 ## Expected volume
 

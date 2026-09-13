@@ -1,5 +1,5 @@
 /** The public address and description, for anything seen outside the app: link previews, search results, shares. */
-export const SITE_URL = (process.env.APP_URL?.trim() || "https://project-trainer-inky.vercel.app").replace(/\/+$/, "");
+export const SITE_URL = (process.env.APP_URL?.trim() || "https://yourpersonaltrainer.vercel.app").replace(/\/+$/, "");
 
 export const SITE_NAME = "Your Personal Trainer";
 
