@@ -1,7 +1,9 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { recordScreen } from "@/lib/navigation";
 import { motion } from "framer-motion";
 import { Home, Dumbbell, CalendarDays, TrendingUp, MessageCircle } from "lucide-react";
 import { clsx } from "@/lib/clsx";
@@ -23,6 +25,8 @@ const ITEMS = [
 
 export function Nav() {
   const pathname = usePathname();
+  // So a Back button elsewhere can tell whether the screen it names is really behind it.
+  useEffect(() => recordScreen(pathname), [pathname]);
 
   return (
     <>

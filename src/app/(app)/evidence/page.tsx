@@ -1,12 +1,13 @@
 "use client";
 
 import { Suspense, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
-import { ChevronDown, ExternalLink } from "lucide-react";
+import { ChevronDown, ChevronLeft, ExternalLink } from "lucide-react";
 import { FINDINGS, STRENGTH_LABEL, TOPICS, citation, sourceUrl } from "@/lib/evidence";
 import type { EvidenceStrength, EvidenceTopic, Finding } from "@/lib/evidence";
 import { clsx } from "@/lib/clsx";
+import { previousScreen } from "@/lib/navigation";
 
 function StrengthBadge({ strength }: { strength: EvidenceStrength }) {
   return (
@@ -55,13 +56,13 @@ function FindingCard({ finding, startOpen }: { finding: Finding; startOpen: bool
 
           {finding.limits && (
             <div className="mb-3 rounded-[12px] bg-background p-3">
-              <div className="mb-1 text-footnote font-semibold text-muted">WHAT IT DOESN&apos;T SAY</div>
+              <div className="mb-1 text-footnote font-semibold text-muted">What it doesn&apos;t say</div>
               <p className="text-subhead leading-relaxed text-muted">{finding.limits}</p>
             </div>
           )}
 
           <div className="text-footnote font-semibold text-muted">
-            {finding.sources.length > 1 ? "SOURCES" : "SOURCE"}
+            {finding.sources.length > 1 ? "Sources" : "Source"}
           </div>
           <ul className="mt-1.5 flex flex-col gap-2">
             {finding.sources.map((source) => (
@@ -84,8 +85,37 @@ function FindingCard({ finding, startOpen }: { finding: Finding; startOpen: bool
   );
 }
 
+/*
+ * Where Back goes when there's no in-app history to return through: a link
+ * opened fresh, or the installed app reopened on this screen. An installed app
+ * has no browser Back button, so without one of these the screen was a dead end.
+ */
+const CAME_FROM: Record<string, { label: string; screen: string }> = {
+  why: { label: "Back", screen: "/plan/why" },
+  settings: { label: "Settings", screen: "/settings" },
+};
+
 function EvidenceBody() {
+  const router = useRouter();
   const params = useSearchParams();
+  const from = CAME_FROM[params.get("from") ?? ""];
+  const rule = params.get("rule");
+  const label = from?.label ?? "Back";
+  // Where to go when that screen isn't actually behind us — reopening the rule
+  // sheet they came from, if there was one.
+  const fallback = from ? `${from.screen}${rule && from.screen === "/plan/why" ? `?rule=${rule}` : ""}` : "/plan";
+
+  /*
+   * Through history only when the screen behind is the one the button names,
+   * so it comes back exactly as it was left. Otherwise straight to it: a
+   * button labelled "Settings" never takes anyone Home.
+   */
+  const goBack = () => {
+    const behind = previousScreen();
+    const expected = from?.screen;
+    if (behind && (!expected || behind === expected)) router.back();
+    else router.push(fallback);
+  };
   // A link from elsewhere in the app can name the findings behind a decision.
   const focused = useMemo(() => {
     const raw = params.get("ids");
@@ -110,6 +140,12 @@ function EvidenceBody() {
 
   return (
     <div>
+      <button
+        onClick={goBack}
+        className="-ml-1 mb-2 flex min-h-[44px] items-center gap-0.5 text-body text-accent"
+      >
+        <ChevronLeft size={22} strokeWidth={2.2} /> {label}
+      </button>
       <div className="mb-1 text-footnote font-semibold text-muted">The evidence</div>
       <h1 className="mb-2 text-largetitle font-bold text-ink">Why the app says what it says</h1>
       <p className="mb-5 text-subhead leading-relaxed text-muted">

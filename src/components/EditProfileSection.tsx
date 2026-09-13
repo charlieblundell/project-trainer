@@ -169,10 +169,13 @@ function Editor({ section, saved }: { section: ProfileSection; saved: Onboarding
 
   const header = (
     <>
-      <button onClick={() => router.push("/settings")} className="mb-4 flex items-center text-muted" aria-label="Back to Settings">
-        <ChevronLeft size={18} />
+      <button
+        onClick={() => router.push("/settings")}
+        className="-ml-1 mb-2 flex min-h-[44px] items-center gap-0.5 text-body text-accent"
+      >
+        <ChevronLeft size={22} strokeWidth={2.2} /> Settings
       </button>
-      <h1 className="mb-5 text-title1 font-bold text-ink">{TITLES[section]}</h1>
+      <h1 className="mb-5 text-largetitle font-bold text-ink">{TITLES[section]}</h1>
     </>
   );
 
@@ -223,13 +226,13 @@ function Editor({ section, saved }: { section: ProfileSection; saved: Onboarding
       <div className="mb-8">
         {section === "training" && (
           <>
-            <Label>GOAL</Label>
+            <Label>Goal</Label>
             <SingleSelect
               options={optionsFor("goal")}
               value={valueFor("goal", draft)}
               onSelect={(opt) => patch(patchFor("goal", opt, draft))}
             />
-            <Label>EXPERIENCE</Label>
+            <Label>Experience</Label>
             <SingleSelect
               options={optionsFor("experience")}
               value={valueFor("experience", draft)}
@@ -240,19 +243,19 @@ function Editor({ section, saved }: { section: ProfileSection; saved: Onboarding
 
         {section === "schedule" && (
           <>
-            <Label>SESSIONS A WEEK</Label>
+            <Label>Sessions a week</Label>
             <SingleSelect
               options={optionsFor("days")}
               value={valueFor("days", draft)}
               onSelect={(opt) => patch(patchFor("days", opt, draft))}
             />
-            <Label>WHICH DAYS</Label>
+            <Label>Which days</Label>
             <WeekdayPicker
               selected={draft.trainingDays}
               days={draft.days ?? 0}
               onToggle={(day) => patch({ trainingDays: toggleWeekday(draft.trainingDays, day) })}
             />
-            <Label>SESSION LENGTH</Label>
+            <Label>Session length</Label>
             <SingleSelect
               options={optionsFor("length")}
               value={valueFor("length", draft)}
@@ -263,13 +266,13 @@ function Editor({ section, saved }: { section: ProfileSection; saved: Onboarding
 
         {section === "equipment" && (
           <>
-            <Label>WHERE YOU TRAIN</Label>
+            <Label>Where you train</Label>
             <SingleSelect
               options={optionsFor("environment")}
               value={valueFor("environment", draft)}
               onSelect={(opt) => patch(patchFor("environment", opt, draft))}
             />
-            <Label>EQUIPMENT</Label>
+            <Label>Equipment</Label>
             {isFullyEquipped(draft.environment) && (
               <p className="mb-3 text-subhead leading-relaxed text-muted">
                 A full gym is assumed to have everything. Untick anything yours doesn&apos;t have.
@@ -280,7 +283,7 @@ function Editor({ section, saved }: { section: ProfileSection; saved: Onboarding
               selected={draft.equipment}
               onToggle={(eq) => patch({ equipment: toggle(draft.equipment, eq) })}
             />
-            <Label>EXERCISES YOU LOVE</Label>
+            <Label>Exercises you love</Label>
             <ExercisePicker
               query={likedQuery}
               setQuery={setLikedQuery}
@@ -288,7 +291,7 @@ function Editor({ section, saved }: { section: ProfileSection; saved: Onboarding
               selected={draft.likedExercises}
               onToggle={(id) => patch({ likedExercises: toggle(draft.likedExercises, id) })}
             />
-            <Label>EXERCISES TO AVOID</Label>
+            <Label>Exercises to avoid</Label>
             <ExercisePicker
               query={avoidQuery}
               setQuery={setAvoidQuery}
@@ -307,7 +310,7 @@ function Editor({ section, saved }: { section: ProfileSection; saved: Onboarding
               <NumberField label="Height" unit="cm" value={draft.heightCm} onChange={(v) => patch({ heightCm: v })} />
               <SexPicker value={draft.sex} onChange={(sex) => patch({ sex })} />
             </div>
-            <Label>INJURIES OR LIMITATIONS</Label>
+            <Label>Injuries or limitations</Label>
             <textarea
               value={draft.considerations ?? ""}
               onChange={(e) => patch({ considerations: e.target.value })}

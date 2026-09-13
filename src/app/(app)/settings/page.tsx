@@ -444,7 +444,7 @@ export default function Settings() {
 
       <ListSection header="App">
         <ListLink
-          onClick={() => router.push("/evidence")}
+          onClick={() => router.push("/evidence?from=settings")}
           title="The evidence behind your plan"
           detail="The research your plan and coach are built on, with sources"
         />

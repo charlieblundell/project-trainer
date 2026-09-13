@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Activity,
@@ -214,7 +214,7 @@ function RuleDetail({ rule, personal }: { rule: PlanRule; personal: ForYou | nul
 
       {rule.basis.kind === "research" ? (
         <Link
-          href={evidenceHref(rule.basis.findings)}
+          href={evidenceHref(rule.basis.findings, "why", rule.id)}
           className="flex min-h-[56px] items-center justify-between gap-3 rounded-[14px] bg-surface px-4 py-3"
         >
           <span className="flex items-center gap-3">
@@ -273,7 +273,7 @@ function WeekDetail({ rows }: { rows: VolumeRow[] }) {
         </p>
       )}
       <Link
-        href={evidenceHref(["volume-dose-response", "count-indirect-sets-as-half"])}
+        href={evidenceHref(["volume-dose-response", "count-indirect-sets-as-half"], "why")}
         className="flex min-h-[56px] items-center justify-between gap-3 rounded-[14px] bg-surface px-4 py-3"
       >
         <span className="flex items-center gap-3">
@@ -292,11 +292,28 @@ function WeekDetail({ rows }: { rows: VolumeRow[] }) {
 
 type Open = { kind: "rule"; id: string } | { kind: "week" } | null;
 
-export default function HowYourPlanIsBuilt() {
+function HowYourPlanIsBuiltBody() {
   const router = useRouter();
+  const params = useSearchParams();
   const plan = useAppStore((s) => s.plan);
   const onboarding = useAppStore((s) => s.onboarding);
-  const [open, setOpen] = useState<Open>(null);
+
+  /*
+   * Which sheet is open lives in the URL, not in component state. That's what
+   * lets Back from the research return someone to the rule they were reading,
+   * and lets the Train and Plan screens link straight to the rule that answers
+   * their question.
+   */
+  const ruleParam = params.get("rule");
+  const open: Open = ruleParam
+    ? { kind: "rule", id: ruleParam }
+    : params.get("week")
+      ? { kind: "week" }
+      : null;
+  const setOpen = (next: Open) => {
+    const query = next?.kind === "rule" ? `?rule=${next.id}` : next?.kind === "week" ? "?week=1" : "";
+    router.replace(`/plan/why${query}`, { scroll: false });
+  };
 
   if (!plan) {
     return (
@@ -391,7 +408,7 @@ export default function HowYourPlanIsBuilt() {
             icon={CircleDashed}
             tone="judgement"
             title={item.title}
-            href={evidenceHref(item.findings)}
+            href={evidenceHref(item.findings, "why")}
             last={i === NOT_YET.length - 1}
           />
         ))}
@@ -410,5 +427,13 @@ export default function HowYourPlanIsBuilt() {
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+export default function HowYourPlanIsBuilt() {
+  return (
+    <Suspense fallback={null}>
+      <HowYourPlanIsBuiltBody />
+    </Suspense>
   );
 }

@@ -217,6 +217,12 @@ export function rulesFor(ctx: RuleContext): PlanRule[] {
   return PLAN_RULES.filter((rule) => !rule.appliesTo || rule.appliesTo(ctx));
 }
 
-export function evidenceHref(findings: string[]): string {
-  return `/evidence?ids=${findings.join(",")}`;
+/**
+ * A link to the findings behind something. `from` tells the evidence screen
+ * where its Back button goes when there's no history to return through — a
+ * link opened fresh, or the app reopened on that screen.
+ */
+export function evidenceHref(findings: string[], from?: "why" | "settings", rule?: string): string {
+  const back = from ? `&from=${from}${rule ? `&rule=${rule}` : ""}` : "";
+  return `/evidence?ids=${findings.join(",")}${back}`;
 }

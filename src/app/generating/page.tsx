@@ -13,6 +13,7 @@ import { savePlan } from "@/lib/plan/storage";
 import { saveSetupProfile } from "@/lib/setup";
 import { signedInUser } from "@/lib/session";
 import { InstallPrompt } from "@/components/InstallPrompt";
+import { BuiltOnResearch } from "@/components/BuiltOnResearch";
 import {
   WEEKDAY_LABELS,
   WEEKDAY_ORDER,
@@ -213,7 +214,7 @@ function PlanReveal({
       animate={{ opacity: 1, y: 0 }}
       className="mx-auto max-w-md px-6 pb-16 pt-10"
     >
-      <div className="mb-1 text-footnote font-semibold text-accent">YOUR PLAN IS READY</div>
+      <div className="mb-1 text-footnote font-semibold text-accent">Your plan is ready</div>
       <h1 className="mb-2 text-3xl font-bold leading-tight text-ink">Here&apos;s your week.</h1>
       <p className="tabular mb-7 text-subhead text-muted">
         {plan.goal} · {plan.sessions.length} session{plan.sessions.length === 1 ? "" : "s"} a week · about{" "}
@@ -240,10 +241,12 @@ function PlanReveal({
         })}
       </ol>
 
+      <BuiltOnResearch plan={plan} className="mb-8" />
+
       {first && (
         <section className="mb-8">
           <div className="mb-2 text-footnote font-semibold text-muted">
-            YOUR FIRST SESSION · {today ? "TODAY" : WEEKDAY_LABELS[first.weekday].toUpperCase()}
+            Your first session · {today ? "today" : WEEKDAY_LABELS[first.weekday]}
           </div>
           <div className="rounded-[20px] bg-surface p-5">
             <div className="mb-3 flex items-baseline justify-between gap-3">
@@ -266,7 +269,7 @@ function PlanReveal({
       )}
 
       <section className="mb-8">
-        <div className="mb-3 text-footnote font-semibold text-muted">HOW YOUR FIRST WEEK WORKS</div>
+        <div className="mb-3 text-footnote font-semibold text-muted">How your first week works</div>
         <div className="flex flex-col gap-4 text-subhead leading-relaxed">
           {lifts && (
             <p>
@@ -296,7 +299,7 @@ function PlanReveal({
 
       {plan.notes.length > 0 && (
         <section className="mb-8 rounded-[20px] bg-accent-soft p-4">
-          <div className="mb-2 text-footnote font-semibold text-accent">WHAT YOUR PLAN WORKS AROUND</div>
+          <div className="mb-2 text-footnote font-semibold text-accent">What your plan works around</div>
           <ul className="flex flex-col gap-1.5">
             {plan.notes.map((note) => (
               <li key={note} className="text-subhead leading-relaxed text-ink">

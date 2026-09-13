@@ -9,6 +9,7 @@ import { useAppStore } from "@/lib/store";
 import { RpeSelector } from "@/components/RpeSelector";
 import { SetStepper } from "@/components/SetStepper";
 import { clsx } from "@/lib/clsx";
+import Link from "next/link";
 import { ExerciseInfoModal } from "@/components/ExerciseInfoModal";
 import { ExerciseSwapPanel } from "@/components/ExerciseSwapPanel";
 import { sessionById, targetLabel } from "@/lib/plan/helpers";
@@ -298,8 +299,17 @@ function ExercisePanel({
         </div>
       </div>
 
-      <div className="tabular mb-1 text-[15px] font-semibold text-accent">
-        {targetLabel(planned)}
+      <div className="mb-1 flex items-center justify-between gap-3">
+        <span className="tabular text-callout font-semibold text-accent">{targetLabel(planned)}</span>
+        {/* Rep and weight targets are what this explains; a timed interval has neither. */}
+        {!isTimed && (
+          <Link
+            href="/plan/why?rule=load-by-goal"
+            className="-mr-2 flex min-h-[44px] items-center px-2 text-footnote text-muted"
+          >
+            Why these numbers?
+          </Link>
+        )}
       </div>
       {override && <div className="mb-4 text-footnote font-semibold text-success">Swapped in for today</div>}
       {lastSets && lastSets.length > 0 ? (
