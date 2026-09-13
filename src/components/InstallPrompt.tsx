@@ -48,7 +48,7 @@ export function InstallPrompt({
   if (installed) {
     if (!showInstalled) return null;
     return (
-      <div className={clsx("rounded-[20px] bg-surface px-4 py-3.5", className)}>
+      <div className={clsx("rounded-[20px] bg-surface shadow-card px-4 py-3.5", className)}>
         <div className="text-subhead font-semibold text-ink">Installed</div>
         <div className="text-footnote leading-relaxed text-muted">You&apos;re using the app from your home screen.</div>
       </div>
@@ -70,7 +70,7 @@ export function InstallPrompt({
   }
 
   return (
-    <div className={clsx("rounded-[20px] bg-surface p-4", className)}>
+    <div className={clsx("rounded-[20px] bg-surface shadow-card p-4", className)}>
       <div className="mb-1 text-subhead font-semibold text-ink">Put it on your home screen</div>
       <p className="mb-3 text-footnote leading-relaxed text-muted">
         Opens in one tap, full screen, straight into your plan — like any other app.

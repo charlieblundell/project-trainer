@@ -158,7 +158,7 @@ function SessionCard({
   const [adding, setAdding] = useState(false);
 
   return (
-    <section className="overflow-hidden rounded-[20px] bg-surface">
+    <section className="overflow-hidden rounded-[20px] bg-surface shadow-card">
       <button onClick={onToggle} className="flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left">
         <div>
           <div className="text-subhead font-semibold text-ink">{session.name}</div>

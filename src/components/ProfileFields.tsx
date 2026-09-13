@@ -286,7 +286,7 @@ export function ExercisePicker({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search exercises"
-          className="w-full rounded-[20px] bg-surface py-3 pl-10 pr-4 text-subhead"
+          className="w-full rounded-[20px] bg-surface shadow-card py-3 pl-10 pr-4 text-subhead"
         />
       </div>
 

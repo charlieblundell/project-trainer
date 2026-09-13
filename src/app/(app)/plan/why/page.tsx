@@ -152,7 +152,7 @@ function Group({ label, children }: { label: string; children: React.ReactNode }
   return (
     <section aria-label={label} className="mb-6">
       <h2 className="mb-1.5 px-4 text-footnote font-medium text-muted">{label}</h2>
-      <div className="overflow-hidden rounded-[20px] bg-surface">{children}</div>
+      <div className="overflow-hidden rounded-[20px] bg-surface shadow-card">{children}</div>
     </section>
   );
 }
@@ -360,7 +360,7 @@ function HowYourPlanIsBuiltBody() {
       {rows.length > 0 && (
         <button
           onClick={() => setOpen({ kind: "week" })}
-          className="mb-6 flex w-full items-center gap-3.5 rounded-[20px] bg-surface p-4 text-left active:bg-fill"
+          className="mb-6 flex w-full items-center gap-3.5 rounded-[20px] bg-surface shadow-card p-4 text-left active:bg-fill"
         >
           <Tile icon={BarChart3} tone="week" />
           <span className="min-w-0 flex-1">

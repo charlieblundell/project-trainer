@@ -316,7 +316,7 @@ function Editor({ section, saved }: { section: ProfileSection; saved: Onboarding
               onChange={(e) => patch({ considerations: e.target.value })}
               rows={5}
               placeholder="e.g. dodgy left shoulder, so overhead pressing hurts"
-              className="w-full resize-none rounded-[20px] bg-surface px-4 py-3 text-subhead leading-relaxed"
+              className="w-full resize-none rounded-[20px] bg-surface shadow-card px-4 py-3 text-subhead leading-relaxed"
             />
           </>
         )}

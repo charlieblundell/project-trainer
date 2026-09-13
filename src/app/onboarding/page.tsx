@@ -366,7 +366,7 @@ export default function Onboarding() {
                         )
                       }
                       className={clsx(
-                        "flex items-center justify-between rounded-[20px] border px-4 py-3.5 text-left text-subhead font-medium",
+                        "press flex items-center justify-between rounded-[20px] border px-4 py-3.5 text-left text-subhead font-medium",
                         selected ? "border-accent bg-accent text-accent-ink" : "border-line bg-surface text-ink"
                       )}
                     >
@@ -441,7 +441,7 @@ export default function Onboarding() {
                       aria-checked={selected}
                       onClick={() => setBuildOwn(option.value)}
                       className={clsx(
-                        "rounded-[20px] border px-4 py-3.5 text-left",
+                        "press rounded-[20px] border px-4 py-3.5 text-left",
                         selected ? "border-accent bg-accent text-accent-ink" : "border-line bg-surface text-ink"
                       )}
                     >
@@ -473,7 +473,7 @@ export default function Onboarding() {
               onChange={(e) => setOnboarding({ considerations: e.target.value })}
               rows={5}
               placeholder="e.g. dodgy left shoulder, so overhead pressing hurts"
-              className="w-full resize-none rounded-[20px] bg-surface px-4 py-3 text-subhead leading-relaxed"
+              className="w-full resize-none rounded-[20px] bg-surface shadow-card px-4 py-3 text-subhead leading-relaxed"
             />
           )}
         </motion.div>

@@ -38,7 +38,7 @@ test("keeping the current plan means it", async ({ signedIn }) => {
 
   // And it stays gone on the next visit.
   await page.reload();
-  await expect(page.getByRole("heading", { name: /good (morning|afternoon|evening)/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /^(morning|afternoon|evening|up late)/i })).toBeVisible();
   await expect(page.getByRole("region", { name: "Your plan has been improved" })).toBeHidden();
 });
 
@@ -56,6 +56,6 @@ test("a plan someone edited by hand is never offered a rebuild", async ({ signed
   });
 
   await page.goto("/home");
-  await expect(page.getByRole("heading", { name: /good (morning|afternoon|evening)/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /^(morning|afternoon|evening|up late)/i })).toBeVisible();
   await expect(page.getByRole("region", { name: "Your plan has been improved" })).toBeHidden();
 });

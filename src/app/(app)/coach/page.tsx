@@ -75,7 +75,7 @@ export default function Coach() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="flex items-center gap-1 self-start rounded-[20px] bg-surface px-4 py-3"
+            className="flex items-center gap-1 self-start rounded-[20px] bg-surface shadow-card px-4 py-3"
           >
             {[0, 1, 2].map((i) => (
               <motion.span

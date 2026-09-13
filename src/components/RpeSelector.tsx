@@ -8,7 +8,7 @@ export function RpeSelector({ onSubmit }: { onSubmit: (value: number) => void })
   const pct = ((value - 1) / 9) * 100;
 
   return (
-    <div className="rounded-[20px] bg-surface p-5">
+    <div className="rounded-[20px] bg-surface shadow-card p-5">
       <div className="mb-3 text-subhead font-semibold text-ink">How hard was that?</div>
       <input
         type="range"

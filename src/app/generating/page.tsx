@@ -221,7 +221,7 @@ function PlanReveal({
         {averageMinutes} min each
       </p>
 
-      <ol className="mb-8 overflow-hidden rounded-[20px] bg-surface">
+      <ol className="mb-8 overflow-hidden rounded-[20px] bg-surface shadow-card">
         {WEEKDAY_ORDER.map((day) => {
           const session = plan.sessions.find((s) => s.weekday === day);
           const isFirst = !!session && session.id === first?.id;
@@ -248,7 +248,7 @@ function PlanReveal({
           <div className="mb-2 text-footnote font-semibold text-muted">
             Your first session · {today ? "today" : WEEKDAY_LABELS[first.weekday]}
           </div>
-          <div className="rounded-[20px] bg-surface p-5">
+          <div className="rounded-[20px] bg-surface shadow-card p-5">
             <div className="mb-3 flex items-baseline justify-between gap-3">
               <h2 className="text-title2 font-bold text-ink">{first.name}</h2>
               <span className="tabular text-subhead text-muted">~{first.estMinutes} min</span>

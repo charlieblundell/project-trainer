@@ -200,7 +200,7 @@ function HealthDetails() {
   return (
     <>
       <div className="mb-2 text-footnote font-semibold text-muted">Health details</div>
-      <div className="mb-6 rounded-[20px] bg-surface px-4 py-3.5">
+      <div className="mb-6 rounded-[20px] bg-surface shadow-card px-4 py-3.5">
         <div className="text-subhead font-semibold text-ink">{shared ? "Shared with your consent" : "Not shared"}</div>
         <div className="text-footnote leading-relaxed text-muted">
           {shared
@@ -297,7 +297,7 @@ function DeleteAccount() {
   return (
     <>
       <div className="mb-2 text-footnote font-semibold text-muted">Delete account</div>
-      <div className="mb-6 rounded-[20px] bg-surface px-4 py-3.5">
+      <div className="mb-6 rounded-[20px] bg-surface shadow-card px-4 py-3.5">
         <div className="text-subhead font-semibold text-ink">Delete your account and data</div>
         <div className="text-footnote leading-relaxed text-muted">
           Permanently removes your account and everything in it, and cancels any subscription.
@@ -413,7 +413,7 @@ export default function Settings() {
       {user?.email && <p className="mb-6 text-subhead text-muted">{user.email}</p>}
 
       <div className="mb-2 text-footnote font-semibold text-muted">Subscription</div>
-      <div className="mb-6 rounded-[20px] bg-surface px-4 py-3.5">
+      <div className="mb-6 rounded-[20px] bg-surface shadow-card px-4 py-3.5">
         <div className={summary.action === "none" ? "" : "mb-3"}>
           <div className="text-subhead font-semibold text-ink">{summary.title}</div>
           <div className={`text-footnote leading-relaxed ${summary.urgent ? "text-warning" : "text-muted"}`}>

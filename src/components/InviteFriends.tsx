@@ -37,7 +37,7 @@ export function InviteFriends({ className }: { className?: string }) {
   }
 
   return (
-    <div className={clsx("rounded-[20px] bg-surface px-4 py-3.5", className)}>
+    <div className={clsx("rounded-[20px] bg-surface shadow-card px-4 py-3.5", className)}>
       <div className="text-subhead font-semibold text-ink">Know someone who&apos;d use this?</div>
       <div className="text-footnote leading-relaxed text-muted">
         Send them a link. They answer their own questions and get a plan built for them.

@@ -105,7 +105,7 @@ export default function TrainComplete() {
       </div>
 
       <motion.div variants={container} initial="hidden" animate="show">
-        <motion.div variants={item} className="mb-4 flex overflow-hidden rounded-[20px] bg-surface">
+        <motion.div variants={item} className="mb-4 flex overflow-hidden rounded-[20px] bg-surface shadow-card">
           {[
             [String(estMinutes), "minutes"],
             [String(exerciseCount), "exercises"],
@@ -121,7 +121,7 @@ export default function TrainComplete() {
         {upgrades.length > 0 && (
           <motion.div
             variants={item}
-            className="mb-4 flex items-center gap-3 rounded-[20px] bg-surface px-4 py-3.5"
+            className="mb-4 flex items-center gap-3 rounded-[20px] bg-surface shadow-card px-4 py-3.5"
           >
             <span
               aria-hidden
@@ -135,7 +135,7 @@ export default function TrainComplete() {
           </motion.div>
         )}
 
-        <motion.section variants={item} className="mb-6 rounded-[20px] bg-surface p-4" aria-labelledby="next-time">
+        <motion.section variants={item} className="mb-6 rounded-[20px] bg-surface shadow-card p-4" aria-labelledby="next-time">
           <h2 id="next-time" className="mb-3 flex items-center gap-1.5 text-footnote font-semibold text-success-ink">
             <TrendingUp size={14} aria-hidden /> What changes next time
           </h2>

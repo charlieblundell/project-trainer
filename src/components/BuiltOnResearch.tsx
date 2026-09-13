@@ -21,7 +21,7 @@ export function BuiltOnResearch({ plan, className = "" }: { plan: Plan; classNam
   return (
     <Link
       href="/plan/why"
-      className={`flex min-h-[64px] items-center gap-3.5 rounded-[20px] bg-surface p-4 active:bg-fill ${className}`}
+      className={`flex min-h-[64px] items-center gap-3.5 rounded-[20px] bg-surface shadow-card p-4 active:bg-fill ${className}`}
     >
       <span
         aria-hidden

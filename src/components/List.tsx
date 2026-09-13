@@ -27,7 +27,7 @@ export function ListSection({
   return (
     <section className={clsx("mb-6", className)} aria-label={header}>
       {header && <h2 className="mb-1.5 px-4 text-footnote font-medium text-muted">{header}</h2>}
-      <div className="overflow-hidden rounded-[20px] bg-surface">{children}</div>
+      <div className="overflow-hidden rounded-[20px] bg-surface shadow-card">{children}</div>
       {footer && <p className="mt-1.5 px-4 text-footnote leading-relaxed text-muted">{footer}</p>}
     </section>
   );
@@ -92,7 +92,7 @@ export function ListLink({
   );
 
   const className =
-    "flex min-h-[44px] w-full items-center justify-between gap-4 border-b border-line/40 px-4 py-2.5 text-left last:border-b-0 active:bg-fill";
+    "press flex min-h-[44px] w-full items-center justify-between gap-4 border-b border-line/40 px-4 py-2.5 text-left last:border-b-0 active:bg-fill";
 
   return href ? (
     <Link href={href} className={className}>

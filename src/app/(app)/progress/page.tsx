@@ -69,7 +69,7 @@ export default function Progress() {
     return (
       <div>
         <h1 className="mb-5 text-largetitle font-bold text-ink">Your progress</h1>
-        <div className="rounded-[20px] bg-surface p-6 text-center">
+        <div className="rounded-[20px] bg-surface shadow-card p-6 text-center">
           {/* What this screen will become, drawn faintly, so the empty state has a shape. */}
           <svg viewBox="0 0 200 70" className="mx-auto mb-4 h-20 w-full max-w-[220px]" aria-hidden>
             {[0, 1, 2, 3].map((i) => (
@@ -134,7 +134,7 @@ export default function Progress() {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: Math.min(i, 6) * 0.03 }}
-              className="mb-3 rounded-[20px] bg-surface p-4"
+              className="mb-3 rounded-[20px] bg-surface shadow-card p-4"
             >
               <div className="mb-2 flex items-baseline justify-between gap-3">
                 <span className="text-subhead font-semibold text-ink">{s.name}</span>
@@ -176,7 +176,7 @@ export default function Progress() {
                   : `${Math.round(totals.consistency * 100)}%`,
               ],
             ].map(([label, value]) => (
-              <div key={label} className="rounded-[20px] bg-surface px-4 py-4">
+              <div key={label} className="rounded-[20px] bg-surface shadow-card px-4 py-4">
                 <div className="tabular text-title2 font-bold text-ink">{value}</div>
                 <div className="mt-0.5 text-footnote text-muted">{label}</div>
               </div>
@@ -190,7 +190,7 @@ export default function Progress() {
             </p>
           )}
 
-          <div className="rounded-[20px] bg-surface p-4">
+          <div className="rounded-[20px] bg-surface shadow-card p-4">
             <div className="mb-3 text-footnote font-semibold text-muted">
               LAST 12 WEEKS
             </div>

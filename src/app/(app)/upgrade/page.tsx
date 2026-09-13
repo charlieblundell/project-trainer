@@ -55,7 +55,7 @@ export default function Upgrade() {
             return (
               <div
                 key={id}
-                className="flex items-center justify-between gap-4 rounded-[20px] bg-surface px-4 py-4"
+                className="flex items-center justify-between gap-4 rounded-[20px] bg-surface shadow-card px-4 py-4"
               >
                 <div>
                   <div className="text-subhead font-semibold text-ink">{plan.label}</div>

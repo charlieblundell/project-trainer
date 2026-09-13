@@ -28,13 +28,8 @@ import type { WorkoutRecord } from "@/lib/progress/types";
 import { InstallPrompt } from "@/components/InstallPrompt";
 import { PlanUpgradeCard } from "@/components/PlanUpgradeCard";
 import { sessionBackground, sessionStyle } from "@/lib/sessionStyle";
-
-function greeting(now = new Date()): string {
-  const h = now.getHours();
-  if (h < 12) return "Good morning";
-  if (h < 18) return "Good afternoon";
-  return "Good evening";
-}
+import { greeting, homeNote } from "@/lib/homeNote";
+import { Rise, useCountUp } from "@/components/Rise";
 
 /** A stable empty array, so the memos below don't recompute on every render. */
 const NO_RECORDS: WorkoutRecord[] = [];
@@ -62,6 +57,8 @@ export default function Home() {
   const trainedToday = trainedDays.has(todayIndex);
 
   const name = displayName(user);
+  const note = useMemo(() => homeNote(history, plan), [history, plan]);
+  const shownDone = useCountUp(records === null ? 0 : sessionsThisWeek);
   const today = sessionForToday(plan);
   const upcoming = today ?? nextSession(plan);
   const isRestDay = !today && !!upcoming;
@@ -90,6 +87,16 @@ export default function Home() {
           <h1 className="text-largetitle font-bold text-ink">
             {name ? `${greeting()}, ${name}` : greeting()}
           </h1>
+          {records !== null && note && (
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.4 }}
+              className="mt-0.5 text-subhead text-muted"
+            >
+              {note}
+            </motion.p>
+          )}
         </div>
         <Link
           href="/settings"
@@ -101,7 +108,7 @@ export default function Home() {
       </div>
 
       {!plan ? (
-        <div className="rounded-[20px] bg-surface p-6 text-center">
+        <div className="rounded-[20px] bg-surface shadow-card p-6 text-center">
           <p className="mb-4 text-subhead text-muted">You don&apos;t have a plan yet.</p>
           <button
             onClick={() => router.push("/onboarding")}
@@ -179,21 +186,22 @@ export default function Home() {
           </div>
         </motion.section>
       ) : (
-        <div className="mb-4 rounded-[20px] bg-surface p-5 text-subhead text-muted">
+        <div className="mb-4 rounded-[20px] bg-surface shadow-card p-5 text-subhead text-muted">
           No sessions scheduled.
         </div>
       )}
 
       {plan && (
-        <section className="mb-4 rounded-[20px] bg-surface p-4" aria-labelledby="this-week">
+        <Rise order={1}>
+        <section className="mb-4 rounded-[20px] bg-surface shadow-card p-4" aria-labelledby="this-week">
           <div className="mb-4 flex items-center gap-4">
-            <WeekRing done={records === null ? 0 : sessionsThisWeek} target={target} />
+            <WeekRing done={records === null ? 0 : sessionsThisWeek} shown={shownDone} target={target} />
             <div className="min-w-0 flex-1">
               <div id="this-week" className="text-footnote font-semibold text-muted">
                 This week
               </div>
               <div className="tabular text-title3 font-bold text-ink">
-                {records === null ? "—" : `${sessionsThisWeek} of ${target} sessions`}
+                {records === null ? "—" : `${shownDone} of ${target} sessions`}
               </div>
               {records !== null && (
                 <div className="flex items-center gap-1 text-footnote text-muted">
@@ -225,7 +233,14 @@ export default function Home() {
                 trained ? "trained" : planned ? `${planned.name} planned` : "rest"
               }`;
               return (
-                <li key={day} className="flex flex-col items-center gap-1.5" aria-label={label}>
+                <motion.li
+                  key={day}
+                  initial={{ opacity: 0, scale: 0.6 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ type: "spring", stiffness: 420, damping: 24, delay: 0.15 + i * 0.04 }}
+                  className="flex flex-col items-center gap-1.5"
+                  aria-label={label}
+                >
                   <span
                     className={clsx(
                       "text-caption",
@@ -254,17 +269,23 @@ export default function Home() {
                       <DayIcon size={15} strokeWidth={2.3} className="text-white" />
                     ) : null}
                   </span>
-                </li>
+                </motion.li>
               );
             })}
           </ol>
         </section>
+        </Rise>
       )}
 
-      {plan && <PlanUpgradeCard className="mb-4" />}
+      {plan && (
+        <Rise order={2}>
+          <PlanUpgradeCard className="mb-4" />
+        </Rise>
+      )}
 
       {plan && lastWeek && (
-        <section className="mb-4 rounded-[20px] bg-surface p-4" aria-labelledby="last-week">
+        <Rise order={3}>
+        <section className="mb-4 rounded-[20px] bg-surface shadow-card p-4" aria-labelledby="last-week">
           <div id="last-week" className="mb-1 text-footnote font-semibold text-muted">
             Last week
           </div>
@@ -285,11 +306,13 @@ export default function Home() {
             </div>
           )}
         </section>
+        </Rise>
       )}
 
+      <Rise order={4}>
       <Link
         href="/coach"
-        className="mb-4 flex min-h-[64px] items-center gap-3.5 rounded-[20px] bg-surface p-4 active:bg-fill"
+        className="press mb-4 flex min-h-[64px] items-center gap-3.5 rounded-[20px] bg-surface shadow-card p-4 active:bg-fill"
       >
         <span
           aria-hidden
@@ -310,21 +333,26 @@ export default function Home() {
           aria-hidden
         />
       </Link>
+      </Rise>
 
-      {plan && <InstallPrompt dismissible mobileOnly />}
+      {plan && (
+        <Rise order={5}>
+          <InstallPrompt dismissible mobileOnly />
+        </Rise>
+      )}
     </div>
   );
 }
 
 /** Sessions done this week as a ring, the shape Fitness uses for a goal. */
-function WeekRing({ done, target }: { done: number; target: number }) {
+function WeekRing({ done, shown, target }: { done: number; shown: number; target: number }) {
   const r = 24;
   const c = 2 * Math.PI * r;
   const fraction = target > 0 ? Math.min(done / target, 1) : 0;
   return (
     <div className="relative flex-shrink-0" aria-hidden>
       <span className="tabular absolute inset-0 flex items-center justify-center text-subhead font-bold text-ink">
-        {done}/{target}
+        {shown}/{target}
       </span>
       <svg width="60" height="60" viewBox="0 0 60 60" className="-rotate-90">
         <circle cx="30" cy="30" r={r} fill="none" stroke="var(--fill-strong)" strokeWidth="8" />

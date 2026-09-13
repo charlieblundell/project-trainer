@@ -71,7 +71,7 @@ export function PlanUpgradeCard({ className = "" }: { className?: string }) {
 
   return (
     <>
-      <section aria-labelledby="plan-upgrade" className={`rounded-[20px] bg-surface p-4 ${className}`}>
+      <section aria-labelledby="plan-upgrade" className={`rounded-[20px] bg-surface shadow-card p-4 ${className}`}>
         <div className="mb-1 flex items-center gap-1.5">
           <Sparkles size={16} className="text-accent" aria-hidden />
           <h2 id="plan-upgrade" className="text-subhead font-semibold text-ink">

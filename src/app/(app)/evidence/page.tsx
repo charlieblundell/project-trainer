@@ -28,7 +28,7 @@ function FindingCard({ finding, startOpen }: { finding: Finding; startOpen: bool
   const [open, setOpen] = useState(startOpen);
 
   return (
-    <div className="rounded-[20px] bg-surface">
+    <div className="rounded-[20px] bg-surface shadow-card">
       <button
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}

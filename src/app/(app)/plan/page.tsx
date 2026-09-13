@@ -60,7 +60,7 @@ export default function Plan() {
       <BuiltOnResearch plan={plan} className="mb-5" />
 
       {plan.notes.length > 0 && (
-        <div className="mb-6 rounded-[20px] bg-surface p-4">
+        <div className="mb-6 rounded-[20px] bg-surface shadow-card p-4">
           <div className="mb-2 flex items-center gap-1.5 text-footnote font-semibold text-muted">
             <Info size={13} /> What your plan works around
           </div>
@@ -79,7 +79,7 @@ export default function Plan() {
        * own colour and symbol; rest days step back to a single quiet line, so
        * the shape of the week is visible without scrolling past seven cards.
        */}
-      <section aria-label="This week" className="mb-6 overflow-hidden rounded-[20px] bg-surface">
+      <section aria-label="This week" className="mb-6 overflow-hidden rounded-[20px] bg-surface shadow-card">
         {week.map(({ weekday, session }, i) => {
           const isToday = weekday === today;
           const dayLabel = (
@@ -112,7 +112,7 @@ export default function Plan() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.03 }}
               onClick={() => setPreview(session)}
-              className="flex min-h-[72px] w-full items-center gap-3.5 border-b border-line/40 px-4 py-3 text-left last:border-b-0 active:bg-fill"
+              className="press flex min-h-[72px] w-full items-center gap-3.5 border-b border-line/40 px-4 py-3 text-left last:border-b-0 active:bg-fill"
             >
               <span
                 aria-hidden
@@ -134,10 +134,10 @@ export default function Plan() {
         })}
       </section>
 
-      <section aria-label="Change your plan" className="overflow-hidden rounded-[20px] bg-surface">
+      <section aria-label="Change your plan" className="overflow-hidden rounded-[20px] bg-surface shadow-card">
         <button
           onClick={() => router.push("/plan/edit")}
-          className="flex min-h-[56px] w-full items-center gap-3.5 border-b border-line/40 px-4 py-3 text-left active:bg-fill"
+          className="press flex min-h-[56px] w-full items-center gap-3.5 border-b border-line/40 px-4 py-3 text-left active:bg-fill"
         >
           <span aria-hidden className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-[9px] bg-[#5d5d63] text-white">
             <Pencil size={16} strokeWidth={2.2} />
@@ -152,7 +152,7 @@ export default function Plan() {
             await refreshPlan();
             setRefreshing(false);
           }}
-          className="flex min-h-[56px] w-full items-center gap-3.5 px-4 py-3 text-left active:bg-fill disabled:opacity-60"
+          className="press flex min-h-[56px] w-full items-center gap-3.5 px-4 py-3 text-left active:bg-fill disabled:opacity-60"
         >
           <span aria-hidden className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-[9px] bg-[#b54708] text-white">
             {refreshing ? <RefreshCw size={16} strokeWidth={2.2} className="animate-spin" /> : <Shuffle size={16} strokeWidth={2.2} />}

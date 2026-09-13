@@ -27,7 +27,7 @@ export function WarmUp({
         Picked for {sessionName.toLowerCase()}. Move through these, then start your sets.
       </p>
 
-      <ol className="mb-5 overflow-hidden rounded-[20px] bg-surface">
+      <ol className="mb-5 overflow-hidden rounded-[20px] bg-surface shadow-card">
         {warmUp.moves.map((move, i) => (
           <li key={move.id} className="flex gap-3 border-b border-line px-4 py-3.5 last:border-b-0">
             <span className="tabular flex-shrink-0 text-subhead font-semibold text-muted">{i + 1}</span>
