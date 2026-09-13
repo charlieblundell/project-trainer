@@ -9,6 +9,14 @@ import {
 } from "@/lib/exercises";
 import type { OnboardingData, Weekday } from "@/lib/types";
 import type { GeneratorProfile, Plan, PlannedExercise, PlannedSession, Region } from "./types";
+import {
+  MUSCLE_GROUPS,
+  isLowPriority,
+  primaryGroup,
+  setsByGroup,
+  weeklyTarget,
+  type MuscleGroup,
+} from "./volume";
 
 /* ------------------------------------------------------------------ *
  * Session templates
@@ -23,6 +31,12 @@ type Template = {
   focus: string;
   region: Region;
   slots: MovementPattern[];
+  /**
+   * The muscles this session is responsible for. A muscle trained by one
+   * session a week (Push/Pull/Legs) has to get its whole weekly volume there;
+   * one trained by three (full body) gets a third of it each time.
+   */
+  trains: MuscleGroup[];
   /** Keeps a "Steady Cardio" day from prescribing intervals, and vice versa. */
   conditioningStyle?: "steady" | "interval";
 };
@@ -46,66 +60,77 @@ const T: Record<string, Template> = {
     name: "Full Body A",
     focus: "Full Body",
     region: "full",
+    trains: MUSCLE_GROUPS,
     slots: ["squat", "horizontal_push", "horizontal_pull", "hinge", "core", "isolation"],
   },
   fullB: {
     name: "Full Body B",
     focus: "Full Body",
     region: "full",
+    trains: MUSCLE_GROUPS,
     slots: ["hinge", "vertical_push", "vertical_pull", "lunge", "core", "isolation"],
   },
   fullC: {
     name: "Full Body C",
     focus: "Full Body",
     region: "full",
+    trains: MUSCLE_GROUPS,
     slots: ["squat", "horizontal_push", "horizontal_pull", "isolation", "core", "isolation"],
   },
   upperA: {
     name: "Upper A",
     focus: "Upper Body",
     region: "upper",
+    trains: ["chest", "back", "shoulders", "biceps", "triceps"],
     slots: ["horizontal_push", "vertical_pull", "vertical_push", "horizontal_pull", "isolation", "isolation"],
   },
   upperB: {
     name: "Upper B",
     focus: "Upper Body",
     region: "upper",
+    trains: ["chest", "back", "shoulders", "biceps", "triceps"],
     slots: ["vertical_push", "horizontal_pull", "horizontal_push", "vertical_pull", "isolation", "isolation"],
   },
   lowerA: {
     name: "Lower A",
     focus: "Lower Body",
     region: "lower",
+    trains: ["quads", "hamstrings", "glutes", "calves"],
     slots: ["squat", "hinge", "lunge", "isolation", "core"],
   },
   lowerB: {
     name: "Lower B",
     focus: "Lower Body",
     region: "lower",
+    trains: ["quads", "hamstrings", "glutes", "calves"],
     slots: ["hinge", "squat", "lunge", "isolation", "core"],
   },
   push: {
     name: "Push",
     focus: "Chest, Shoulders & Triceps",
     region: "upper",
+    trains: ["chest", "shoulders", "triceps"],
     slots: ["horizontal_push", "vertical_push", "horizontal_push", "isolation", "isolation"],
   },
   pull: {
     name: "Pull",
     focus: "Back & Biceps",
     region: "upper",
+    trains: ["back", "biceps"],
     slots: ["vertical_pull", "horizontal_pull", "horizontal_pull", "isolation", "isolation"],
   },
   legs: {
     name: "Legs",
     focus: "Legs",
     region: "lower",
+    trains: ["quads", "hamstrings", "glutes", "calves"],
     slots: ["squat", "hinge", "lunge", "isolation", "core"],
   },
   intervals: {
     name: "Intervals",
     focus: "Conditioning",
     region: "full",
+    trains: [],
     conditioningStyle: "interval",
     slots: ["conditioning", "core"],
   },
@@ -113,6 +138,7 @@ const T: Record<string, Template> = {
     name: "Steady Cardio",
     focus: "Conditioning",
     region: "full",
+    trains: [],
     conditioningStyle: "steady",
     slots: ["conditioning", "mobility"],
   },
@@ -120,12 +146,14 @@ const T: Record<string, Template> = {
     name: "Strength A",
     focus: "Strength & Mobility",
     region: "full",
+    trains: MUSCLE_GROUPS,
     slots: ["squat", "horizontal_push", "horizontal_pull", "core", "mobility"],
   },
   healthB: {
     name: "Strength B",
     focus: "Strength & Mobility",
     region: "full",
+    trains: MUSCLE_GROUPS,
     slots: ["hinge", "vertical_push", "lunge", "core", "mobility"],
   },
 };
@@ -149,13 +177,14 @@ function splitFor(days: number, goal: string, level: Level): Template[] {
     5: [T.upperA, T.lowerA, T.push, T.pull, T.legs],
     6: [T.push, T.pull, T.legs, T.push, T.pull, T.legs],
   };
-  const base = strength[days] ?? strength[3];
-
-  // Fat loss and general fitness swap the last strength day for conditioning.
-  if ((goal === "Lose fat" || goal === "Improve fitness") && days >= 3) {
-    return [...base.slice(0, days - 1), T.intervals];
-  }
-  return base;
+  /*
+   * Fat loss and general fitness used to swap the last strength day for
+   * conditioning — and in Push/Pull/Legs the last day is Legs, so those plans
+   * had no leg training at all. The app's own evidence is that resistance
+   * training is what protects muscle in a deficit. The lifting stays whole;
+   * conditioning is added as a finisher instead (see FINISHER_GOALS).
+   */
+  return strength[days] ?? strength[3];
 }
 
 /* ------------------------------------------------------------------ *
@@ -169,13 +198,24 @@ const PRESCRIPTIONS: Record<string, { compound: Prescription; isolation: Prescri
     compound: { sets: 4, repMin: 4, repMax: 6, restSeconds: 180 },
     isolation: { sets: 3, repMin: 8, repMax: 10, restSeconds: 90 },
   },
+  /*
+   * Two minutes on main lifts: the library's rest finding is that rushing the
+   * rest on a heavy compound costs reps on the next set, and those reps are
+   * the training. Isolation work stays short, where systemic fatigue isn't
+   * what limits the set.
+   */
   "Build muscle": {
-    compound: { sets: 4, repMin: 6, repMax: 10, restSeconds: 90 },
+    compound: { sets: 4, repMin: 6, repMax: 10, restSeconds: 120 },
     isolation: { sets: 3, repMin: 10, repMax: 15, restSeconds: 60 },
   },
+  /*
+   * The same as building muscle, on purpose. High reps and short rest "for
+   * fat loss" is exactly the myth the evidence library argues against: keeping
+   * the heavy work is what holds on to muscle while eating less.
+   */
   "Lose fat": {
-    compound: { sets: 3, repMin: 10, repMax: 12, restSeconds: 60 },
-    isolation: { sets: 3, repMin: 12, repMax: 15, restSeconds: 45 },
+    compound: { sets: 4, repMin: 6, repMax: 10, restSeconds: 120 },
+    isolation: { sets: 3, repMin: 10, repMax: 15, restSeconds: 60 },
   },
   "Improve fitness": {
     compound: { sets: 3, repMin: 10, repMax: 12, restSeconds: 60 },
@@ -286,6 +326,13 @@ type SelectionContext = {
    * someone up to a harder variation they've earned.
    */
   keep: Set<string>;
+  /**
+   * Sets each muscle is still short of this session's share of its weekly
+   * target. A slot prefers movements that close the biggest gap, which is what
+   * turns a Legs day's hinge slot into Romanian deadlifts when hamstrings have
+   * nothing and glutes already have some.
+   */
+  needs: Map<MuscleGroup, number>;
 };
 
 const STEADY_IDS = new Set([
@@ -306,6 +353,19 @@ function score(ex: ExerciseDef, slotIndex: number, ctx: SelectionContext): numbe
   if (ctx.conditioningStyle === "steady" && STEADY_IDS.has(ex.id)) s += 40;
   if (ctx.conditioningStyle === "interval" && !STEADY_IDS.has(ex.id)) s += 40;
   if (ctx.liked.has(ex.id)) s += 50;
+  const group = primaryGroup(ex);
+  const shortBy = group ? ctx.needs.get(group) ?? 0 : 0;
+  if (shortBy > 0) {
+    // A low-priority muscle gets a nudge, not the full pull: a Legs day that's
+    // short on hamstrings should reach for leg curls before calf raises.
+    const weight = group && isLowPriority(group) ? 0.35 : 1;
+    s += (18 + Math.min(shortBy, 10) * 2) * weight;
+  }
+  // (c) Main lifts for someone past their first months are the ones that load
+  // heaviest and progress longest, which is a barbell. Without this a
+  // kettlebell swing could win a trained lifter's hinge slot on an alphabetical
+  // tiebreak.
+  if (slotIndex < 2 && ctx.level >= 2 && ex.compound && ex.equipment.includes("barbell")) s += 15;
   if (ctx.keep.has(ex.id)) s += 45;
   if (!ctx.usedThisWeek.has(ex.id)) s += 12;
   if (ex.compound && slotIndex < 2) s += 30;
@@ -327,7 +387,8 @@ function selectForSlot(
   pattern: MovementPattern,
   slotIndex: number,
   region: Region,
-  ctx: SelectionContext
+  ctx: SelectionContext,
+  trains: MuscleGroup[] = []
 ): SlotResult {
   // Accessory slots have to belong to the half of the body being trained,
   // or an upper day ends up prescribing calf raises.
@@ -337,6 +398,13 @@ function selectForSlot(
     if (ex.pattern !== pattern) return false;
     if (ex.level > ctx.level && !ctx.keep.has(ex.id)) return false;
     if (ctx.usedThisSession.has(ex.id)) return false;
+    // "Upper" isn't specific enough for a split: curls are upper body, and they
+    // don't belong on a Push day. An accessory whose main muscle the session
+    // isn't responsible for goes elsewhere in the week.
+    if (regionMatters && trains.length > 0) {
+      const group = primaryGroup(ex);
+      if (group && !trains.includes(group)) return false;
+    }
     if (!regionMatters || region === "full") return true;
     const exRegion = regionOf(ex);
     if (pattern === "core" || pattern === "mobility") return exRegion === "core" || exRegion === region;
@@ -380,6 +448,32 @@ export function estimateMinutes(exercises: PlannedExercise[]): number {
 /* ------------------------------------------------------------------ *
  * Generator
  * ------------------------------------------------------------------ */
+
+/** Goals where conditioning is added on top of the lifting, never in place of it. */
+const FINISHER_GOALS = new Set(["Lose fat", "Improve fitness"]);
+
+/** A short interval block to end a lifting session with. */
+function pickFinisher(
+  pool: ExerciseDef[],
+  avoiding: Set<BodyPart>,
+  used: Set<string>
+): ExerciseDef | undefined {
+  return (
+    pool
+      .filter(
+        (ex) =>
+          ex.pattern === "conditioning" &&
+          !STEADY_IDS.has(ex.id) &&
+          !used.has(ex.id) &&
+          !touchesAvoided(ex, avoiding)
+      )
+      // Gentlest first: this ends a lifting session, it doesn't replace one.
+      .sort(
+        (a, b) =>
+          Number(!!b.lowImpact) - Number(!!a.lowImpact) || a.level - b.level || a.id.localeCompare(b.id)
+      )[0]
+  );
+}
 
 const FALLBACK_DAYS: Weekday[] = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
 
@@ -430,7 +524,7 @@ export function generatePlan(profile: GeneratorProfile, options: { keep?: Iterab
   const goal = profile.goal ?? "Build muscle";
   const level = experienceToLevel(profile.experience);
   const days = profile.days ?? 3;
-  const sessionMinutes = profile.length ?? 45;
+  let sessionMinutes = profile.length ?? 45;
   const avoiding = parseConsiderations(profile.considerations);
   const notes: string[] = [];
 
@@ -450,6 +544,21 @@ export function generatePlan(profile: GeneratorProfile, options: { keep?: Iterab
   const missingEquipmentFor = new Set<MovementPattern>();
   const droppedForInjury = new Set<MovementPattern>();
 
+  /*
+   * How many sessions in the week train each muscle, so each session carries
+   * its share of that muscle's weekly target rather than all of it or none.
+   * Push/Pull/Legs puts a muscle's whole week on one day; full body splits it
+   * three ways.
+   */
+  const sessionsTraining = Object.fromEntries(
+    MUSCLE_GROUPS.map((g) => [g, templates.filter((t) => t.trains.includes(g)).length])
+  ) as Record<MuscleGroup, number>;
+
+  const shareOf = (group: MuscleGroup, bound: "min" | "max"): number => {
+    const count = sessionsTraining[group];
+    return count ? Math.ceil(weeklyTarget(goal, level, group)[bound] / count) : 0;
+  };
+
   templates.forEach((template, i) => {
     const usedThisSession = new Set<string>();
     const ctx: SelectionContext = {
@@ -462,12 +571,32 @@ export function generatePlan(profile: GeneratorProfile, options: { keep?: Iterab
       usedThisWeek,
       usedThisSession,
       keep,
+      needs: new Map(),
     };
 
     const chosen: PlannedExercise[] = [];
 
+    /** What each of this session's muscles is still short of, against a bound. */
+    const shortfall = (bound: "min" | "max") => {
+      const have = setsByGroup(chosen);
+      const gaps = new Map<MuscleGroup, number>();
+      for (const group of template.trains) {
+        const gap = shareOf(group, bound) - have[group];
+        if (gap > 0) gaps.set(group, gap);
+      }
+      return gaps;
+    };
+
+    const take = (exercise: ExerciseDef, planned: PlannedExercise) => {
+      usedThisSession.add(exercise.id);
+      usedThisWeek.add(exercise.id);
+      chosen.push(planned);
+    };
+
+    // 1. The template's own slots: main lifts first, in priority order.
     for (const [slotIndex, pattern] of template.slots.entries()) {
-      const result = selectForSlot(pattern, slotIndex, template.region, ctx);
+      ctx.needs = shortfall("min");
+      const result = selectForSlot(pattern, slotIndex, template.region, ctx, template.trains);
       if (result.kind === "no_equipment") {
         missingEquipmentFor.add(pattern);
         continue;
@@ -476,15 +605,163 @@ export function generatePlan(profile: GeneratorProfile, options: { keep?: Iterab
         droppedForInjury.add(pattern);
         continue;
       }
-      usedThisSession.add(result.exercise.id);
-      usedThisWeek.add(result.exercise.id);
-      chosen.push(prescribe(result.exercise, goal));
+      take(result.exercise, prescribe(result.exercise, goal));
     }
 
-    // Trim from the back until the session fits the time they told us they have.
-    while (chosen.length > 2 && estimateMinutes(chosen) > sessionMinutes) {
-      chosen.pop();
+    /**
+     * Closes the biggest gap it can within the time they have: a new movement
+     * for that muscle if one fits, otherwise another set of one already here.
+     * Returns false when that muscle can't be helped in the time left.
+     */
+    const addFor = (group: MuscleGroup): boolean => {
+      const fits = (next: PlannedExercise[]) => estimateMinutes(next) <= sessionMinutes;
+
+      const candidates = pool
+        .filter(
+          (ex) =>
+            primaryGroup(ex) === group &&
+            ex.unit !== "time" &&
+            ex.unit !== "distance" &&
+            !usedThisSession.has(ex.id) &&
+            (ex.level <= level || keep.has(ex.id)) &&
+            !touchesAvoided(ex, avoidingSet)
+        )
+        // Filling is accessory work, so isolation movements come first: a second
+        // heavy compound late in a session is more fatigue than it's worth.
+        .sort(
+          (a, b) =>
+            Number(b.pattern === "isolation") - Number(a.pattern === "isolation") ||
+            score(b, chosen.length, ctx) - score(a, chosen.length, ctx) ||
+            a.id.localeCompare(b.id)
+        );
+
+      const forGroup = chosen.filter((planned) => {
+        const def = EXERCISES_BY_ID[planned.exerciseId];
+        return def && primaryGroup(def) === group;
+      });
+      const compoundsFor = forGroup.filter((planned) => EXERCISES_BY_ID[planned.exerciseId]?.compound).length;
+
+      /*
+       * A movement with a harder version this person can already do is a
+       * stepping stone, not an accessory: scapular pull-ups are how you get to
+       * a pull-up, not something to add after a trained lifter's rows.
+       */
+      const owned = new Set<string>([...profile.equipment, "bodyweight"]);
+      const isRegression = (ex: ExerciseDef) => {
+        const harder = ex.harder ? EXERCISES_BY_ID[ex.harder] : undefined;
+        return !!harder && harder.level <= level && harder.equipment.every((kit) => owned.has(kit));
+      };
+
+      for (const exercise of candidates) {
+        // Two heavy presses for chest is a session; a fourth "to fill time" is
+        // fatigue dressed up as volume. Extra sets on what's there do it better.
+        if (exercise.compound && compoundsFor >= 2) continue;
+        // Two movements for one muscle gives it variety; a third is the same
+        // stimulus again. Past two, the next step is another set, below.
+        if (forGroup.length >= 2) break;
+        if (isRegression(exercise)) continue;
+        const planned = prescribe(exercise, goal);
+        if (fits([...chosen, planned])) {
+          take(exercise, planned);
+          return true;
+        }
+      }
+
+      // Nothing new fits: one more set of something already training it.
+      const MAX_SETS = 5;
+      for (let at = chosen.length - 1; at >= 0; at -= 1) {
+        const planned = chosen[at];
+        const def = EXERCISES_BY_ID[planned.exerciseId];
+        if (!def || primaryGroup(def) !== group || planned.sets >= MAX_SETS) continue;
+        const trial = chosen.map((e, j) => (j === at ? { ...e, sets: e.sets + 1 } : e));
+        if (fits(trial)) {
+          chosen[at] = trial[at];
+          return true;
+        }
+      }
+      return false;
+    };
+
+    const fillToward = (bound: "min" | "max") => {
+      const stuck = new Set<MuscleGroup>();
+      for (let guard = 0; guard < 40; guard += 1) {
+        ctx.needs = shortfall(bound);
+        const next = [...ctx.needs.entries()]
+          .filter(([group]) => !stuck.has(group))
+          // Biggest gap first, but calves wait until everything else is served.
+          .sort(
+            ([a, gapA], [b, gapB]) =>
+              Number(isLowPriority(a)) - Number(isLowPriority(b)) || gapB - gapA
+          )[0];
+        if (!next) return;
+        if (!addFor(next[0])) stuck.add(next[0]);
+      }
+    };
+
+    // Over time: a finisher is the extra, so it goes first; then accessory sets
+    // come down to two; then accessories go. The first two slots, the main
+    // lifts, are never touched.
+    const PROTECTED = 2;
+    const trimTo = (budget: number, keepFinisher: boolean) => {
+      for (
+        let guard = 0;
+        guard < 60 && estimateMinutes(chosen) > budget && chosen.length > PROTECTED;
+        guard += 1
+      ) {
+        const timed = chosen.findIndex(
+          (e, j) => j >= PROTECTED && (e.unit === "time" || e.unit === "distance")
+        );
+        if (timed >= 0 && template.trains.length > 0 && !keepFinisher) {
+          chosen.splice(timed, 1);
+          continue;
+        }
+        const reducible = chosen
+          .map((e, j) => ({ e, j }))
+          .filter(({ e, j }) => j >= PROTECTED && e.sets > 2 && e.unit !== "time" && e.unit !== "distance")
+          .pop();
+        if (reducible) {
+          chosen[reducible.j] = { ...reducible.e, sets: reducible.e.sets - 1 };
+          continue;
+        }
+        const lastLift = chosen.map((e, j) => ({ e, j })).filter(({ e, j }) => j >= PROTECTED && e.unit !== "time" && e.unit !== "distance").pop();
+        if (!lastLift) break;
+        chosen.splice(lastLift.j, 1);
+      }
+    };
+
+    // 2. Reach every muscle's minimum, in the time available. A goal that wants
+    //    conditioning has that time held back first, or the lifting would use
+    //    every minute and the conditioning would never happen.
+    const FINISHER_MINUTES = 10;
+    const wantsFinisher =
+      FINISHER_GOALS.has(goal) && template.trains.length > 0 && sessionMinutes >= 30;
+    const fullBudget = sessionMinutes;
+    if (wantsFinisher) sessionMinutes = fullBudget - FINISHER_MINUTES;
+    if (template.trains.length > 0) fillToward("min");
+    sessionMinutes = fullBudget;
+
+    // 3. Conditioning for the goals that want it. The main lifts can fill a
+    //    session on their own, so the lifting is trimmed to leave the room;
+    //    otherwise "plus conditioning" would only ever happen on long sessions.
+    if (wantsFinisher) trimTo(fullBudget - FINISHER_MINUTES, false);
+    if (FINISHER_GOALS.has(goal) && template.trains.length > 0) {
+      const spare = sessionMinutes - estimateMinutes(chosen);
+      const finisher =
+        wantsFinisher && spare >= 8 ? pickFinisher(pool, avoidingSet, usedThisSession) : undefined;
+      if (finisher) {
+        take(finisher, {
+          ...prescribe(finisher, goal),
+          sets: 1,
+          seconds: Math.max(6, Math.min(15, spare - 2)) * 60,
+          restSeconds: 0,
+        });
+      }
     }
+
+    // 4. Time left over goes toward the top of each muscle's range.
+    if (template.trains.length > 0) fillToward("max");
+
+    trimTo(sessionMinutes, wantsFinisher);
 
     sessions.push({
       id: `${template.name.toLowerCase().replace(/\s+/g, "-")}-${i}`,
@@ -496,6 +773,18 @@ export function generatePlan(profile: GeneratorProfile, options: { keep?: Iterab
       exercises: chosen,
     });
   });
+
+  // Say so when the time they gave can't hold the week's volume, rather than
+  // quietly handing them less than the plan is meant to deliver.
+  const weekly = setsByGroup(sessions.flatMap((s) => s.exercises));
+  const shortOf = MUSCLE_GROUPS.filter(
+    (g) => sessionsTraining[g] > 0 && !isLowPriority(g) && weekly[g] < weeklyTarget(goal, level, g).min
+  );
+  if (shortOf.length > 0) {
+    notes.push(
+      `Your sessions don't have room for the full weekly volume on ${shortOf.join(", ")}. Longer sessions or another training day would close the gap.`
+    );
+  }
 
   if (avoiding.length > 0) {
     const unavoidable = sessions
@@ -597,6 +886,9 @@ export function refreshAccessories(plan: Plan, profile: GeneratorProfile): Refre
         avoiding,
         usedThisWeek,
         keep: new Set<string>(),
+        // A refresh swaps one accessory for another in the same slot, so the
+        // week's volume doesn't move and there's nothing to steer toward.
+        needs: new Map<MuscleGroup, number>(),
       };
 
       // Two passes: first ruling out what's been retired recently, then, if

@@ -8,7 +8,9 @@ const files = readdirSync(dir).filter((f) => f.endsWith(".ts") && f !== "types.t
 
 const exercises = [];
 for (const file of files) {
-  const src = readFileSync(join(dir, file), "utf8");
+  // Normalised because git on Windows checks these out with CRLF endings,
+  // and the block split below matches on bare newlines.
+  const src = readFileSync(join(dir, file), "utf8").replace(/\r\n/g, "\n");
   // Each entry is an object literal with an `id:` field; pull the fields we check.
   const blocks = src.split(/\n  \{\n/).slice(1);
   for (const block of blocks) {
