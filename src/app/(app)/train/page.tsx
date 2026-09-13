@@ -12,7 +12,7 @@ import { clsx } from "@/lib/clsx";
 import Link from "next/link";
 import { ExerciseInfoModal } from "@/components/ExerciseInfoModal";
 import { ExerciseSwapPanel } from "@/components/ExerciseSwapPanel";
-import { sessionById, targetLabel } from "@/lib/plan/helpers";
+import { nextSession, sessionById, sessionForToday, targetLabel } from "@/lib/plan/helpers";
 import type { PlannedExercise } from "@/lib/plan/types";
 import type { SetLog } from "@/lib/types";
 import { useAuthStore } from "@/lib/auth";
@@ -22,6 +22,12 @@ import { adjustForReadiness, isLowReadiness } from "@/lib/plan/readiness";
 import { warmUpFor } from "@/lib/plan/warmup";
 import { CheckIn } from "@/components/CheckIn";
 import { WarmUp } from "@/components/WarmUp";
+import { DoneForToday } from "@/components/DoneForToday";
+
+function sameDay(iso: string, now = new Date()): boolean {
+  const d = new Date(iso);
+  return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
+}
 
 export default function Train() {
   const router = useRouter();
@@ -31,6 +37,7 @@ export default function Train() {
   const equipment = useAppStore((s) => s.onboarding.equipment) as Equipment[];
   const setReadiness = useAppStore((s) => s.setReadiness);
   const markWarmedUp = useAppStore((s) => s.markWarmedUp);
+  const startWorkout = useAppStore((s) => s.startWorkout);
   const user = useAuthStore((s) => s.user);
   const [history, setHistory] = useState<WorkoutRecord[] | null>(null);
 
@@ -84,16 +91,35 @@ export default function Train() {
   // share health information.
   const needsCheckIn = healthConsent && !session.readiness && atStart;
 
-  if (!planSession) {
+  const finishedToday = !!session.finishedAt && sameDay(session.finishedAt);
+
+  if (planSession && plan && finishedToday) {
+    return <DoneForToday plan={plan} finished={planSession} loggedSets={session.loggedSets} />;
+  }
+
+  // Nothing started, or what's here was finished on an earlier day.
+  if (!planSession || session.finishedAt) {
+    const upcoming = sessionForToday(plan) ?? nextSession(plan);
     return (
       <div className="py-16 text-center">
-        <p className="mb-4 text-subhead text-muted">No workout selected.</p>
-        <button
-          onClick={() => router.push("/plan")}
-          className="min-h-[48px] rounded-[12px] bg-accent px-5 text-body font-semibold text-accent-ink"
-        >
-          Pick one from your plan
-        </button>
+        <p className="mb-4 text-subhead text-muted">
+          {upcoming ? `Ready when you are. ${upcoming.name} is next.` : "No workout selected."}
+        </p>
+        {upcoming ? (
+          <button
+            onClick={() => startWorkout(upcoming.id)}
+            className="press min-h-[48px] rounded-[12px] bg-accent px-5 text-body font-semibold text-accent-ink"
+          >
+            Start {upcoming.name}
+          </button>
+        ) : (
+          <button
+            onClick={() => router.push("/plan")}
+            className="min-h-[48px] rounded-[12px] bg-accent px-5 text-body font-semibold text-accent-ink"
+          >
+            Pick one from your plan
+          </button>
+        )}
       </div>
     );
   }

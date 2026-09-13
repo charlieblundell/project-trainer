@@ -28,6 +28,8 @@ type TrainingSession = {
   readiness?: Readiness | "skipped" | null;
   /** Whether the warm-up screen has been dealt with, done or skipped. */
   warmedUp?: boolean;
+  /** When the last set was logged and the workout saved; absent while it's still going. */
+  finishedAt?: string | null;
 };
 
 function emptySession(workoutId: string): TrainingSession {
@@ -39,6 +41,7 @@ function emptySession(workoutId: string): TrainingSession {
     overrides: {},
     readiness: null,
     warmedUp: false,
+    finishedAt: null,
   };
 }
 
@@ -60,6 +63,12 @@ type AppState = {
   /** What progression did to the plan after the last session. */
   lastChanges: Change[];
   completeWorkout: () => Promise<void>;
+  /**
+   * Marks the open session finished, so the Train tab shows a well done instead
+   * of reopening the last exercise. Called from the completion screen rather
+   * than completeWorkout, which would flash that view while the save runs.
+   */
+  markSessionFinished: () => void;
 
   messages: ChatMessage[];
   addMessage: (msg: ChatMessage) => void;
@@ -133,6 +142,8 @@ export const useAppStore = create<AppState>()(
       markWarmedUp: () => set((s) => ({ session: { ...s.session, warmedUp: true } })),
       lastCompletedSummary: null,
       lastChanges: [],
+      markSessionFinished: () =>
+        set((s) => (s.session.finishedAt ? {} : { session: { ...s.session, finishedAt: new Date().toISOString() } })),
       completeWorkout: async () => {
         const s = get().session;
         const currentPlan = get().plan;
