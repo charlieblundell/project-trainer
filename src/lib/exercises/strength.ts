@@ -403,7 +403,10 @@ export const STRENGTH_EXERCISES: ExerciseDef[] = [
     muscles: ["Hamstrings", "Glutes", "Core"],
     compound: true,
     level: 2,
-    unit: "reps",
+    // The bell is the load, not an addition to bodyweight, so it's recorded
+    // the way any other lift is. Logged as reps alone, a 12 kg swing and a
+    // 32 kg swing were the same entry.
+    unit: "weight_reps",
     loads: ["spine", "hip", "shoulder"],
     substitutes: ["rdl", "hip_thrust"],
     cues: ["This is a hip snap, not a squat and not a front raise.", "The bell floats up; you don't lift it with your arms."],

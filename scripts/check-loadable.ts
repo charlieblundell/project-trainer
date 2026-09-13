@@ -10,6 +10,7 @@
 import { EXERCISES, EXERCISES_BY_ID } from "../src/lib/exercises";
 import { applyProgression } from "../src/lib/plan/progress";
 import { targetLabel } from "../src/lib/plan/helpers";
+import { normalizePlan } from "../src/lib/plan/normalize";
 import type { Plan, PlannedExercise } from "../src/lib/plan/types";
 import type { SetLog } from "../src/lib/types";
 
@@ -118,6 +119,37 @@ const short = run(calibrated, [
   { w: 20, r: 8 },
 ]);
 expect("falling short holds the weight", short.plan.sessions[0].exercises[0].targetWeightKg, 20);
+
+console.log("\nThe bell is the load, not an addition to it\n");
+
+const swing = EXERCISES_BY_ID["kb_swing"]!;
+expect("a kettlebell swing records its weight", swing.unit, "weight_reps");
+expect("and isn't treated as bodyweight-plus", !!swing.loadable, false);
+
+/*
+ * A plan written before that correction still says "reps". The measurement
+ * belongs to the movement, so normalising a stored plan fixes it rather than
+ * leaving that person's swings unweighed forever.
+ */
+const stale = planWith({
+  exerciseId: "kb_swing",
+  sets: 3,
+  unit: "reps",
+  repMin: 10,
+  repMax: 15,
+  restSeconds: 60,
+  targetWeightKg: null,
+});
+expect(
+  "an old plan is corrected on the way in",
+  normalizePlan(stale).sessions[0].exercises[0].unit,
+  "weight_reps"
+);
+expect(
+  "and a movement that hasn't changed is left alone",
+  normalizePlan(planWith(calfRaise)).sessions[0].exercises[0].unit,
+  "reps"
+);
 
 console.log("\nHow it reads on screen\n");
 expect("a loaded target says added", targetLabel(calibrated), "+20 kg · 3 x 10-12");

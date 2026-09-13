@@ -23,6 +23,16 @@ export function normalizePlan(plan: StoredPlan): Plan {
     sessions: plan.sessions.map((session) => ({
       ...session,
       region: session.region ?? inferRegion(session),
+      /*
+       * How a movement is measured belongs to the movement, not to the copy of
+       * the plan someone happens to be carrying. Kettlebell swings were
+       * recorded as bare reps until this was corrected, so a plan written
+       * before then would have gone on never asking what weight was used.
+       */
+      exercises: session.exercises.map((planned) => {
+        const def = EXERCISES_BY_ID[planned.exerciseId];
+        return def && def.unit !== planned.unit ? { ...planned, unit: def.unit } : planned;
+      }),
     })),
   };
 }
