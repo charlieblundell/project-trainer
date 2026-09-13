@@ -72,7 +72,8 @@ export function PlanEditor() {
     if (!draft) return;
     setStatus("saving");
     setError(null);
-    await updatePlan(draft);
+    // Marked, so an improved-plan offer never rebuilds over what they chose.
+    await updatePlan({ ...draft, editedByHand: true });
     setStatus("saved");
     router.push("/plan");
   }

@@ -123,6 +123,20 @@ expect(
   ppl.sessions[0].exercises[0].repMax
 );
 
+expect(
+  "conditioning is the last thing in the session",
+  cut.sessions.every((s) => {
+    const at = s.exercises.findIndex((e) => e.unit === "time");
+    return at === -1 || at === s.exercises.length - 1;
+  }),
+  true
+);
+
+console.log("\nCalves are never forgotten\n");
+expect("an hour of Push/Pull/Legs trains calves", pplWeek.calves >= 3, true);
+expect("so does a 45-minute fat-loss week", cutWeek.calves >= 3, true);
+expect("and the room for them didn't cost a main lift", legs.exercises.slice(0, 2).every((e) => e.sets >= 4), true);
+
 console.log("\nWhen the time can't hold the volume, it says so\n");
 const short = build("Get stronger", TRAINED, 3, 30);
 expect("a 30-minute plan still has its main lifts", short.sessions.every((s) => s.exercises.length >= 2), true);

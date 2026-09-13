@@ -763,6 +763,60 @@ export function generatePlan(profile: GeneratorProfile, options: { keep?: Iterab
 
     trimTo(sessionMinutes, wantsFinisher);
 
+    /*
+     * Calves come last in every queue, which on a full hour meant they came
+     * nowhere: a trained lifter's Legs day had none at all. People notice
+     * when they're missing, and a few sets cost little, so they get a small
+     * floor even if it takes a set from another accessory to make the room.
+     */
+    const CALF_FLOOR_WEEKLY = 3;
+    if (template.trains.includes("calves") && sessionsTraining.calves > 0) {
+      const floor = Math.ceil(CALF_FLOOR_WEEKLY / sessionsTraining.calves);
+      const have = setsByGroup(chosen).calves;
+      if (have < floor) {
+        const calf = pool
+          .filter(
+            (ex) =>
+              primaryGroup(ex) === "calves" &&
+              ex.unit !== "time" &&
+              ex.unit !== "distance" &&
+              !usedThisSession.has(ex.id) &&
+              ex.level <= level &&
+              !touchesAvoided(ex, avoidingSet)
+          )
+          .sort((a, b) => score(b, chosen.length, ctx) - score(a, chosen.length, ctx) || a.id.localeCompare(b.id))[0];
+
+        if (calf) {
+          const planned = { ...prescribe(calf, goal), sets: Math.max(2, Math.min(3, floor - have)) };
+          // Make room from the accessory carrying the most sets, never a main lift.
+          for (let guard = 0; guard < 12 && estimateMinutes([...chosen, planned]) > sessionMinutes; guard += 1) {
+            const donor = chosen
+              .map((e, j) => ({ e, j }))
+              .filter(({ e, j }) => j >= PROTECTED && e.sets > 2 && e.unit !== "time" && e.unit !== "distance")
+              .sort((a, b) => b.e.sets - a.e.sets)[0];
+            if (!donor) {
+              // Nothing left to take a set from: a conditioning finisher can give
+              // up a couple of minutes, down to six, rather than calves going to zero.
+              const finisherAt = chosen.findIndex((e) => e.unit === "time" && (e.seconds ?? 0) > 360);
+              if (finisherAt < 0) break;
+              const f = chosen[finisherAt];
+              chosen[finisherAt] = { ...f, seconds: Math.max(360, (f.seconds ?? 0) - 120) };
+              continue;
+            }
+            chosen[donor.j] = { ...donor.e, sets: donor.e.sets - 1 };
+          }
+          if (estimateMinutes([...chosen, planned]) <= sessionMinutes) {
+            // Before any conditioning finisher: that ends the session, calf raises don't.
+            usedThisSession.add(calf.id);
+            usedThisWeek.add(calf.id);
+            const finisherAt = chosen.findIndex((e) => e.unit === "time" || e.unit === "distance");
+            if (finisherAt >= PROTECTED) chosen.splice(finisherAt, 0, planned);
+            else chosen.push(planned);
+          }
+        }
+      }
+    }
+
     sessions.push({
       id: `${template.name.toLowerCase().replace(/\s+/g, "-")}-${i}`,
       name: template.name,
@@ -956,7 +1010,20 @@ function progressValue(ex: PlannedExercise): number {
  * those that stay keep their calibrated weight, reps or duration. A weight
  * moved to a new rep range is converted so it stays about as hard.
  */
-export function rebuildPlan(current: Plan, profile: GeneratorProfile): Plan {
+export function rebuildPlan(
+  current: Plan,
+  profile: GeneratorProfile,
+  options: {
+    /**
+     * Keep today's exercises wherever they still fit. Right when someone edits
+     * their settings: they asked for a different schedule, not new movements.
+     * Wrong when the rules themselves have improved, because the old choices
+     * are exactly what the new rules are meant to replace.
+     */
+    preferCurrent?: boolean;
+  } = {}
+): Plan {
+  const { preferCurrent = true } = options;
   const previous = new Map<string, PlannedExercise>();
   for (const session of current.sessions) {
     for (const ex of session.exercises) {
@@ -965,7 +1032,7 @@ export function rebuildPlan(current: Plan, profile: GeneratorProfile): Plan {
     }
   }
 
-  const fresh = generatePlan(profile, { keep: previous.keys() });
+  const fresh = generatePlan(profile, preferCurrent ? { keep: previous.keys() } : {});
 
   const sessions = fresh.sessions.map((session) => {
     const exercises = session.exercises.map((planned): PlannedExercise => {
@@ -990,6 +1057,9 @@ export function rebuildPlan(current: Plan, profile: GeneratorProfile): Plan {
           repMin: before.repMin ?? planned.repMin,
           repMax: before.repMax ?? planned.repMax,
           streak: before.streak,
+          // Weight held on a calf raise or a pull-up is progress like any other,
+          // and a rebuild used to quietly reset it to bodyweight.
+          targetWeightKg: before.targetWeightKg ?? planned.targetWeightKg,
         };
       }
       return { ...planned, seconds: before.seconds ?? planned.seconds };

@@ -25,6 +25,7 @@ import {
 } from "@/lib/progress/compute";
 import type { WorkoutRecord } from "@/lib/progress/types";
 import { InstallPrompt } from "@/components/InstallPrompt";
+import { PlanUpgradeCard } from "@/components/PlanUpgradeCard";
 
 function greeting(now = new Date()): string {
   const h = now.getHours();
@@ -125,6 +126,8 @@ export default function Home() {
           )}
         </div>
       )}
+
+      {plan && <PlanUpgradeCard className="mb-4" />}
 
       {plan && <InstallPrompt className="mb-5" dismissible mobileOnly />}
 

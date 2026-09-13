@@ -45,7 +45,7 @@ export function samplePlan(): Plan {
         weekday: "tue",
         estMinutes: 38,
         region: "upper",
-        exercises: [exercise("bench_press"), exercise("kettlebell_overhead_press")],
+        exercises: [exercise("bench_press"), exercise("kb_press")],
       },
       {
         id: "s2",
@@ -54,7 +54,7 @@ export function samplePlan(): Plan {
         weekday: "sat",
         estMinutes: 38,
         region: "lower",
-        exercises: [exercise("back_squat"), exercise("romanian_deadlift")],
+        exercises: [exercise("back_squat"), exercise("rdl")],
       },
     ],
   };
@@ -63,11 +63,15 @@ export function samplePlan(): Plan {
 const PROFILE = {
   id: USER_ID,
   goal: "Build muscle",
-  experience: "Some experience",
+  // Matches the sample plan, which is built at level 2. A profile that says less
+  // than the plan is exactly what the improved-plan offer refuses to act on.
+  experience: "I've been training a while",
   days: 2,
   length: 45,
   environment: "Full gym",
-  equipment: ["barbell", "dumbbells", "bench", "rack"],
+  // The app's own equipment ids. Near-misses like "dumbbells" or "rack" read as
+  // equipment nobody has, and rebuild a barbell lifter onto bodyweight work.
+  equipment: ["barbell", "dumbbell", "cable", "machine", "squat_rack", "bench", "pullup_bar", "bodyweight"],
   liked_exercises: [],
   disliked_exercises: [],
   training_days: ["tue", "sat"],

@@ -255,5 +255,5 @@ export function replaceExercise(plan: Plan, sessionId: string, index: number, ex
 
 /** True once a plan has been changed by hand, so screens can stop calling it "the plan we built". */
 export function isHandEdited(plan: Plan): boolean {
-  return plan.sessions.some((session) => session.id.startsWith("custom-"));
+  return plan.editedByHand === true || plan.sessions.some((session) => session.id.startsWith("custom-"));
 }

@@ -56,6 +56,11 @@ export type Plan = {
   avoiding: BodyPart[];
   /** Compromises worth being upfront about, shown to the user. */
   notes: string[];
+  /**
+   * Set when someone saves changes in the plan editor. Their week is theirs from
+   * then on: nothing offers to rebuild it over the top of what they chose.
+   */
+  editedByHand?: boolean;
 };
 
 export type GeneratorProfile = {
