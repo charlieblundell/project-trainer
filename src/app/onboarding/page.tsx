@@ -238,9 +238,18 @@ export default function Onboarding() {
 
   return (
     <div className="mx-auto flex min-h-screen max-w-sm flex-col px-6 py-10">
-      <button onClick={back} className="mb-6 w-fit text-muted" aria-label="Back">
-        <ChevronLeft size={20} />
-      </button>
+      <div className="mb-4 flex items-center justify-between">
+        <button
+          onClick={back}
+          className="-ml-3 flex h-11 w-11 items-center justify-center rounded-full text-accent"
+          aria-label="Back"
+        >
+          <ChevronLeft size={24} strokeWidth={2.2} />
+        </button>
+        <span className="tabular text-footnote text-muted">
+          {step + 1} of {steps.length}
+        </span>
+      </div>
 
       <div className="mb-8 flex gap-1" role="progressbar" aria-valuenow={step + 1} aria-valuemin={1} aria-valuemax={steps.length}>
         {steps.map((_, i) => (
@@ -273,7 +282,16 @@ export default function Onboarding() {
             <SingleSelect
               options={optionsFor(current.key)}
               value={valueFor(current.key, onboarding)}
-              onSelect={(opt) => setOnboarding(patchFor(current.key, opt, onboarding))}
+              onSelect={(opt) => {
+                setOnboarding(patchFor(current.key, opt, onboarding));
+                // One tap answers a one-answer question. The short pause lets the
+                // choice register on screen before the next question slides in.
+                const from = step;
+                window.setTimeout(() => {
+                  setQuery("");
+                  setStep((s) => (s === from && s < steps.length - 1 ? s + 1 : s));
+                }, 280);
+              }}
             />
           )}
 

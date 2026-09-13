@@ -73,7 +73,13 @@ function profileGroups(o: OnboardingData): ProfileGroup[] {
         ["Where you train", o.environment ?? "Not set"],
         [
           "Equipment",
-          o.equipment.length ? o.equipment.map((e) => EQUIPMENT_LABELS[e as Equipment] ?? e).join(", ") : "Not set",
+          // The full list wrapped into a paragraph beside its label; the count
+          // reads at a glance, and the list is one tap away.
+          o.equipment.length
+            ? o.equipment.length <= 2
+              ? o.equipment.map((e) => EQUIPMENT_LABELS[e as Equipment] ?? e).join(", ")
+              : `${o.equipment.length} items`
+            : "Not set",
         ],
         ["Favourites", o.likedExercises.length ? exerciseNames(o.likedExercises) : "None"],
         ["Avoiding", o.dislikedExercises.length ? exerciseNames(o.dislikedExercises) : "None"],

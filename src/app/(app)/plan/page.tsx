@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { X, Info, Pencil, RefreshCw, Shuffle, BookOpen } from "lucide-react";
+import { X, Info, Pencil, RefreshCw, Shuffle, BookOpen, ChevronRight } from "lucide-react";
 import { BuiltOnResearch } from "@/components/BuiltOnResearch";
 import { useAppStore } from "@/lib/store";
 import {
@@ -16,6 +16,7 @@ import {
   weekOverview,
 } from "@/lib/plan/helpers";
 import type { PlannedSession } from "@/lib/plan/types";
+import { sessionBackground, sessionStyle } from "@/lib/sessionStyle";
 
 
 export default function Plan() {
@@ -73,82 +74,110 @@ export default function Plan() {
         </div>
       )}
 
-      <div className="flex flex-col gap-2.5">
+      {/*
+       * The week as one list. Training days are the rows worth a tap, with their
+       * own colour and symbol; rest days step back to a single quiet line, so
+       * the shape of the week is visible without scrolling past seven cards.
+       */}
+      <section aria-label="This week" className="mb-6 overflow-hidden rounded-[20px] bg-surface">
         {week.map(({ weekday, session }, i) => {
           const isToday = weekday === today;
+          const dayLabel = (
+            <span className="flex items-center gap-1.5 text-footnote text-muted">
+              <span className={isToday ? "font-semibold text-accent" : undefined}>{WEEKDAY_LABELS[weekday]}</span>
+              {isToday && (
+                <span className="rounded-full bg-accent px-1.5 py-px text-caption font-semibold text-white">Today</span>
+              )}
+            </span>
+          );
+
+          if (!session) {
+            return (
+              <div
+                key={weekday}
+                className="flex min-h-[44px] items-center justify-between gap-3 border-b border-line/40 px-4 py-2 last:border-b-0"
+              >
+                {dayLabel}
+                <span className="text-footnote text-muted">Rest</span>
+              </div>
+            );
+          }
+
+          const style = sessionStyle(session);
+          const Icon = style.icon;
           return (
             <motion.button
               key={weekday}
-              initial={{ opacity: 0, y: 8 }}
+              initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.03 }}
-              whileTap={session ? { scale: 0.99 } : undefined}
-              disabled={!session}
-              onClick={() => session && setPreview(session)}
-              className={`flex min-h-[56px] w-full items-center justify-between rounded-[20px] border px-4 py-3 text-left ${
-                isToday ? "border-ink bg-ink" : "border-line bg-surface"
-              }`}
+              onClick={() => setPreview(session)}
+              className="flex min-h-[72px] w-full items-center gap-3.5 border-b border-line/40 px-4 py-3 text-left last:border-b-0 active:bg-fill"
             >
-              <div>
-                <div className={`mb-0.5 text-footnote ${isToday ? "text-background/50" : "text-muted"}`}>
-                  {WEEKDAY_LABELS[weekday]}
-                  {isToday ? " · Today" : ""}
-                </div>
-                <div className={`text-subhead font-semibold ${isToday ? "text-background" : "text-ink"}`}>
-                  {session ? session.name : "Rest"}
-                </div>
-              </div>
-              {session && (
-                <div className={`tabular text-subhead ${isToday ? "text-background/50" : "text-muted"}`}>
-                  ~{session.estMinutes} min
-                </div>
-              )}
+              <span
+                aria-hidden
+                className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-[12px] text-white"
+                style={sessionBackground(style)}
+              >
+                <Icon size={21} strokeWidth={2.2} />
+              </span>
+              <span className="min-w-0 flex-1">
+                {dayLabel}
+                <span className="block text-headline font-semibold text-ink">{session.name}</span>
+                <span className="tabular block text-footnote text-muted">
+                  {session.exercises.length} exercises · ~{session.estMinutes} min
+                </span>
+              </span>
+              <ChevronRight size={18} strokeWidth={2.2} className="flex-shrink-0 text-faint" aria-hidden />
             </motion.button>
           );
         })}
-      </div>
+      </section>
 
-      <button
-        onClick={() => router.push("/plan/edit")}
-        className="mt-2.5 flex w-full items-center justify-center gap-2 min-h-[48px] rounded-[20px] border border-line text-subhead font-semibold text-ink"
-      >
-        <Pencil size={15} /> Edit my plan
-      </button>
-
-      <div className="mt-6 rounded-[20px] bg-surface p-4">
-        <div className="mb-1 flex items-center gap-1.5 text-subhead font-semibold text-ink">
-          <Shuffle size={14} className="text-accent" /> Getting stale?
-        </div>
-        <p className="mb-3 text-subhead leading-relaxed text-muted">
-          Swaps the isolation, core and mobility work for something different. Your main lifts stay
-          put, along with every weight you&apos;ve built on them — you&apos;ll find a working weight
-          for anything new on your next session.
-        </p>
-        <motion.button
-          whileTap={{ scale: 0.98 }}
+      <section aria-label="Change your plan" className="overflow-hidden rounded-[20px] bg-surface">
+        <button
+          onClick={() => router.push("/plan/edit")}
+          className="flex min-h-[56px] w-full items-center gap-3.5 border-b border-line/40 px-4 py-3 text-left active:bg-fill"
+        >
+          <span aria-hidden className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-[9px] bg-[#5d5d63] text-white">
+            <Pencil size={16} strokeWidth={2.2} />
+          </span>
+          <span className="flex-1 text-body text-ink">Edit my plan</span>
+          <ChevronRight size={18} strokeWidth={2.2} className="flex-shrink-0 text-faint" aria-hidden />
+        </button>
+        <button
           disabled={refreshing}
           onClick={async () => {
             setRefreshing(true);
             await refreshPlan();
             setRefreshing(false);
           }}
-          className="flex w-full items-center justify-center gap-2 rounded-[20px] border border-line py-3 text-subhead font-semibold text-ink disabled:opacity-50"
+          className="flex min-h-[56px] w-full items-center gap-3.5 px-4 py-3 text-left active:bg-fill disabled:opacity-60"
         >
-          <RefreshCw size={14} className={refreshing ? "animate-spin" : undefined} />
-          {refreshing ? "Picking new work" : "Freshen up my accessories"}
-        </motion.button>
+          <span aria-hidden className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-[9px] bg-[#b54708] text-white">
+            {refreshing ? <RefreshCw size={16} strokeWidth={2.2} className="animate-spin" /> : <Shuffle size={16} strokeWidth={2.2} />}
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-body text-ink">{refreshing ? "Picking new work" : "Freshen up my accessories"}</span>
+            <span className="block text-footnote text-muted">New isolation and core work. Main lifts and weights stay.</span>
+          </span>
+        </button>
 
         {lastRefresh && (
-          <div className="mt-3 rounded-[12px] bg-accent-soft p-3.5">
-            <div className="mb-2 flex items-start justify-between gap-3">
-              <span className="text-footnote font-semibold text-accent">Last refresh</span>
-              <button onClick={clearLastRefresh} className="text-accent" aria-label="Dismiss">
-                <X size={14} />
+          <div className="mx-4 mb-4 rounded-[12px] bg-accent-soft p-3.5">
+            <div className="mb-2 flex items-center justify-between gap-3">
+              <span className="text-footnote font-semibold text-accent">What changed</span>
+              <button
+                onClick={clearLastRefresh}
+                className="-m-3 flex h-11 w-11 items-center justify-center text-accent"
+                aria-label="Dismiss"
+              >
+                <X size={16} />
               </button>
             </div>
             {lastRefresh.length === 0 ? (
               <p className="text-subhead leading-relaxed text-ink">
-                Nothing to swap — your equipment doesn&apos;t leave another option for those slots.
+                Nothing to swap. Your equipment doesn&apos;t leave another option for those slots.
               </p>
             ) : (
               <ul className="flex flex-col gap-1.5">
@@ -161,7 +190,7 @@ export default function Plan() {
             )}
           </div>
         )}
-      </div>
+      </section>
 
       <AnimatePresence>
         {preview && (
@@ -180,10 +209,28 @@ export default function Plan() {
               transition={{ type: "spring", stiffness: 420, damping: 38 }}
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="mb-1 flex items-start justify-between">
-                <h3 className="text-title3 font-bold text-ink">{preview.name}</h3>
-                <button onClick={() => setPreview(null)} className="text-muted" aria-label="Close">
-                  <X size={20} />
+              <div className="mb-1 flex items-start justify-between gap-3">
+                <span className="flex items-center gap-3">
+                  <span
+                    aria-hidden
+                    className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-[12px] text-white"
+                    style={sessionBackground(sessionStyle(preview))}
+                  >
+                    {(() => {
+                      const PreviewIcon = sessionStyle(preview).icon;
+                      return <PreviewIcon size={21} strokeWidth={2.2} />;
+                    })()}
+                  </span>
+                  <h3 className="text-title2 font-bold text-ink">{preview.name}</h3>
+                </span>
+                <button
+                  onClick={() => setPreview(null)}
+                  className="-mr-2 -mt-1 flex h-11 w-11 items-center justify-center rounded-full text-muted"
+                  aria-label="Close"
+                >
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-fill">
+                    <X size={18} />
+                  </span>
                 </button>
               </div>
               <p className="mb-4 text-subhead text-muted">

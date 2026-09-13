@@ -75,7 +75,7 @@ test("a calf raise offers weight without demanding it", async ({ signedIn }) => 
   await expect(weight).toHaveValue("");
 
   // The set logs with the box left alone: this is still a bodyweight exercise.
-  await page.getByRole("button", { name: /^log set$/i }).click();
+  await page.getByRole("button", { name: /^log set/i }).click();
   await expect(page.getByRole("listitem").first()).toContainText("12");
 });
 
@@ -87,7 +87,7 @@ test("adding weight is remembered as added, not as the total", async ({ signedIn
   const weight = page.getByRole("spinbutton", { name: /added weight/i });
   await weight.click();
   await weight.fill("20");
-  await page.getByRole("button", { name: /^log set$/i }).click();
+  await page.getByRole("button", { name: /^log set/i }).click();
 
   // The chip says what was added, with the sign that makes it unambiguous.
   await expect(page.getByRole("listitem").first()).toContainText("+20");
@@ -101,5 +101,5 @@ test("a barbell lift still demands a weight", async ({ signedIn }) => {
   await expect(page.getByRole("heading", { name: "Barbell Bench Press" })).toBeVisible();
   await expect(page.getByRole("spinbutton", { name: "Weight" })).toBeVisible();
   // Nothing typed, so there's nothing to log yet.
-  await expect(page.getByRole("button", { name: /^log set$/i })).toBeDisabled();
+  await expect(page.getByRole("button", { name: /add a weight to log/i })).toBeDisabled();
 });

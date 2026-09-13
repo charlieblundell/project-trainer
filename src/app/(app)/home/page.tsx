@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Settings } from "lucide-react";
+import { Check, ChevronRight, Flame, MessageCircle, Play, Settings } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import { useAuthStore } from "@/lib/auth";
 import { displayName } from "@/lib/displayName";
@@ -12,6 +12,7 @@ import { clsx } from "@/lib/clsx";
 import {
   WEEKDAY_LABELS,
   WEEKDAY_ORDER,
+  exerciseName,
   nextSession,
   sessionForToday,
   todayWeekday,
@@ -26,6 +27,7 @@ import {
 import type { WorkoutRecord } from "@/lib/progress/types";
 import { InstallPrompt } from "@/components/InstallPrompt";
 import { PlanUpgradeCard } from "@/components/PlanUpgradeCard";
+import { sessionBackground, sessionStyle } from "@/lib/sessionStyle";
 
 function greeting(now = new Date()): string {
   const h = now.getHours();
@@ -70,12 +72,25 @@ export default function Home() {
     router.push("/train");
   }
 
+  const style = upcoming ? sessionStyle(upcoming) : null;
+  const Icon = style?.icon;
+  const preview = upcoming?.exercises.slice(0, 3).map(exerciseName) ?? [];
+  const extra = (upcoming?.exercises.length ?? 0) - preview.length;
+  const dateLine = new Date().toLocaleDateString(undefined, {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });
+
   return (
     <div>
-      <div className="mb-5 flex items-center justify-between gap-3">
-        <h1 className="text-largetitle font-bold text-ink">
-          {name ? `${greeting()} ${name}` : greeting()}
-        </h1>
+      <div className="mb-5 flex items-start justify-between gap-3">
+        <div>
+          <div className="text-footnote font-semibold text-muted">{dateLine}</div>
+          <h1 className="text-largetitle font-bold text-ink">
+            {name ? `${greeting()}, ${name}` : greeting()}
+          </h1>
+        </div>
         <Link
           href="/settings"
           className="-mr-2 flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full text-accent"
@@ -95,96 +110,158 @@ export default function Home() {
             Build my plan
           </button>
         </div>
-      ) : (
-        <div className="mb-4 rounded-[20px] bg-ink p-5 text-white">
-          <div className="mb-1 text-footnote font-semibold text-white/55">
-            {trainedToday ? "Done today" : isRestDay ? "Rest day" : "Today"}
-          </div>
-          {upcoming ? (
-            <>
-              <div className="mb-0.5 text-title2 font-bold">{upcoming.name}</div>
-              <div className="mb-5 text-subhead text-white/60">
-                {trainedToday
-                  ? "Logged today — nice work. Recovery is part of the plan."
-                  : isRestDay
-                    ? `Next up ${WEEKDAY_LABELS[upcoming.weekday]} · ${upcoming.exercises.length} exercises`
-                    : `${upcoming.exercises.length} exercises · ~${upcoming.estMinutes} min`}
-              </div>
-              <motion.button
-                whileTap={{ scale: 0.98 }}
-                onClick={start}
-                className={clsx(
-                  "min-h-[50px] w-full rounded-[14px] text-body font-semibold",
-                  trainedToday ? "border border-white/25 text-white" : "bg-white text-ink"
+      ) : upcoming && style && Icon ? (
+        <motion.section
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          aria-label="Your next workout"
+          className="relative mb-4 overflow-hidden rounded-[24px] p-5 text-white shadow-[0_14px_30px_-14px_rgba(0,0,0,0.45)]"
+          style={sessionBackground(style)}
+        >
+          {/* The session's symbol, large and quiet, so each kind of day has a face. */}
+          <Icon
+            aria-hidden
+            size={150}
+            strokeWidth={1.4}
+            className="pointer-events-none absolute -right-6 -top-5 text-white/10"
+          />
+
+          <div className="relative">
+            <span className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-white/20 px-2.5 py-1 text-footnote font-semibold text-white">
+              {trainedToday ? (
+                <Check size={13} strokeWidth={3} aria-hidden />
+              ) : (
+                <Icon size={13} strokeWidth={2.4} aria-hidden />
+              )}
+              {trainedToday
+                ? "Done today"
+                : isRestDay
+                  ? `Rest day · next up ${WEEKDAY_LABELS[upcoming.weekday]}`
+                  : "Today"}
+            </span>
+            <div className="text-title1 font-bold">{upcoming.name}</div>
+            <div className="tabular mb-4 text-subhead text-white">
+              {trainedToday
+                ? "Logged today, nice work. Recovery is part of the plan."
+                : `${upcoming.exercises.length} exercises · ~${upcoming.estMinutes} min`}
+            </div>
+
+            {!trainedToday && preview.length > 0 && (
+              <ul className="mb-5 flex flex-wrap gap-1.5" aria-label="Exercises">
+                {preview.map((n, i) => (
+                  <li
+                    key={`${n}-${i}`}
+                    className="rounded-full bg-black/15 px-2.5 py-1 text-footnote font-medium text-white"
+                  >
+                    {n}
+                  </li>
+                ))}
+                {extra > 0 && (
+                  <li className="rounded-full bg-black/15 px-2.5 py-1 text-footnote font-medium text-white">
+                    +{extra} more
+                  </li>
                 )}
-              >
-                {trainedToday ? "Train again anyway" : isRestDay ? "Start it early" : "Start workout"}
-              </motion.button>
-            </>
-          ) : (
-            <div className="text-subhead text-white/60">No sessions scheduled.</div>
-          )}
+              </ul>
+            )}
+
+            <motion.button
+              whileTap={{ scale: 0.97 }}
+              onClick={start}
+              className={clsx(
+                "flex min-h-[52px] w-full items-center justify-center gap-2 rounded-[16px] text-body font-semibold",
+                trainedToday ? "border border-white/40 text-white" : "bg-white text-ink"
+              )}
+            >
+              {!trainedToday && <Play size={16} fill="currentColor" aria-hidden />}
+              {trainedToday ? "Train again anyway" : isRestDay ? "Start it early" : "Start workout"}
+            </motion.button>
+          </div>
+        </motion.section>
+      ) : (
+        <div className="mb-4 rounded-[20px] bg-surface p-5 text-subhead text-muted">
+          No sessions scheduled.
         </div>
       )}
 
-      {plan && <PlanUpgradeCard className="mb-4" />}
-
-      {plan && <InstallPrompt className="mb-5" dismissible mobileOnly />}
-
       {plan && (
         <section className="mb-4 rounded-[20px] bg-surface p-4" aria-labelledby="this-week">
-          <div className="mb-3 flex items-start justify-between gap-4">
-            <div>
+          <div className="mb-4 flex items-center gap-4">
+            <WeekRing done={records === null ? 0 : sessionsThisWeek} target={target} />
+            <div className="min-w-0 flex-1">
               <div id="this-week" className="text-footnote font-semibold text-muted">
                 This week
               </div>
               <div className="tabular text-title3 font-bold text-ink">
                 {records === null ? "—" : `${sessionsThisWeek} of ${target} sessions`}
               </div>
+              {records !== null && (
+                <div className="flex items-center gap-1 text-footnote text-muted">
+                  {streak > 0 ? (
+                    <>
+                      <Flame size={14} className="text-[#d9480f]" aria-hidden />
+                      <span>
+                        {streak} week{streak === 1 ? "" : "s"} in a row
+                      </span>
+                    </>
+                  ) : target > 0 && sessionsThisWeek >= target ? (
+                    <span>Target hit. That starts a streak.</span>
+                  ) : (
+                    <span>{target - sessionsThisWeek} more this week to start a streak</span>
+                  )}
+                </div>
+              )}
             </div>
-            {records !== null && (
-              <div className="text-right">
-                {streak > 0 ? (
-                  <>
-                    <div className="tabular text-title3 font-bold text-accent">{streak}</div>
-                    <div className="text-footnote text-muted">week{streak === 1 ? "" : "s"} in a row</div>
-                  </>
-                ) : (
-                  <div className="max-w-[10rem] text-right text-footnote leading-snug text-muted">
-                    Do {target} session{target === 1 ? "" : "s"} this week to start a streak
-                  </div>
-                )}
-              </div>
-            )}
           </div>
 
-          <ol className="grid grid-cols-7 gap-1.5">
+          <ol className="grid grid-cols-7 gap-1">
             {WEEKDAY_ORDER.map((day, i) => {
               const trained = trainedDays.has(i);
-              const planned = plan.sessions.some((s) => s.weekday === day);
-              const label = `${WEEKDAY_LABELS[day]}: ${trained ? "trained" : planned ? "planned" : "rest"}`;
+              const planned = plan.sessions.find((s) => s.weekday === day);
+              const isToday = i === todayIndex;
+              const dayStyle = planned ? sessionStyle(planned) : null;
+              const DayIcon = dayStyle?.icon;
+              const label = `${WEEKDAY_LABELS[day]}${isToday ? " (today)" : ""}: ${
+                trained ? "trained" : planned ? `${planned.name} planned` : "rest"
+              }`;
               return (
-                <li key={day} className="flex flex-col items-center gap-1" aria-label={label}>
-                  <div
+                <li key={day} className="flex flex-col items-center gap-1.5" aria-label={label}>
+                  <span
                     className={clsx(
-                      "h-8 w-full rounded-[7px] border",
-                      trained
-                        ? "border-accent bg-accent"
-                        : planned
-                          ? "border-accent/45 bg-accent-soft"
-                          : "border-transparent bg-fill"
+                      "text-caption",
+                      isToday ? "font-bold text-accent" : "text-muted"
                     )}
-                  />
-                  <span className={clsx("text-caption", i === todayIndex ? "font-bold text-ink" : "text-muted")}>
+                  >
                     {WEEKDAY_LABELS[day].slice(0, 1)}
+                  </span>
+                  <span
+                    aria-hidden
+                    className={clsx(
+                      "flex h-9 w-9 items-center justify-center rounded-full",
+                      isToday && "ring-2 ring-accent ring-offset-2 ring-offset-surface"
+                    )}
+                    style={
+                      trained
+                        ? { backgroundColor: "var(--success)" }
+                        : dayStyle
+                          ? sessionBackground(dayStyle)
+                          : { backgroundColor: "var(--fill)" }
+                    }
+                  >
+                    {trained ? (
+                      <Check size={17} strokeWidth={3} className="text-white" />
+                    ) : DayIcon ? (
+                      <DayIcon size={15} strokeWidth={2.3} className="text-white" />
+                    ) : null}
                   </span>
                 </li>
               );
             })}
           </ol>
-          <p className="mt-2.5 text-caption text-muted">Solid: trained · Outlined: planned</p>
         </section>
       )}
+
+      {plan && <PlanUpgradeCard className="mb-4" />}
 
       {plan && lastWeek && (
         <section className="mb-4 rounded-[20px] bg-surface p-4" aria-labelledby="last-week">
@@ -192,7 +269,8 @@ export default function Home() {
             Last week
           </div>
           <div className="tabular text-subhead text-ink">
-            {lastWeek.sessions} of {lastWeek.target} sessions · {lastWeek.sets} set{lastWeek.sets === 1 ? "" : "s"}
+            {lastWeek.sessions} of {lastWeek.target} sessions · {lastWeek.sets} set
+            {lastWeek.sets === 1 ? "" : "s"}
             {lastWeek.newBests.length > 0 &&
               ` · ${lastWeek.newBests.length} new personal best${lastWeek.newBests.length === 1 ? "" : "s"}`}
           </div>
@@ -202,17 +280,70 @@ export default function Home() {
             </div>
           )}
           {lastWeek.target > 0 && lastWeek.sessions >= lastWeek.target && (
-            <div className="mt-1 text-footnote font-semibold text-success">Weekly target hit.</div>
+            <div className="mt-1 text-footnote font-semibold text-success-ink">
+              Weekly target hit.
+            </div>
           )}
         </section>
       )}
 
-      <Link href="/coach" className="block rounded-[20px] bg-surface p-4">
-        <div className="mb-1 text-subhead leading-relaxed text-ink">
-          Questions about your plan, or need to change something?
-        </div>
-        <div className="text-subhead font-semibold text-accent">Ask your coach &rarr;</div>
+      <Link
+        href="/coach"
+        className="mb-4 flex min-h-[64px] items-center gap-3.5 rounded-[20px] bg-surface p-4 active:bg-fill"
+      >
+        <span
+          aria-hidden
+          className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-[11px] bg-[#1c7a34] text-white"
+        >
+          <MessageCircle size={21} strokeWidth={2.2} />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-headline font-semibold text-ink">Ask your coach</span>
+          <span className="block text-subhead text-muted">
+            Swap an exercise, move a day, ask why
+          </span>
+        </span>
+        <ChevronRight
+          size={18}
+          strokeWidth={2.2}
+          className="flex-shrink-0 text-faint"
+          aria-hidden
+        />
       </Link>
+
+      {plan && <InstallPrompt dismissible mobileOnly />}
+    </div>
+  );
+}
+
+/** Sessions done this week as a ring, the shape Fitness uses for a goal. */
+function WeekRing({ done, target }: { done: number; target: number }) {
+  const r = 24;
+  const c = 2 * Math.PI * r;
+  const fraction = target > 0 ? Math.min(done / target, 1) : 0;
+  return (
+    <div className="relative flex-shrink-0" aria-hidden>
+      <span className="tabular absolute inset-0 flex items-center justify-center text-subhead font-bold text-ink">
+        {done}/{target}
+      </span>
+      <svg width="60" height="60" viewBox="0 0 60 60" className="-rotate-90">
+        <circle cx="30" cy="30" r={r} fill="none" stroke="var(--fill-strong)" strokeWidth="8" />
+        {fraction > 0 && (
+          <motion.circle
+            cx="30"
+            cy="30"
+            r={r}
+            fill="none"
+            stroke={fraction >= 1 ? "var(--success)" : "var(--accent)"}
+            strokeWidth="8"
+            strokeLinecap="round"
+            strokeDasharray={c}
+            initial={{ strokeDashoffset: c }}
+            animate={{ strokeDashoffset: c * (1 - fraction) }}
+            transition={{ duration: 0.9, ease: "easeOut" }}
+          />
+        )}
+      </svg>
     </div>
   );
 }

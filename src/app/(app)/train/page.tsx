@@ -116,10 +116,24 @@ export default function Train() {
         <ChevronLeft size={22} strokeWidth={2.2} /> {planSession.name}
       </button>
 
-      <div className="mb-1 text-footnote text-muted">
-        {Math.min(session.exerciseIdx + 1, planSession.exercises.length)} /{" "}
-        {planSession.exercises.length} exercises
-        {isLowReadiness(readiness) && " · lighter day: one fewer set each, from your check-in"}
+      {/* Where you are in the session, readable at arm's length between sets. */}
+      <div className="mb-3">
+        <ol className="mb-1.5 flex gap-1" aria-hidden>
+          {planSession.exercises.map((_, i) => (
+            <li
+              key={i}
+              className={clsx(
+                "h-1.5 flex-1 rounded-full transition-colors",
+                i < session.exerciseIdx ? "bg-success" : i === session.exerciseIdx ? "bg-accent" : "bg-fill-strong"
+              )}
+            />
+          ))}
+        </ol>
+        <div className="tabular text-footnote text-muted">
+          Exercise {Math.min(session.exerciseIdx + 1, planSession.exercises.length)} of{" "}
+          {planSession.exercises.length}
+          {isLowReadiness(readiness) && " · lighter day, one fewer set each"}
+        </div>
       </div>
 
       {planned ? (
@@ -256,6 +270,7 @@ function ExercisePanel({
     const addedWeight = canAddWeight && weightValue > 0 ? weightValue : 0;
     const log: SetLog = { w: tracksWeight ? weightValue : addedWeight, r: repsValue };
     logSet(activeId, log);
+    if ("vibrate" in navigator) navigator.vibrate(25);
     // No rest after the last set: the effort rating comes next.
     if (logs.length + 1 < planned.sets) startRest();
     else setRestEndsAt(null);
@@ -322,8 +337,8 @@ function ExercisePanel({
         <div className="mb-5 flex gap-2.5 rounded-[20px] bg-accent-soft p-4">
           <Lightbulb size={16} className="mt-0.5 flex-shrink-0 text-accent" />
           <p className="text-subhead leading-relaxed text-ink">
-            First time on this one. Work up to a weight where the last two reps are hard but your
-            form holds, then log what you did — we&apos;ll take it from there.
+            <span className="font-semibold">First time on this one.</span> Pick a weight where the
+            last two reps are hard but clean. We&apos;ll set your targets from there.
           </p>
         </div>
       )}
@@ -355,12 +370,17 @@ function ExercisePanel({
               )}
             >
               {done ? (
-                <>
-                  <Check size={13} className="flex-shrink-0 text-success" aria-hidden />
+                <motion.span
+                  initial={{ scale: 0.6, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 22 }}
+                  className="flex items-center gap-1"
+                >
+                  <Check size={13} strokeWidth={3} className="flex-shrink-0 text-success-ink" aria-hidden />
                   <span>
                     {tracksWeight ? `${done.w}×${done.r}` : done.w > 0 ? `+${done.w}×${done.r}` : done.r}
                   </span>
-                </>
+                </motion.span>
               ) : (
                 <span>{i + 1}</span>
               )}
@@ -452,16 +472,17 @@ function ExercisePanel({
                 max={isTimed ? 120 : 50}
               />
             </div>
-            {tracksWeight && !(weightValue > 0) && (
-              <p className="mb-2.5 text-footnote text-muted">Enter the weight you used to log this set.</p>
-            )}
             <motion.button
               whileTap={canLog ? { scale: 0.98 } : undefined}
               onClick={handleLogSet}
               disabled={!canLog}
               className="min-h-[54px] w-full rounded-[14px] bg-accent text-body font-semibold text-accent-ink disabled:bg-fill-strong disabled:text-faint"
             >
-              {isTimed ? "Log it" : "Log set"}
+              {tracksWeight && !(weightValue > 0)
+                ? "Add a weight to log this set"
+                : isTimed
+                  ? "Log it"
+                  : `Log set ${logs.length + 1} of ${planned.sets}`}
             </motion.button>
           </>
         )

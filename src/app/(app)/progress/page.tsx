@@ -70,16 +70,32 @@ export default function Progress() {
       <div>
         <h1 className="mb-5 text-largetitle font-bold text-ink">Your progress</h1>
         <div className="rounded-[20px] bg-surface p-6 text-center">
-          <p className="mb-1 text-subhead font-semibold text-ink">Nothing logged yet.</p>
+          {/* What this screen will become, drawn faintly, so the empty state has a shape. */}
+          <svg viewBox="0 0 200 70" className="mx-auto mb-4 h-20 w-full max-w-[220px]" aria-hidden>
+            {[0, 1, 2, 3].map((i) => (
+              <line key={i} x1="0" x2="200" y1={10 + i * 18} y2={10 + i * 18} stroke="var(--fill-strong)" strokeWidth="1" />
+            ))}
+            <motion.path
+              d="M4 60 C 40 55, 55 44, 80 42 S 120 30, 140 24 S 180 12, 196 8"
+              fill="none"
+              stroke="var(--accent)"
+              strokeWidth="4"
+              strokeLinecap="round"
+              initial={{ pathLength: 0 }}
+              animate={{ pathLength: 1 }}
+              transition={{ duration: 1.2, ease: "easeOut" }}
+            />
+            <circle cx="196" cy="8" r="5" fill="var(--accent)" />
+          </svg>
+          <p className="mb-1 text-headline font-semibold text-ink">Your first workout starts this</p>
           <p className="mb-5 text-subhead leading-relaxed text-muted">
-            Finish a workout and everything here fills in from what you actually lifted — no
-            estimates, no placeholders.
+            Strength trends, personal bests and weekly sets, all from what you actually lift.
           </p>
           <button
             onClick={() => router.push("/plan")}
             className="min-h-[44px] rounded-[12px] bg-accent px-5 text-body font-semibold text-accent-ink"
           >
-            Go to my plan
+            See my plan
           </button>
         </div>
       </div>
