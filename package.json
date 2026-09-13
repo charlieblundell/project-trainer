@@ -25,7 +25,8 @@
     "screens": "tsx scripts/marketing-screens.ts",
     "check:loadable": "tsx scripts/check-loadable.ts",
     "check:volume": "tsx scripts/check-volume.ts",
-    "check:upgrade": "tsx scripts/check-upgrade.ts"
+    "check:upgrade": "tsx scripts/check-upgrade.ts",
+    "check:rules": "tsx scripts/check-rules.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.124.0",

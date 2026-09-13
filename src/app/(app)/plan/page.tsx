@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { X, Info, Pencil, RefreshCw, Shuffle, BookOpen } from "lucide-react";
+import { X, Info, Pencil, RefreshCw, Shuffle, BookOpen, ChevronRight } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import {
   WEEKDAY_LABELS,
@@ -68,7 +69,7 @@ export default function Plan() {
       {plan.notes.length > 0 && (
         <div className="mb-6 rounded-[20px] bg-accent-soft p-4">
           <div className="mb-2 flex items-center gap-1.5 text-footnote font-semibold text-accent">
-            <Info size={13} /> HOW THIS WAS BUILT
+            <Info size={13} /> How this was built
           </div>
           <ul className="flex flex-col gap-1.5">
             {plan.notes.map((note) => (
@@ -121,6 +122,17 @@ export default function Plan() {
       >
         <Pencil size={15} /> Edit my plan
       </button>
+
+      <Link
+        href="/plan/why"
+        className="mt-2.5 flex min-h-[56px] w-full items-center justify-between gap-3 rounded-[20px] bg-surface px-4 py-3"
+      >
+        <span>
+          <span className="block text-body font-semibold text-ink">Why your plan looks like this</span>
+          <span className="block text-footnote text-muted">The research behind every rule, and where it&apos;s our call</span>
+        </span>
+        <ChevronRight size={18} className="flex-shrink-0 text-faint" aria-hidden />
+      </Link>
 
       <div className="mt-6 rounded-[20px] bg-surface p-4">
         <div className="mb-1 flex items-center gap-1.5 text-subhead font-semibold text-ink">

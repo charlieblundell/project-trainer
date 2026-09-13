@@ -32,7 +32,62 @@ export const PROGRAMMING: Finding[] = [
         title:
           "The resistance training dose response: meta-regressions exploring the effects of weekly volume and frequency on muscle hypertrophy and strength gains",
         journal: "Sports Medicine",
+        locator: "56(2):481–505",
         doi: "10.1007/s40279-025-02344-w",
+      },
+    ],
+  },
+  {
+    id: "count-indirect-sets-as-half",
+    topic: "programming",
+    claim:
+      "When adding up a muscle's weekly sets, work that hits it indirectly is best counted as half a set.",
+    practical:
+      "A bench press is real work for your triceps, but not the same as a triceps exercise. Counting it as a full triceps set overstates what they're getting; ignoring it understates it. Half is the count that best matched real results across the research, and it's how this app adds up your week.",
+    strength: "moderate",
+    limits:
+      "This is the counting method that best predicted outcomes across 67 studies, not a direct test of any one exercise or muscle. The participants averaged 25 years old and were mostly men.",
+    tags: ["indirect sets", "counting sets", "weekly sets", "indirect", "compound lifts", "triceps", "biceps"],
+    sources: [
+      {
+        authors: "Pelland JC, Remmert JF, Robinson ZP, Hinson SR, Zourdos MC",
+        year: 2026,
+        title:
+          "The resistance training dose response: meta-regressions exploring the effects of weekly volume and frequency on muscle hypertrophy and strength gains",
+        journal: "Sports Medicine",
+        locator: "56(2):481–505",
+        doi: "10.1007/s40279-025-02344-w",
+      },
+    ],
+  },
+  {
+    id: "beginners-start-small",
+    topic: "programming",
+    claim:
+      "People new to lifting make real gains from very little, though more volume produces more, even at the start.",
+    practical:
+      "A new lifter's first weeks don't need to be long to work — around four hard sets a muscle a week is enough to make progress. That's why the app starts beginners on less: it's easier to recover from and to keep turning up for. It's a starting point, not a ceiling. More volume still pays off early, and the plan grows as you do.",
+    strength: "limited",
+    limits:
+      "The comparison of one set against three comes from a single eight-week trial of 34 sedentary young men, where three sets did better. The four-set minimum is a practical recommendation from a narrative review, not a trial designed to find a beginner's ideal dose. Starting beginners lower is partly a judgement about recovery and sticking with it, not a finding that less is better.",
+    tags: ["beginner", "novice", "new to lifting", "starting out", "first weeks", "never lifted"],
+    sources: [
+      {
+        authors: "Iversen VM, Norum M, Schoenfeld BJ, Fimland MS",
+        year: 2021,
+        title:
+          "No time to lift? Designing time-efficient training programs for strength and hypertrophy: a narrative review",
+        journal: "Sports Medicine",
+        locator: "51(10):2079–2095",
+        doi: "10.1007/s40279-021-01490-1",
+      },
+      {
+        authors: "Coskun IA, Kafkas ME",
+        year: 2026,
+        title:
+          "Comparative effects of single vs. multiple-set resistance training on neuromuscular performance and muscle morphology in sedentary men",
+        journal: "BMC Sports Science, Medicine and Rehabilitation",
+        doi: "10.1186/s13102-026-01874-8",
       },
     ],
   },

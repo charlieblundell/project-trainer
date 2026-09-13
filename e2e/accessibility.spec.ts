@@ -8,7 +8,7 @@ import type { Page } from "@playwright/test";
  * and invisible to whoever makes it.
  */
 
-const SCREENS = ["/home", "/plan", "/plan/edit", "/progress", "/coach", "/settings", "/evidence"];
+const SCREENS = ["/home", "/plan", "/plan/why", "/plan/edit", "/progress", "/coach", "/settings", "/evidence"];
 
 /** Runs in the page: returns anything too small to hit or too faint to read. */
 async function audit(page: Page) {
