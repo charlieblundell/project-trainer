@@ -75,6 +75,17 @@ export type ExerciseDef = {
   cues?: string[];
   /** True for movements that are gentle on joints and suit deconditioned users. */
   lowImpact?: boolean;
+  /**
+   * A bodyweight movement that will take added load — a dumbbell held, a plate
+   * on the hips, a belt — without becoming a different exercise. These start
+   * unloaded and progress on reps, but once someone starts adding weight the
+   * app follows the weight instead of pushing them up a variation ladder.
+   *
+   * Left off anything explosive (jumps, burpees) and anything where the
+   * difficulty is the skill rather than the load (pistol squats, handstand
+   * push-ups), because loading those changes the movement.
+   */
+  loadable?: boolean;
 };
 
 export const EQUIPMENT_LABELS: Record<Equipment, string> = {

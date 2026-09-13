@@ -83,6 +83,7 @@ export const LOW_IMPACT_EXERCISES: ExerciseDef[] = [
     compound: false,
     level: 1,
     unit: "reps",
+    loadable: true,
     loads: ["ankle"],
     lowImpact: true,
     substitutes: ["calf_raise"],

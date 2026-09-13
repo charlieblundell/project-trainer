@@ -22,7 +22,8 @@
     "check:plan-edit": "tsx scripts/check-plan-edit.ts",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "screens": "tsx scripts/marketing-screens.ts"
+    "screens": "tsx scripts/marketing-screens.ts",
+    "check:loadable": "tsx scripts/check-loadable.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.124.0",

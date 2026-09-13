@@ -48,9 +48,14 @@ function progressWeighted(
   def: ExerciseDef | undefined,
   sets: SetLog[],
   rpe: number | null,
-  lowReadiness = false
+  lowReadiness = false,
+  /** True when the weight is added to bodyweight rather than being the whole load. */
+  added = false
 ): Change {
   const name = def?.name ?? planned.exerciseId;
+  // "12 kg" on a bench press is the bar; on a calf raise it's what you're
+  // holding. The plus sign is the difference between those two sentences.
+  const kg = (n: number) => `${added ? "+" : ""}${n} kg`;
   const repMin = planned.repMin ?? 8;
   const repMax = planned.repMax ?? 12;
   const loggedWeight = roundToHalfKg(
@@ -64,7 +69,7 @@ function progressWeighted(
       exerciseId: planned.exerciseId,
       exerciseName: name,
       kind: "calibrated",
-      reason: `Starting weight set at ${loggedWeight} kg.`,
+      reason: `Starting weight set at ${kg(loggedWeight)}.`,
       next: { ...planned, targetWeightKg: loggedWeight },
     };
   }
@@ -80,7 +85,7 @@ function progressWeighted(
       exerciseId: planned.exerciseId,
       exerciseName: name,
       kind: "increase",
-      reason: `${repMax} reps on every set at ${loggedWeight} kg, so up to ${nextWeight} kg.`,
+      reason: `${repMax} reps on every set at ${kg(loggedWeight)}, so up to ${kg(nextWeight)}.`,
       next: { ...planned, targetWeightKg: nextWeight },
     };
   }
@@ -102,7 +107,7 @@ function progressWeighted(
       exerciseId: planned.exerciseId,
       exerciseName: name,
       kind: "hold",
-      reason: `A tough day by your check-in, so your target stays at ${planned.targetWeightKg} kg rather than dropping.`,
+      reason: `A tough day by your check-in, so your target stays at ${kg(planned.targetWeightKg)} rather than dropping.`,
       next: planned,
     };
   }
@@ -123,7 +128,7 @@ function progressWeighted(
     exerciseId: planned.exerciseId,
     exerciseName: name,
     kind: "hold",
-    reason: `Staying at ${loggedWeight} kg — aim for ${repMax} reps next time.`,
+    reason: `Staying at ${kg(loggedWeight)} — aim for ${repMax} reps next time.`,
     next: { ...planned, targetWeightKg: loggedWeight },
   };
 }
@@ -265,7 +270,15 @@ export function applyProgression(
       if (planned.unit === "weight_reps") {
         change = progressWeighted(planned, def, sets, rpe, isLowReadiness(readiness));
       } else if (planned.unit === "reps") {
-        change = progressBodyweight(planned, def, sets, owned);
+        /*
+         * A loadable movement that's actually being loaded progresses on
+         * weight, like any other lift. Pushing someone from a 20 kg calf raise
+         * up to the single-leg version would be a step backwards.
+         */
+        const loaded = def?.loadable && sets.some((set) => set.w > 0);
+        change = loaded
+          ? progressWeighted(planned, def, sets, rpe, isLowReadiness(readiness), true)
+          : progressBodyweight(planned, def, sets, owned);
       } else {
         change = progressTimed(planned, def, sets);
       }

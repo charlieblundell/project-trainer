@@ -430,6 +430,7 @@ export const STRENGTH_EXERCISES: ExerciseDef[] = [
     compound: false,
     level: 1,
     unit: "reps",
+    loadable: true,
     loads: ["spine"],
     lowImpact: true,
     substitutes: ["back_extension_bw"],

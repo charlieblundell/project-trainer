@@ -143,7 +143,12 @@ export default function Train() {
 /** "50 kg × 10, 10, 9", "12, 11, 10 reps" or "20 min" — however the exercise is measured. */
 function describeSets(sets: SetLog[], unit: PlannedExercise["unit"]): string {
   if (unit === "time" || unit === "distance") return `${Math.max(...sets.map((s) => s.r))} min`;
-  if (unit === "reps") return `${sets.map((s) => s.r).join(", ")} reps`;
+  if (unit === "reps") {
+    const added = sets.every((s) => s.w === sets[0].w) && sets[0].w > 0 ? `+${sets[0].w} kg × ` : "";
+    return added
+      ? `${added}${sets.map((s) => s.r).join(", ")}`
+      : `${sets.map((s) => s.r).join(", ")} reps`;
+  }
   const sameWeight = sets.every((s) => s.w === sets[0].w);
   return sameWeight
     ? `${sets[0].w} kg × ${sets.map((s) => s.r).join(", ")}`
@@ -178,6 +183,12 @@ function ExercisePanel({
 
   const isTimed = planned.unit === "time" || planned.unit === "distance";
   const tracksWeight = planned.unit === "weight_reps";
+  /*
+   * A bodyweight movement you can hold a dumbbell for. The weight box is
+   * offered but never required: leaving it empty logs a bodyweight set, which
+   * is how most people will do most of these.
+   */
+  const canAddWeight = planned.unit === "reps" && !!def?.loadable;
   const needsCalibration = tracksWeight && planned.targetWeightKg == null;
 
   const [input, setInput] = useState({
@@ -239,7 +250,10 @@ function ExercisePanel({
 
   function handleLogSet() {
     if (!canLog) return;
-    const log: SetLog = { w: tracksWeight ? weightValue : 0, r: repsValue };
+    // An empty box on a loadable movement means bodyweight, which is a real
+    // answer rather than a missing one.
+    const addedWeight = canAddWeight && weightValue > 0 ? weightValue : 0;
+    const log: SetLog = { w: tracksWeight ? weightValue : addedWeight, r: repsValue };
     logSet(activeId, log);
     // No rest after the last set: the effort rating comes next.
     if (logs.length + 1 < planned.sets) startRest();
@@ -318,7 +332,7 @@ function ExercisePanel({
               key={i}
               aria-label={
                 done
-                  ? `Set ${i + 1}, done: ${tracksWeight ? `${done.w} kg, ` : ""}${done.r} ${isTimed ? "minutes" : "reps"}`
+                  ? `Set ${i + 1}, done: ${done.w > 0 ? `${tracksWeight ? "" : "plus "}${done.w} kg, ` : ""}${done.r} ${isTimed ? "minutes" : "reps"}`
                   : `Set ${i + 1}, not done yet`
               }
               className={clsx(
@@ -334,7 +348,7 @@ function ExercisePanel({
                 <>
                   <Check size={13} className="flex-shrink-0 text-success" aria-hidden />
                   <span>
-                    {tracksWeight ? `${done.w}×${done.r}` : done.r}
+                    {tracksWeight ? `${done.w}×${done.r}` : done.w > 0 ? `+${done.w}×${done.r}` : done.r}
                   </span>
                 </>
               ) : (
@@ -409,9 +423,9 @@ function ExercisePanel({
         logs.length < planned.sets && (
           <>
             <div className="mb-4 flex flex-col gap-3">
-              {tracksWeight && (
+              {(tracksWeight || canAddWeight) && (
                 <SetStepper
-                  label="Weight"
+                  label={tracksWeight ? "Weight" : "Added weight (optional)"}
                   suffix="kg"
                   value={input.w}
                   onChange={(w) => setInput({ ...input, w })}

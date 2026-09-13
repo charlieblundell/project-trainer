@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown, ChevronLeft, ChevronUp, Plus, Search, Trash2, X } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import { availableExercises, searchExercises, type Equipment } from "@/lib/exercises";
+import { EXERCISES_BY_ID } from "@/lib/exercises";
 import { WEEKDAY_LABELS, WEEKDAY_ORDER, exerciseName } from "@/lib/plan/helpers";
 import {
   LIMITS,
@@ -324,6 +325,10 @@ function ExerciseRow({
   onChange: (change: (plan: Plan) => Plan) => void;
 }) {
   const timed = exercise.unit === "time" || exercise.unit === "distance";
+  const def = EXERCISES_BY_ID[exercise.exerciseId];
+  // Bodyweight work that takes added load gets the same box, labelled for what
+  // the number actually means.
+  const addsWeight = exercise.unit === "reps" && !!def?.loadable;
   const weighted = exercise.unit === "weight_reps";
   const patch = (change: Parameters<typeof updateExercise>[3]) =>
     onChange((plan) => updateExercise(plan, sessionId, index, change));
@@ -402,11 +407,11 @@ function ExerciseRow({
         />
       </div>
 
-      {weighted && (
+      {(weighted || addsWeight) && (
         <div className="mt-2 flex items-end gap-2">
           <NumberBox
             key={`weight-${exercise.targetWeightKg}`}
-            label="Target weight (kg)"
+            label={weighted ? "Target weight (kg)" : "Added weight (kg)"}
             value={exercise.targetWeightKg}
             limits={LIMITS.weightKg}
             allowEmpty
@@ -422,9 +427,11 @@ function ExerciseRow({
           )}
         </div>
       )}
-      {weighted && exercise.targetWeightKg == null && (
+      {exercise.targetWeightKg == null && (weighted || addsWeight) && (
         <p className="mt-1.5 text-[11px] leading-relaxed text-muted">
-          Left empty, you&apos;ll find a working weight on your next session.
+          {weighted
+            ? "Left empty, you'll find a working weight on your next session."
+            : "Left empty, this stays a bodyweight exercise."}
         </p>
       )}
     </div>

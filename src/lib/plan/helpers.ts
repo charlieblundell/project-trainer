@@ -63,7 +63,10 @@ export function targetLabel(planned: PlannedExercise): string {
   }
   const reps = planned.repMin === planned.repMax ? `${planned.repMax}` : `${planned.repMin}-${planned.repMax}`;
   if (planned.targetWeightKg != null) {
-    return `${planned.targetWeightKg} kg · ${planned.sets} x ${reps}`;
+    // On a rep-counted movement a target weight can only be weight added to
+    // bodyweight, and saying "20 kg" for a calf raise would read as the total.
+    const prefix = planned.unit === "reps" ? "+" : "";
+    return `${prefix}${planned.targetWeightKg} kg · ${planned.sets} x ${reps}`;
   }
   return `${planned.sets} x ${reps}`;
 }
