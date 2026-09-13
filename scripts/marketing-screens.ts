@@ -87,6 +87,28 @@ async function main() {
   await page.goto(BASE);
   await settle(page);
 
+  /*
+   * The coach screen is a chat, and an empty chat photographs as a blank
+   * page. This is the app's own copy in its own UI — a plausible exchange,
+   * not a testimonial or a claim about anyone.
+   */
+  await page.evaluate(() => {
+    const key = "project-trainer-store";
+    const saved = JSON.parse(window.localStorage.getItem(key) ?? "{}");
+    saved.state = {
+      ...saved.state,
+      messages: [
+        { role: "assistant", text: "Hey. What can I help with?" },
+        { role: "user", text: "Can I swap squats for leg press? My knee's been sore." },
+        {
+          role: "assistant",
+          text: "Yes — swapped for today. Machines and free weights build muscle about equally well, so you lose nothing by using one while a joint settles. I've kept the same sets and reps, and you'll find a working weight on your first set.",
+        },
+      ],
+    };
+    window.localStorage.setItem(key, JSON.stringify(saved));
+  });
+
   for (const screen of ["home", "plan", "coach"]) {
     await page.goto(`${BASE}/${screen}`);
     await settle(page);
