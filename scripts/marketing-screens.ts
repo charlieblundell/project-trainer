@@ -42,6 +42,9 @@ function marketingPlan() {
     plan.sessions[0].exercises[1],
     ...more.map((exerciseId) => ({ ...template, exerciseId, sets: 3, repMin: 8, repMax: 12 })),
   ];
+  // Six exercises is not a 38-minute session; the fixture's estimate was
+  // written for two.
+  plan.sessions[0].estMinutes = 52;
   return plan;
 }
 
