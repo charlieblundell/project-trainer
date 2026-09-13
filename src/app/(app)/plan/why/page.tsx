@@ -1,23 +1,75 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { BookOpen, ChevronLeft, ChevronRight, Scale } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  Activity,
+  BarChart3,
+  BookOpen,
+  CalendarDays,
+  CircleDashed,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  Dumbbell,
+  Flame,
+  Footprints,
+  Layers,
+  ListOrdered,
+  Moon,
+  Scale,
+  Sprout,
+  Target,
+  Timer,
+  TrendingUp,
+  X,
+  Zap,
+  type LucideIcon,
+} from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import { FINDINGS_BY_ID, STRENGTH_LABEL } from "@/lib/evidence";
 import { experienceToLevel } from "@/lib/plan/generate";
-import { NOT_YET, evidenceHref, rulesFor, type PlanRule, type VolumeRow } from "@/lib/plan/rules";
+import {
+  NOT_YET,
+  PLAN_RULES,
+  evidenceHref,
+  rulesFor,
+  type ForYou,
+  type PlanRule,
+  type VolumeRow,
+} from "@/lib/plan/rules";
 import { clsx } from "@/lib/clsx";
 
 /*
- * Why your plan looks like this.
+ * How your plan is built.
  *
- * Every rule the plan was built by, what it means for this person's week, and
- * what it rests on — a finding they can open and read the paper behind, or a
- * plain statement that it's our judgement. The judgement calls are shown in
- * the same list, not tucked away, because an app that says it follows the
- * research has to say where it doesn't.
+ * A list, not a report. Each rule is one line you can take in at a glance,
+ * sorted under whether it comes from research or from us; the explanation,
+ * what it means for this plan and the papers behind it are one tap away in a
+ * sheet. The honesty is unchanged — judgement calls still sit in the same list
+ * under their own heading — it just isn't all said at once.
  */
+
+/** One glyph per rule, so a row can be recognised before it's read. */
+const ICONS: Record<string, LucideIcon> = {
+  "weekly-volume": BarChart3,
+  "split-follows-volume": CalendarDays,
+  "several-sets": Layers,
+  "load-by-goal": Dumbbell,
+  rest: Timer,
+  "progress-not-failure": TrendingUp,
+  machines: Activity,
+  "fat-loss-keeps-lifting": Flame,
+  beginners: Sprout,
+  "warm-up": Zap,
+  "check-in": Moon,
+  "barbell-main-lifts": Target,
+  "time-budget": Clock,
+  "two-per-muscle": ListOrdered,
+  calves: Footprints,
+};
 
 const STRENGTH_ORDER = { strong: 0, moderate: 1, limited: 2 } as const;
 
@@ -29,84 +81,222 @@ function weakest(ids: string[]) {
     .sort((a, b) => STRENGTH_ORDER[b] - STRENGTH_ORDER[a])[0];
 }
 
-function Basis({ rule }: { rule: PlanRule }) {
-  if (rule.basis.kind === "judgement") {
-    return (
-      <div className="mt-3 rounded-[12px] bg-fill px-3 py-2.5">
-        <div className="mb-0.5 flex items-center gap-1.5 text-footnote font-semibold text-ink">
-          <Scale size={14} aria-hidden /> Our judgement
-        </div>
-        <p className="text-footnote leading-relaxed text-muted">{rule.basis.why}</p>
-      </div>
-    );
-  }
+const formatSets = (n: number) => (Number.isInteger(n) ? String(n) : n.toFixed(1));
 
-  const strength = weakest(rule.basis.findings);
-  const count = rule.basis.findings.length;
+type Tone = "research" | "judgement" | "week";
+
+/* ------------------------------------------------------------------ *
+ * Rows
+ * ------------------------------------------------------------------ */
+
+/** The coloured square iOS Settings uses, so a list of rules reads like one. */
+function Tile({ icon: Icon, tone }: { icon: LucideIcon; tone: Tone }) {
   return (
-    <Link
-      href={evidenceHref(rule.basis.findings)}
-      className="mt-3 flex min-h-[44px] items-center justify-between gap-3 rounded-[12px] bg-accent-soft px-3 py-2.5"
+    <span
+      aria-hidden
+      className={clsx(
+        "flex h-[30px] w-[30px] flex-shrink-0 items-center justify-center rounded-[8px] text-white",
+        tone === "research" && "bg-accent",
+        tone === "judgement" && "bg-ink-soft",
+        tone === "week" && "bg-success-ink"
+      )}
     >
-      <span className="flex items-start gap-2">
-        <BookOpen size={15} className="mt-0.5 flex-shrink-0 text-accent" aria-hidden />
-        <span>
-          <span className="block text-footnote font-semibold text-accent">
-            {count === 1 ? "Read the research" : `Read the research · ${count} findings`}
-          </span>
-          {/* The weakest of the evidence, since that's the honest one to lead with. */}
-          {strength && <span className="block text-caption text-ink-soft">{STRENGTH_LABEL[strength]}</span>}
-        </span>
-      </span>
-      <ChevronRight size={16} className="flex-shrink-0 text-accent" aria-hidden />
-    </Link>
+      <Icon size={17} strokeWidth={2.2} />
+    </span>
   );
 }
 
-const sets = (n: number) => (Number.isInteger(n) ? String(n) : n.toFixed(1));
+function Row({
+  icon,
+  tone,
+  title,
+  onPress,
+  href,
+  last,
+}: {
+  icon: LucideIcon;
+  tone: Tone;
+  title: string;
+  onPress?: () => void;
+  href?: string;
+  last?: boolean;
+}) {
+  const inner = (
+    <>
+      <Tile icon={icon} tone={tone} />
+      {/* The hairline starts where the text starts, not at the edge. */}
+      <span
+        className={clsx(
+          "flex min-h-[50px] flex-1 items-center justify-between gap-3 py-2.5 pr-4",
+          !last && "border-b border-line/40"
+        )}
+      >
+        <span className="text-body text-ink">{title}</span>
+        <ChevronRight size={17} strokeWidth={2.2} className="flex-shrink-0 text-faint" aria-hidden />
+      </span>
+    </>
+  );
+  const className = "flex w-full items-center gap-3 pl-4 text-left active:bg-fill";
+  return href ? (
+    <Link href={href} className={className}>
+      {inner}
+    </Link>
+  ) : (
+    <button onClick={onPress} className={className}>
+      {inner}
+    </button>
+  );
+}
 
-/**
- * Their week in numbers. A muscle under its aim is the most useful thing on
- * the screen, so it's marked in words as well as colour rather than left to
- * be found in a sentence.
- */
-function VolumeGrid({ rows }: { rows: VolumeRow[] }) {
+function Group({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <section aria-label={label} className="mb-6">
+      <h2 className="mb-1.5 px-4 text-footnote font-medium text-muted">{label}</h2>
+      <div className="overflow-hidden rounded-[20px] bg-surface">{children}</div>
+    </section>
+  );
+}
+
+/* ------------------------------------------------------------------ *
+ * The sheet
+ * ------------------------------------------------------------------ */
+
+function Sheet({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
+  return (
+    <motion.div
+      className="fixed inset-0 z-30 flex items-end justify-center bg-black/40 md:items-center"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={onClose}
+    >
+      <motion.div
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+        className="max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-t-[24px] bg-background px-5 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] pt-2 md:rounded-[24px]"
+        initial={{ y: 48 }}
+        animate={{ y: 0 }}
+        exit={{ y: 48 }}
+        transition={{ type: "spring", stiffness: 420, damping: 38 }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* The grabber says "this slides away" before anyone looks for a button. */}
+        <div className="mx-auto mb-2 h-[5px] w-9 rounded-full bg-fill-strong" aria-hidden />
+        <div className="mb-3 flex items-start justify-between gap-3">
+          <h2 className="pt-1 text-title2 font-bold text-ink">{title}</h2>
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            className="-mr-2 flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full text-muted"
+          >
+            <X size={20} />
+          </button>
+        </div>
+        {children}
+      </motion.div>
+    </motion.div>
+  );
+}
+
+function RuleDetail({ rule, personal }: { rule: PlanRule; personal: ForYou | null | undefined }) {
+  const strength = rule.basis.kind === "research" ? weakest(rule.basis.findings) : undefined;
+  return (
+    <>
+      <p className="mb-4 text-body leading-relaxed text-ink">{rule.explain}</p>
+
+      {typeof personal === "string" && (
+        <div className="mb-4 rounded-[14px] bg-surface p-3.5">
+          <div className="mb-0.5 text-footnote font-semibold text-muted">In your plan</div>
+          <p className="text-subhead leading-relaxed text-ink">{personal}</p>
+        </div>
+      )}
+
+      {rule.basis.kind === "research" ? (
+        <Link
+          href={evidenceHref(rule.basis.findings)}
+          className="flex min-h-[56px] items-center justify-between gap-3 rounded-[14px] bg-surface px-4 py-3"
+        >
+          <span className="flex items-center gap-3">
+            <Tile icon={BookOpen} tone="research" />
+            <span>
+              <span className="block text-body text-ink">
+                {rule.basis.findings.length === 1 ? "Read the research" : `Read the ${rule.basis.findings.length} findings`}
+              </span>
+              {strength && <span className="block text-footnote text-muted">{STRENGTH_LABEL[strength]}</span>}
+            </span>
+          </span>
+          <ChevronRight size={17} className="flex-shrink-0 text-faint" aria-hidden />
+        </Link>
+      ) : (
+        <div className="flex items-start gap-3 rounded-[14px] bg-surface px-4 py-3">
+          <Tile icon={Scale} tone="judgement" />
+          <span>
+            <span className="block text-body text-ink">Our judgement</span>
+            <span className="block text-footnote leading-relaxed text-muted">{rule.basis.why}</span>
+          </span>
+        </div>
+      )}
+    </>
+  );
+}
+
+function WeekDetail({ rows }: { rows: VolumeRow[] }) {
   const under = rows.filter((r) => r.aim && r.sets < r.aim.min);
   return (
-    <div className="mt-3">
-      <div className="mb-1.5 text-footnote font-semibold text-ink">Your week, in hard sets</div>
-      <ul className="grid grid-cols-3 gap-1.5">
-        {rows.map((row) => {
+    <>
+      <p className="mb-4 text-body leading-relaxed text-ink">
+        Hard sets each muscle gets across your week. Indirect work, like triceps on a bench press, counts as half.
+      </p>
+      <ul className="mb-4 overflow-hidden rounded-[14px] bg-surface">
+        {rows.map((row, i) => {
           const short = !!row.aim && row.sets < row.aim.min;
           return (
             <li
               key={row.muscle}
-              className={clsx("rounded-[10px] px-2.5 py-2", short ? "bg-warning-soft" : "bg-fill")}
+              className={clsx("flex min-h-[44px] items-center justify-between gap-3 px-4 py-2", i > 0 && "border-t border-line/40")}
             >
-              <div className="text-caption capitalize text-ink-soft">{row.muscle}</div>
-              <div className="tabular text-headline font-semibold text-ink">{sets(row.sets)}</div>
-              <div className={clsx("tabular text-caption", short ? "font-semibold text-warning" : "text-ink-soft")}>
-                {row.aim ? (short ? `under ${row.aim.min}–${row.aim.max}` : `aim ${row.aim.min}–${row.aim.max}`) : "small floor"}
-              </div>
+              <span className="text-body capitalize text-ink">{row.muscle}</span>
+              <span className="flex items-baseline gap-2.5">
+                <span className={clsx("tabular text-footnote", short ? "font-semibold text-warning" : "text-muted")}>
+                  {row.aim ? (short ? `Under ${row.aim.min}–${row.aim.max}` : `${row.aim.min}–${row.aim.max}`) : "Small floor"}
+                </span>
+                <span className="tabular w-9 text-right text-headline font-semibold text-ink">{formatSets(row.sets)}</span>
+              </span>
             </li>
           );
         })}
       </ul>
       {under.length > 0 && (
-        <p className="mt-2 text-footnote leading-relaxed text-muted">
-          {under.map((r) => r.muscle).join(", ")} {under.length === 1 ? "sits" : "sit"} under
-          {under.length === 1 ? " its" : " their"} aim. Usually that&apos;s session time running out; it can also be
-          equipment, or an area you&apos;ve asked the plan to go easy on.
+        <p className="mb-4 text-footnote leading-relaxed text-muted">
+          A little under usually means the sessions ran out of time. Longer sessions or another day would close the gap.
         </p>
       )}
-    </div>
+      <Link
+        href={evidenceHref(["volume-dose-response", "count-indirect-sets-as-half"])}
+        className="flex min-h-[56px] items-center justify-between gap-3 rounded-[14px] bg-surface px-4 py-3"
+      >
+        <span className="flex items-center gap-3">
+          <Tile icon={BookOpen} tone="research" />
+          <span className="text-body text-ink">Why weekly sets matter</span>
+        </span>
+        <ChevronRight size={17} className="flex-shrink-0 text-faint" aria-hidden />
+      </Link>
+    </>
   );
 }
 
-export default function WhyThisPlan() {
+/* ------------------------------------------------------------------ *
+ * Screen
+ * ------------------------------------------------------------------ */
+
+type Open = { kind: "rule"; id: string } | { kind: "week" } | null;
+
+export default function HowYourPlanIsBuilt() {
   const router = useRouter();
   const plan = useAppStore((s) => s.plan);
   const onboarding = useAppStore((s) => s.onboarding);
+  const [open, setOpen] = useState<Open>(null);
 
   if (!plan) {
     return (
@@ -128,28 +318,15 @@ export default function WhyThisPlan() {
     level: plan.level ?? experienceToLevel(onboarding.experience),
   };
   const rules = rulesFor(ctx);
-  const research = rules.filter((r) => r.basis.kind === "research");
+  // Weekly volume gets its own card at the top, so it isn't repeated in the list.
+  const research = rules.filter((r) => r.basis.kind === "research" && r.id !== "weekly-volume");
   const judgement = rules.filter((r) => r.basis.kind === "judgement");
 
-  const renderRule = (rule: PlanRule) => {
-    const personal = rule.forYou?.(ctx);
-    return (
-      <article key={rule.id} aria-labelledby={`rule-${rule.id}`} className="rounded-[20px] bg-surface p-4">
-        <h3 id={`rule-${rule.id}`} className="mb-1 text-headline font-semibold text-ink">
-          {rule.title}
-        </h3>
-        <p className="text-subhead leading-relaxed text-muted">{rule.explain}</p>
-        {typeof personal === "string" && (
-          <p className="mt-2.5 text-footnote leading-relaxed text-ink">
-            <span className="font-semibold">Your plan: </span>
-            {personal}
-          </p>
-        )}
-        {personal && typeof personal !== "string" && <VolumeGrid rows={personal.rows} />}
-        <Basis rule={rule} />
-      </article>
-    );
-  };
+  const volume = PLAN_RULES.find((r) => r.id === "weekly-volume")?.forYou?.(ctx);
+  const rows = volume && typeof volume !== "string" ? volume.rows : [];
+  const under = rows.filter((r) => r.aim && r.sets < r.aim.min);
+
+  const openRule = open?.kind === "rule" ? PLAN_RULES.find((r) => r.id === open.id) : undefined;
 
   return (
     <div>
@@ -160,50 +337,78 @@ export default function WhyThisPlan() {
         <ChevronLeft size={22} strokeWidth={2.2} /> Your plan
       </button>
 
-      <h1 className="mb-2 text-largetitle font-bold text-ink">Why your plan looks like this</h1>
-      <p className="mb-6 text-subhead leading-relaxed text-muted">
-        Every rule your week was built by, and what it rests on. Most come from published research you
-        can open and read. The ones that don&apos;t are marked as our judgement, because a plan that says
-        it follows the evidence should say where it doesn&apos;t.
-      </p>
+      <h1 className="mb-1 text-largetitle font-bold text-ink">How your plan is built</h1>
+      <p className="mb-6 text-subhead text-muted">Every rule, and what it&apos;s based on.</p>
 
-      <section aria-labelledby="from-research" className="mb-7">
-        <h2 id="from-research" className="mb-2 px-1 text-footnote font-medium text-muted">
-          From the research · {research.length}
-        </h2>
-        <div className="flex flex-col gap-2.5">{research.map(renderRule)}</div>
-      </section>
+      {rows.length > 0 && (
+        <button
+          onClick={() => setOpen({ kind: "week" })}
+          className="mb-6 flex w-full items-center gap-3.5 rounded-[20px] bg-surface p-4 text-left active:bg-fill"
+        >
+          <Tile icon={BarChart3} tone="week" />
+          <span className="min-w-0 flex-1">
+            <span className="block text-headline font-semibold text-ink">Your weekly sets</span>
+            <span className="block text-subhead text-muted">
+              {under.length === 0
+                ? "Every muscle is on target"
+                : `${rows.length - under.length} on target · ${under.length} a little under`}
+            </span>
+          </span>
+          <ChevronRight size={17} strokeWidth={2.2} className="flex-shrink-0 text-faint" aria-hidden />
+        </button>
+      )}
 
-      <section aria-labelledby="our-judgement" className="mb-7">
-        <h2 id="our-judgement" className="mb-2 px-1 text-footnote font-medium text-muted">
-          Our judgement · {judgement.length}
-        </h2>
-        <div className="flex flex-col gap-2.5">{judgement.map(renderRule)}</div>
-      </section>
+      <Group label="Based on research">
+        {research.map((rule, i) => (
+          <Row
+            key={rule.id}
+            icon={ICONS[rule.id] ?? BookOpen}
+            tone="research"
+            title={rule.title}
+            onPress={() => setOpen({ kind: "rule", id: rule.id })}
+            last={i === research.length - 1}
+          />
+        ))}
+      </Group>
 
-      <section aria-labelledby="not-yet" className="mb-4">
-        <h2 id="not-yet" className="mb-2 px-1 text-footnote font-medium text-muted">
-          What your plan doesn&apos;t do yet
-        </h2>
-        <div className="overflow-hidden rounded-[20px] bg-surface">
-          {NOT_YET.map((item, i) => (
-            <Link
-              key={item.title}
-              href={evidenceHref(item.findings)}
-              className={clsx(
-                "flex min-h-[44px] items-center justify-between gap-4 px-4 py-3 active:bg-fill",
-                i > 0 && "border-t border-line/40"
-              )}
-            >
-              <span>
-                <span className="block text-body text-ink">{item.title}</span>
-                <span className="mt-0.5 block text-footnote leading-relaxed text-muted">{item.explain}</span>
-              </span>
-              <ChevronRight size={17} className="flex-shrink-0 text-faint" aria-hidden />
-            </Link>
-          ))}
-        </div>
-      </section>
+      <Group label="Our judgement">
+        {judgement.map((rule, i) => (
+          <Row
+            key={rule.id}
+            icon={ICONS[rule.id] ?? Scale}
+            tone="judgement"
+            title={rule.title}
+            onPress={() => setOpen({ kind: "rule", id: rule.id })}
+            last={i === judgement.length - 1}
+          />
+        ))}
+      </Group>
+
+      <Group label="Not in your plan yet">
+        {NOT_YET.map((item, i) => (
+          <Row
+            key={item.title}
+            icon={CircleDashed}
+            tone="judgement"
+            title={item.title}
+            href={evidenceHref(item.findings)}
+            last={i === NOT_YET.length - 1}
+          />
+        ))}
+      </Group>
+
+      <AnimatePresence>
+        {open?.kind === "week" && (
+          <Sheet title="Your weekly sets" onClose={() => setOpen(null)}>
+            <WeekDetail rows={rows} />
+          </Sheet>
+        )}
+        {openRule && (
+          <Sheet title={openRule.title} onClose={() => setOpen(null)}>
+            <RuleDetail rule={openRule} personal={openRule.forYou?.(ctx)} />
+          </Sheet>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -128,8 +128,8 @@ export default function Plan() {
         className="mt-2.5 flex min-h-[56px] w-full items-center justify-between gap-3 rounded-[20px] bg-surface px-4 py-3"
       >
         <span>
-          <span className="block text-body font-semibold text-ink">Why your plan looks like this</span>
-          <span className="block text-footnote text-muted">The research behind every rule, and where it&apos;s our call</span>
+          <span className="block text-body font-semibold text-ink">How your plan is built</span>
+          <span className="block text-footnote text-muted">The research behind it</span>
         </span>
         <ChevronRight size={18} className="flex-shrink-0 text-faint" aria-hidden />
       </Link>

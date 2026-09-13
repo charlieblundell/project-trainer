@@ -80,7 +80,7 @@ export const PLAN_RULES: PlanRule[] = [
   },
   {
     id: "split-follows-volume",
-    title: "Your split matters less than your weekly total",
+    title: "Your split fits your week",
     explain:
       "Once the week's sets are matched, spreading them over more sessions doesn't add growth. So the plan fits the days you'll actually train, and makes sure each session carries its share of the week.",
     basis: { kind: "research", findings: ["frequency-follows-volume"] },
@@ -95,14 +95,14 @@ export const PLAN_RULES: PlanRule[] = [
   },
   {
     id: "several-sets",
-    title: "Several sets per exercise, not one",
+    title: "Several sets per exercise",
     explain:
       "Multiple sets produce more strength than a single set, so every main lift gets more than one. How many depends on your goal.",
     basis: { kind: "research", findings: ["multiple-sets-beat-one-for-strength"] },
   },
   {
     id: "load-by-goal",
-    title: "Heavy for strength, a wider range for size",
+    title: "Reps and weight for your goal",
     explain:
       "Strength depends on lifting heavy, so a strength plan works in low reps. Size responds to light and heavy loads alike when sets are hard, so a muscle-building plan uses moderate ranges. The exact range is a practical choice within what the research allows: heavy enough to progress, light enough not to grind.",
     basis: { kind: "research", findings: ["load-for-strength", "load-range-hypertrophy", "goal-changes-prescription"] },
@@ -118,7 +118,7 @@ export const PLAN_RULES: PlanRule[] = [
   },
   {
     id: "progress-not-failure",
-    title: "Weight goes up at the top of the range, not at failure",
+    title: "When your weights go up",
     explain:
       "Stopping a rep or two short builds almost as much and costs far less. So the plan raises your target when you reach the top of the rep range and your effort rating says there was something left.",
     basis: { kind: "research", findings: ["failure-not-required", "effort-gauged-by-reps-left"] },
@@ -154,7 +154,7 @@ export const PLAN_RULES: PlanRule[] = [
   },
   {
     id: "check-in",
-    title: "A bad night means a slightly lighter day",
+    title: "Lighter days after bad sleep",
     explain:
       "Sleep loss measurably hurts performance. If your check-in says you slept badly or you're very sore, each strength exercise loses a set that day, and a missed target isn't counted as going backwards. Only the sleep part rests on research; treating heavy soreness the same way is our call.",
     basis: { kind: "research", findings: ["sleep-loss-hurts-performance"] },
@@ -163,7 +163,7 @@ export const PLAN_RULES: PlanRule[] = [
   /* ---------------- Our judgement ---------------- */
   {
     id: "barbell-main-lifts",
-    title: "Main lifts favour a barbell, once you've trained a while",
+    title: "Barbells for main lifts",
     explain:
       "Machines build muscle just as well. This is about progress you can measure: a barbell goes up in small, steady steps for years.",
     basis: {
@@ -174,7 +174,7 @@ export const PLAN_RULES: PlanRule[] = [
   },
   {
     id: "time-budget",
-    title: "The time you give is the time you get",
+    title: "Using the time you have",
     explain:
       "Spare minutes go toward the top of each muscle's range. If a session runs long, accessory sets come down first and the first two lifts are never cut.",
     basis: {
@@ -184,7 +184,7 @@ export const PLAN_RULES: PlanRule[] = [
   },
   {
     id: "two-per-muscle",
-    title: "Two movements per muscle, then more sets",
+    title: "Two exercises per muscle",
     explain:
       "When filling spare time, a muscle that already has two exercises in the session gets another set rather than a third exercise. A third curl variation adds little that one more set wouldn't.",
     basis: { kind: "judgement", why: "A practical limit to keep sessions focused, not a tested threshold." },
