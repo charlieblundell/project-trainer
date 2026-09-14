@@ -12,7 +12,7 @@ import { clsx } from "@/lib/clsx";
 import Link from "next/link";
 import { ExerciseInfoModal } from "@/components/ExerciseInfoModal";
 import { ExerciseSwapPanel } from "@/components/ExerciseSwapPanel";
-import { nextSession, sessionById, sessionForToday, targetLabel } from "@/lib/plan/helpers";
+import { WEEKDAY_LABELS, nextSession, sessionById, sessionForToday, targetLabel } from "@/lib/plan/helpers";
 import type { PlannedExercise } from "@/lib/plan/types";
 import type { SetLog } from "@/lib/types";
 import { useAuthStore } from "@/lib/auth";
@@ -97,20 +97,33 @@ export default function Train() {
     return <DoneForToday plan={plan} finished={planSession} loggedSets={session.loggedSets} />;
   }
 
-  // Nothing started, or what's here was finished on an earlier day.
+  // Nothing started, or what's here was finished on an earlier day. Only
+  // today's session can be started; on a rest day this says when the next is.
   if (!planSession || session.finishedAt) {
-    const upcoming = sessionForToday(plan) ?? nextSession(plan);
+    const today = sessionForToday(plan);
+    const upcoming = nextSession(plan);
     return (
       <div className="py-16 text-center">
         <p className="mb-4 text-subhead text-muted">
-          {upcoming ? `Ready when you are. ${upcoming.name} is next.` : "No workout selected."}
+          {today
+            ? `Ready when you are. ${today.name} is today.`
+            : upcoming
+              ? `Rest day. ${upcoming.name} is on ${WEEKDAY_LABELS[upcoming.weekday]}.`
+              : "No workout selected."}
         </p>
-        {upcoming ? (
+        {today ? (
           <button
-            onClick={() => startWorkout(upcoming.id)}
+            onClick={() => startWorkout(today.id)}
             className="press min-h-[48px] rounded-[12px] bg-accent px-5 text-body font-semibold text-accent-ink"
           >
-            Start {upcoming.name}
+            Start {today.name}
+          </button>
+        ) : upcoming ? (
+          <button
+            onClick={() => router.push("/home")}
+            className="press min-h-[48px] rounded-[12px] bg-surface px-5 text-body font-semibold text-ink shadow-card"
+          >
+            Back home
           </button>
         ) : (
           <button

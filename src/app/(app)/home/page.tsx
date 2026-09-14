@@ -155,7 +155,7 @@ export default function Home() {
             </div>
 
             {!trainedToday && preview.length > 0 && (
-              <ul className="mb-5 flex flex-wrap gap-1.5" aria-label="Exercises">
+              <ul className={clsx("flex flex-wrap gap-1.5", !isRestDay && "mb-5")} aria-label="Exercises">
                 {preview.map((n, i) => (
                   <li
                     key={`${n}-${i}`}
@@ -172,17 +172,26 @@ export default function Home() {
               </ul>
             )}
 
-            <motion.button
-              whileTap={{ scale: 0.97 }}
-              onClick={start}
-              className={clsx(
-                "flex min-h-[52px] w-full items-center justify-center gap-2 rounded-[16px] text-body font-semibold",
-                trainedToday ? "border border-white/40 text-white" : "bg-white text-ink"
-              )}
-            >
-              {!trainedToday && <Play size={16} fill="currentColor" aria-hidden />}
-              {trainedToday ? "Train again anyway" : isRestDay ? "Start it early" : "Start workout"}
-            </motion.button>
+            {/* A session starts on its own day: a rest day shows what's coming, not a way to start it. */}
+            {isRestDay ? (
+              !trainedToday && (
+                <p className="mt-4 text-subhead font-medium text-white">
+                  Ready to start on {WEEKDAY_LABELS[upcoming.weekday]}.
+                </p>
+              )
+            ) : (
+              <motion.button
+                whileTap={{ scale: 0.97 }}
+                onClick={start}
+                className={clsx(
+                  "flex min-h-[52px] w-full items-center justify-center gap-2 rounded-[16px] text-body font-semibold",
+                  trainedToday ? "border border-white/40 text-white" : "bg-white text-ink"
+                )}
+              >
+                {!trainedToday && <Play size={16} fill="currentColor" aria-hidden />}
+                {trainedToday ? "Train again anyway" : "Start workout"}
+              </motion.button>
+            )}
           </div>
         </motion.section>
       ) : (

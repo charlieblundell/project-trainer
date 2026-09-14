@@ -320,17 +320,27 @@ function PlanReveal({
         </p>
       )}
 
-      {first ? (
+      {/* A session starts on its own day, so there's only a start button when that's today. */}
+      {today ? (
+        <>
+          <button
+            onClick={() => onStart(today.id)}
+            className="mb-2.5 min-h-[54px] w-full rounded-[14px] bg-accent text-body font-semibold text-accent-ink"
+          >
+            Start today&apos;s session
+          </button>
+          <button onClick={onHome} className="w-full py-3 text-subhead font-semibold text-muted hover:text-ink">
+            Go to home
+          </button>
+        </>
+      ) : (
         <button
-          onClick={() => onStart(first.id)}
-          className="mb-2.5 min-h-[54px] w-full rounded-[14px] bg-accent text-body font-semibold text-accent-ink"
+          onClick={onHome}
+          className="min-h-[54px] w-full rounded-[14px] bg-accent text-body font-semibold text-accent-ink"
         >
-          {today ? "Start today's session" : `Start ${first.name} now`}
+          {first ? `Go to home · ${first.name} is on ${WEEKDAY_LABELS[first.weekday]}` : "Go to home"}
         </button>
-      ) : null}
-      <button onClick={onHome} className="w-full py-3 text-subhead font-semibold text-muted hover:text-ink">
-        {first && !today ? `Save it for ${WEEKDAY_LABELS[first.weekday]} — go to home` : "Go to home"}
-      </button>
+      )}
     </motion.div>
   );
 }

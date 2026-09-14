@@ -55,13 +55,15 @@ test("the Train tab says well done after today's workout", async ({ signedIn }) 
 
 test("a workout finished yesterday doesn't hold the Train tab", async ({ signedIn }) => {
   const { page } = signedIn;
-  const yesterday = new Date(Date.now() - 26 * 60 * 60 * 1000).toISOString();
-  const store = seedFinishedSession(yesterday);
+  // Push was finished last Saturday; it's now Tuesday, which is Push day. (Past
+  // dates only: the stubbed sign-in expires an hour after the real clock.)
+  await page.clock.install({ time: new Date("2026-09-15T09:00:00") });
+  const store = seedFinishedSession(new Date("2026-09-12T18:00:00").toISOString());
   await page.evaluate((s) => localStorage.setItem("project-trainer-store", JSON.stringify(s)), store);
 
   await page.goto("/train");
   await expect(page.getByRole("heading", { name: "Good job!" })).toHaveCount(0);
-  await expect(page.getByRole("button", { name: /^Start (Push|Legs)$/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Start Push" })).toBeVisible();
 });
 
 test("reaching the completion screen is what marks the workout finished", async ({ signedIn }) => {

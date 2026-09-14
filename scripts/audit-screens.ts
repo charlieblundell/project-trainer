@@ -55,7 +55,7 @@ async function main() {
 
   // A workout, walked into the way a person does.
   await page.goto(BASE + "/home"); await page.waitForTimeout(800);
-  await page.getByRole("button", { name: /start workout|start it early/i }).first().click();
+  await page.getByRole("button", { name: "Start workout" }).first().click();
   await shot(page, "30-checkin", false);
   for (const a of ["Well", "Not sore", "None"]) { const b = page.getByRole("button", { name: a, exact: true }); if (await b.count()) await b.first().click(); }
   const begin = page.getByRole("button", { name: "Start workout" }); if (await begin.count()) await begin.click();

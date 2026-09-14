@@ -36,8 +36,10 @@ async function planWithCalfRaise(page: import("@playwright/test").Page) {
 
 /** Walks from the plan into the first exercise of the session. */
 async function startTraining(page: import("@playwright/test").Page) {
+  // A session only starts on its own day, and Push is the sample plan's Tuesday.
+  await page.clock.install({ time: new Date("2026-09-15T09:00:00") });
   await page.goto("/home");
-  await page.getByRole("button", { name: /start workout|start it early/i }).first().click();
+  await page.getByRole("button", { name: "Start workout" }).first().click();
 
   /*
    * The check-in comes first, then the warm-up. isVisible() answers straight

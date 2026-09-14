@@ -249,17 +249,24 @@ export default function Plan() {
                 ))}
               </div>
 
-              <motion.button
-                whileTap={{ scale: 0.98 }}
-                onClick={() => {
-                  startWorkout(preview.id);
-                  setPreview(null);
-                  router.push("/train");
-                }}
-                className="min-h-[54px] w-full rounded-[14px] bg-accent text-body font-semibold text-accent-ink"
-              >
-                Start this workout
-              </motion.button>
+              {/* A session starts on its own day; any other day it's here to read. */}
+              {preview.weekday === today ? (
+                <motion.button
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => {
+                    startWorkout(preview.id);
+                    setPreview(null);
+                    router.push("/train");
+                  }}
+                  className="min-h-[54px] w-full rounded-[14px] bg-accent text-body font-semibold text-accent-ink"
+                >
+                  Start this workout
+                </motion.button>
+              ) : (
+                <p className="rounded-[14px] bg-fill px-4 py-3.5 text-center text-subhead text-ink">
+                  You can start this on {WEEKDAY_LABELS[preview.weekday]}.
+                </p>
+              )}
 
               <Link
                 href="/plan/why?rule=load-by-goal"
