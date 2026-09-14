@@ -13,7 +13,7 @@ import {
   hasHealthDetails,
   withdrawHealthConsent,
 } from "@/lib/health-consent";
-import { LogoMark } from "@/components/Wordmark";
+import { AppLoader } from "@/components/AppLoader";
 import { HealthConsentPrompt } from "@/components/HealthConsentPrompt";
 
 /**
@@ -158,11 +158,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   }
 
   if (!initialized || !user || !profileSynced || !billingChecked || (locked && !pageIsOpen)) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <LogoMark size={36} />
-      </div>
-    );
+    return <AppLoader />;
   }
 
   if (needsHealthConsent) {

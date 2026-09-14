@@ -30,7 +30,7 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   // One colour, because the app is light whatever the phone is set to.
-  themeColor: "#f2f2f7",
+  themeColor: "#f6f3ee",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

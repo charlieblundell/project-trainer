@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { destinationAfterSignIn } from "@/lib/after-sign-in";
-import { LogoMark } from "@/components/Wordmark";
+import { AppLoader } from "@/components/AppLoader";
 
 export default function AuthCallback() {
   const router = useRouter();
@@ -65,9 +65,6 @@ export default function AuthCallback() {
   }
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-sm flex-col items-center justify-center px-6 py-10 text-center">
-      <LogoMark size={40} />
-      <p className="mt-4 text-subhead text-muted">Signing you in...</p>
-    </div>
+    <AppLoader message="Signing you in…" />
   );
 }

@@ -189,6 +189,58 @@ body {
   transform: scale(0.975);
 }
 
+/*
+ * The opening loader (AppLoader). Every keyframe ends on the resting, fully
+ * visible pose and fills both ways, so when Reduce Motion cuts the animations
+ * to nothing below, what's left is the finished icon rather than a blank.
+ */
+.loader-in {
+  animation: loader-fade 320ms ease-out 140ms both;
+}
+.loader-tile {
+  animation: loader-pop 520ms cubic-bezier(0.34, 1.56, 0.64, 1) 140ms both;
+}
+.loader-plate-inner-left {
+  animation: loader-slide-left 380ms cubic-bezier(0.22, 1, 0.36, 1) 360ms both;
+}
+.loader-plate-outer-left {
+  animation: loader-slide-left 380ms cubic-bezier(0.22, 1, 0.36, 1) 480ms both;
+}
+.loader-plate-inner-right {
+  animation: loader-slide-right 380ms cubic-bezier(0.22, 1, 0.36, 1) 360ms both;
+}
+.loader-plate-outer-right {
+  animation: loader-slide-right 380ms cubic-bezier(0.22, 1, 0.36, 1) 480ms both;
+}
+.loader-lift {
+  animation: loader-lift 1600ms ease-in-out 950ms infinite both;
+}
+.loader-caption {
+  animation: loader-fade 400ms ease-out 600ms both;
+}
+
+@keyframes loader-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes loader-pop {
+  from { opacity: 0; transform: scale(0.82); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes loader-slide-left {
+  from { opacity: 0; transform: translateX(-14px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes loader-slide-right {
+  from { opacity: 0; transform: translateX(14px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes loader-lift {
+  0%, 100% { transform: translateY(0); }
+  45% { transform: translateY(-7px); }
+  60% { transform: translateY(-7px); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -199,6 +251,10 @@ body {
   }
   .press:active:not(:disabled) {
     transform: none;
+  }
+  /* No waiting on hidden plates: the loader is simply there, finished. */
+  [class*="loader-"] {
+    animation-delay: 0s !important;
   }
 }
 
