@@ -76,7 +76,9 @@ export default function Privacy() {
         <p>
           <strong>Technical information.</strong> Our hosting providers keep standard server logs, which can include
           your IP address, browser type and the time of a request, for security and fixing faults. The app stores data
-          in your browser to keep you signed in and remember where you were. We don&apos;t use advertising cookies.
+          in your browser to keep you signed in and remember where you were. So it works without a signal, it also
+          keeps a copy of your plan and workout history on your device, and holds any workout finished offline there
+          until it can be sent to us. The history copy is removed from the device when you log out. We don&apos;t use advertising cookies.
           We count visits to each page with Vercel Web Analytics, which doesn&apos;t use cookies and doesn&apos;t
           identify you.
         </p>

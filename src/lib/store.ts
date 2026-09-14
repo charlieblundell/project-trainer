@@ -7,6 +7,9 @@ import type { Plan } from "./plan/types";
 import { applyProgression, type Change } from "./plan/progress";
 import { savePlan } from "./plan/storage";
 import { track } from "./analytics";
+import { signedInUser } from "./session";
+import { isNetworkError } from "./offline/network";
+import { flushOutbox, queueWorkout } from "./offline/outbox";
 import { normalizePlan } from "./plan/normalize";
 import { profileFromOnboarding, refreshAccessories } from "./plan/generate";
 import type { Equipment } from "./exercises";
@@ -62,6 +65,8 @@ type AppState = {
   lastCompletedSummary: { workoutId: string; loggedSets: Record<string, SetLog[]> } | null;
   /** What progression did to the plan after the last session. */
   lastChanges: Change[];
+  /** True when the last finished workout is waiting on the phone for a connection. */
+  lastSaveQueued: boolean;
   completeWorkout: () => Promise<void>;
   /**
    * Marks the open session finished, so the Train tab shows a well done instead
@@ -142,6 +147,7 @@ export const useAppStore = create<AppState>()(
       markWarmedUp: () => set((s) => ({ session: { ...s.session, warmedUp: true } })),
       lastCompletedSummary: null,
       lastChanges: [],
+      lastSaveQueued: false,
       markSessionFinished: () =>
         set((s) => (s.session.finishedAt ? {} : { session: { ...s.session, finishedAt: new Date().toISOString() } })),
       completeWorkout: async () => {
@@ -149,11 +155,13 @@ export const useAppStore = create<AppState>()(
         const currentPlan = get().plan;
         const equipment = get().onboarding.equipment as Equipment[];
 
-        set({ lastCompletedSummary: { workoutId: s.workoutId, loggedSets: s.loggedSets } });
+        set({ lastCompletedSummary: { workoutId: s.workoutId, loggedSets: s.loggedSets }, lastSaveQueued: false });
         track("workout_completed", { sets: Object.values(s.loggedSets).reduce((n, l) => n + l.length, 0) });
 
-        const { data } = await supabase.auth.getUser();
-        if (!data.user) return;
+        // The session stored on the phone, not a server round trip: this has to
+        // work in a gym with no signal.
+        const user = await signedInUser();
+        if (!user) return;
 
         // Supabase query builders are lazy — without awaiting, the insert is
         // built and never sent. This silently dropped every logged workout.
@@ -163,15 +171,25 @@ export const useAppStore = create<AppState>()(
             ? s.readiness
             : null;
 
-        const { error } = await supabase.from("workout_sessions").insert({
-          user_id: data.user.id,
+        const row = {
+          user_id: user.id,
           workout_id: s.workoutId,
           logged_sets: s.loggedSets,
           rpe: s.rpeValues,
           readiness,
-        });
-        if (error) console.error("Failed to save workout:", error.message);
-        else set((prev) => ({ sessionsLogged: prev.sessionsLogged + 1 }));
+          completed_at: new Date().toISOString(),
+        };
+        const { error } = await supabase.from("workout_sessions").insert(row);
+        if (!error) {
+          set((prev) => ({ sessionsLogged: prev.sessionsLogged + 1 }));
+          // A good moment to send anything older that was waiting.
+          void flushOutbox();
+        } else if (isNetworkError(error)) {
+          queueWorkout(row);
+          set((prev) => ({ sessionsLogged: prev.sessionsLogged + 1, lastSaveQueued: true }));
+        } else {
+          console.error("Failed to save workout:", error.message);
+        }
 
         // Feed the results back into the plan so next week's targets move.
         if (currentPlan) {
@@ -185,7 +203,7 @@ export const useAppStore = create<AppState>()(
           );
           set({ plan: nextPlan, lastChanges: changes });
           try {
-            await savePlan(data.user.id, nextPlan);
+            await savePlan(user.id, nextPlan);
           } catch {
             // Already logged in savePlan; the in-memory plan still reflects it.
           }
@@ -207,10 +225,10 @@ export const useAppStore = create<AppState>()(
         // What progression or a refresh last did no longer describes this plan.
         set({ plan: normalizePlan(plan), lastChanges: [], lastRefresh: null });
 
-        const { data } = await supabase.auth.getUser();
-        if (!data.user) return;
+        const user = await signedInUser();
+        if (!user) return;
         try {
-          await savePlan(data.user.id, plan);
+          await savePlan(user.id, plan);
         } catch {
           // Already logged in savePlan; the in-memory plan still reflects it.
         }
@@ -225,10 +243,10 @@ export const useAppStore = create<AppState>()(
         );
         set({ plan: nextPlan, lastRefresh: swapped });
 
-        const { data } = await supabase.auth.getUser();
-        if (!data.user) return;
+        const user = await signedInUser();
+        if (!user) return;
         try {
-          await savePlan(data.user.id, nextPlan);
+          await savePlan(user.id, nextPlan);
         } catch {
           // Already logged in savePlan; the in-memory plan still reflects it.
         }
@@ -243,6 +261,7 @@ export const useAppStore = create<AppState>()(
           session: emptySession(""),
           lastCompletedSummary: null,
           lastChanges: [],
+          lastSaveQueued: false,
           lastRefresh: null,
           onboarding: EMPTY_ONBOARDING,
           onboardingComplete: false,

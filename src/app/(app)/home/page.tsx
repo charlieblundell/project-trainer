@@ -30,6 +30,8 @@ import { PlanUpgradeCard } from "@/components/PlanUpgradeCard";
 import { sessionBackground, sessionStyle } from "@/lib/sessionStyle";
 import { greeting, homeNote } from "@/lib/homeNote";
 import { Rise, useCountUp } from "@/components/Rise";
+import { WeekCardSkeleton } from "@/components/Skeleton";
+import { onSynced } from "@/lib/offline/outbox";
 
 /** A stable empty array, so the memos below don't recompute on every render. */
 const NO_RECORDS: WorkoutRecord[] = [];
@@ -42,7 +44,10 @@ export default function Home() {
   const [records, setRecords] = useState<WorkoutRecord[] | null>(null);
 
   useEffect(() => {
-    if (user) loadHistory(user.id).then(setRecords);
+    if (!user) return;
+    const load = () => loadHistory(user.id).then(setRecords);
+    load();
+    return onSynced(load);
   }, [user]);
 
   const history = records ?? NO_RECORDS;
@@ -200,7 +205,9 @@ export default function Home() {
         </div>
       )}
 
-      {plan && (
+      {plan && records === null && <WeekCardSkeleton />}
+
+      {plan && records !== null && (
         <Rise order={1}>
         <section className="mb-4 rounded-[20px] bg-surface shadow-card p-4" aria-labelledby="this-week">
           <div className="mb-4 flex items-center gap-4">

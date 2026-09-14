@@ -14,6 +14,9 @@ import {
   withdrawHealthConsent,
 } from "@/lib/health-consent";
 import { AppLoader } from "@/components/AppLoader";
+import { AppFrame } from "@/components/AppFrame";
+import { ScreenSkeleton } from "@/components/Skeleton";
+import { hasQueuedPlan } from "@/lib/offline/outbox";
 import { HealthConsentPrompt } from "@/components/HealthConsentPrompt";
 
 /**
@@ -22,6 +25,13 @@ import { HealthConsentPrompt } from "@/components/HealthConsentPrompt";
  * the evidence library, which is reference rather than product.
  */
 const OPEN_WHEN_LOCKED = ["/upgrade", "/billing", "/settings", "/evidence"];
+
+/**
+ * How long the skeleton waits on the server before showing what the phone
+ * already has. A weak signal in a gym can leave requests hanging far longer
+ * than no signal at all; late answers still land when they arrive.
+ */
+const SYNC_PATIENCE_MS = 5000;
 
 export function AuthGate({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -37,6 +47,10 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   const setBilling = useAppStore((s) => s.setBilling);
   const [profileSynced, setProfileSynced] = useState(false);
   const [billingChecked, setBillingChecked] = useState(false);
+  const [planReady, setPlanReady] = useState(false);
+  // A plan already on the phone can show straight away; with none, the
+  // skeleton waits for it, so a new device doesn't flash "no plan yet".
+  const hasLocalPlan = useAppStore((s) => s.plan !== null);
   const [needsHealthConsent, setNeedsHealthConsent] = useState(false);
   const [consentBusy, setConsentBusy] = useState(false);
   const [consentError, setConsentError] = useState<string | null>(null);
@@ -51,16 +65,33 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     if (syncedForUser.current === user.id) return;
     syncedForUser.current = user.id;
     claimForUser(user.id);
+    const userId = user.id;
 
-    loadPlan(user.id).then(setPlan);
+    loadPlan(userId)
+      .then((plan) => {
+        // A plan changed offline and still waiting to sync is newer than the server's.
+        if (!hasQueuedPlan(userId)) setPlan(plan);
+      })
+      .catch(() => {
+        // No connection: keep the copy on the phone rather than wiping it.
+      })
+      .finally(() => setPlanReady(true));
 
     // The workouts table is the record of what they've actually done, so the
     // running total is read from it rather than kept on the plan.
     supabase
       .from("workout_sessions")
       .select("id", { count: "exact", head: true })
-      .eq("user_id", user.id)
-      .then(({ count }) => setSessionsLogged(count ?? 0));
+      .eq("user_id", userId)
+      .then(({ count, error }) => {
+        if (!error) setSessionsLogged(count ?? 0);
+      });
+
+    window.setTimeout(() => {
+      setPlanReady(true);
+      setBillingChecked(true);
+      setProfileSynced(true);
+    }, SYNC_PATIENCE_MS);
 
     supabase
       .from("billing")
@@ -80,7 +111,12 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
       .select("*")
       .eq("id", user.id)
       .single()
-      .then(({ data }) => {
+      .then(({ data, error }) => {
+        // Offline, keep what's on the phone rather than treating a failed read as an empty profile.
+        if (error && !data) {
+          setProfileSynced(true);
+          return;
+        }
         const hasHealth = !!data && hasHealthDetails(data);
         const consented = !!data?.health_consent_at;
 
@@ -157,8 +193,18 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     setConsentBusy(false);
   }
 
-  if (!initialized || !user || !profileSynced || !billingChecked || (locked && !pageIsOpen)) {
+  // Nothing to show yet, or on the way somewhere else: the opening loader.
+  if (!initialized || !user || (locked && !pageIsOpen)) {
     return <AppLoader />;
+  }
+
+  // Signed in and syncing: the shape of the screen that's coming.
+  if (!profileSynced || !billingChecked || !(planReady || hasLocalPlan)) {
+    return (
+      <AppFrame>
+        <ScreenSkeleton pathname={pathname} />
+      </AppFrame>
+    );
   }
 
   if (needsHealthConsent) {

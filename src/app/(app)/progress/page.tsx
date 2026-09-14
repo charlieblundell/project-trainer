@@ -14,6 +14,8 @@ import {
 } from "@/lib/progress/compute";
 import type { ExerciseSeries, WorkoutRecord } from "@/lib/progress/types";
 import { Sparkline } from "@/components/Sparkline";
+import { ProgressSkeleton } from "@/components/Skeleton";
+import { onSynced } from "@/lib/offline/outbox";
 import { clsx } from "@/lib/clsx";
 
 /** A stable empty array, so the memos below don't recompute on every render. */
@@ -45,7 +47,10 @@ export default function Progress() {
 
   useEffect(() => {
     if (!user) return;
-    loadHistory(user.id).then(setRecords);
+    const load = () => loadHistory(user.id).then(setRecords);
+    load();
+    // Workouts trained offline arrive on the server later; show them once they do.
+    return onSynced(load);
   }, [user]);
 
   const history = records ?? NO_RECORDS;
@@ -58,9 +63,8 @@ export default function Progress() {
 
   if (records === null) {
     return (
-      <div>
-        <h1 className="mb-5 text-largetitle font-bold text-ink">Your progress</h1>
-        <p className="text-subhead text-muted">Loading what you&apos;ve logged…</p>
+      <div role="status" aria-label="Loading your progress">
+        <ProgressSkeleton />
       </div>
     );
   }

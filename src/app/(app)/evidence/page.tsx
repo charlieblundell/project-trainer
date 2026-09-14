@@ -1,5 +1,6 @@
 "use client";
 
+import { ListSkeleton } from "@/components/Skeleton";
 import { Suspense, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
@@ -188,7 +189,7 @@ function EvidenceBody() {
 
 export default function Evidence() {
   return (
-    <Suspense fallback={<p className="text-subhead text-muted">Loading…</p>}>
+    <Suspense fallback={<ListSkeleton count={5} />}>
       <EvidenceBody />
     </Suspense>
   );

@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, useReducedMotion } from "framer-motion";
-import { Flame, TrendingUp } from "lucide-react";
+import { CloudOff, Flame, TrendingUp } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import { sessionById } from "@/lib/plan/helpers";
 import { sessionBackground, sessionStyle } from "@/lib/sessionStyle";
@@ -26,6 +26,7 @@ export default function TrainComplete() {
   const summary = useAppStore((s) => s.lastCompletedSummary);
   const plan = useAppStore((s) => s.plan);
   const changes = useAppStore((s) => s.lastChanges);
+  const savedOnPhone = useAppStore((s) => s.lastSaveQueued);
   const sessionWorkoutId = useAppStore((s) => s.session.workoutId);
   const markSessionFinished = useAppStore((s) => s.markSessionFinished);
   const reduceMotion = useReducedMotion();
@@ -78,6 +79,18 @@ export default function TrainComplete() {
       </div>
 
       <motion.div variants={container} initial="hidden" animate="show">
+        {savedOnPhone && (
+          <motion.div
+            variants={item}
+            role="status"
+            className="mb-4 flex items-start gap-3 rounded-[20px] bg-surface px-4 py-3.5 shadow-card"
+          >
+            <CloudOff size={18} className="mt-0.5 flex-shrink-0 text-muted" aria-hidden />
+            <span className="text-subhead leading-relaxed text-ink">
+              Saved on this phone. It&apos;ll sync by itself when you&apos;re back online.
+            </span>
+          </motion.div>
+        )}
         <motion.div variants={item} className="mb-4 flex overflow-hidden rounded-[20px] bg-surface shadow-card">
           {[
             [String(estMinutes), "minutes"],

@@ -7,12 +7,15 @@ import { COACH_PROMPTS } from "@/lib/data";
 import { useAppStore } from "@/lib/store";
 import { supabase } from "@/lib/supabase";
 import { track } from "@/lib/analytics";
+import { useOnline } from "@/lib/offline/network";
 
 export default function Coach() {
   const messages = useAppStore((s) => s.messages);
   const addMessage = useAppStore((s) => s.addMessage);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  // The coach's answers come from the server; there's nothing to ask it offline.
+  const online = useOnline();
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -20,6 +23,7 @@ export default function Coach() {
   }, [messages, loading]);
 
   async function send(text: string) {
+    if (!online) return;
     const nextMessages = [...messages, { role: "user" as const, text }];
     addMessage({ role: "user", text });
     setInput("");
@@ -93,7 +97,13 @@ export default function Coach() {
         <div ref={scrollRef} />
       </div>
 
-      {messages.length <= 1 && (
+      {!online && (
+        <p role="status" className="mb-3 rounded-[14px] bg-fill px-4 py-3 text-subhead text-ink">
+          The coach needs a connection. Your plan and workouts still work offline.
+        </p>
+      )}
+
+      {online && messages.length <= 1 && (
         <div className="mb-3.5 flex flex-wrap gap-2">
           {COACH_PROMPTS.map((p, i) => (
             <motion.button
@@ -118,7 +128,8 @@ export default function Coach() {
           onKeyDown={(e) => {
             if (e.key === "Enter" && input.trim()) send(input.trim());
           }}
-          placeholder="Ask your coach..."
+          placeholder={online ? "Ask your coach..." : "Offline"}
+          disabled={!online}
           // Matches the server's limit, so the box stops you rather than an error does.
           maxLength={2000}
           className="min-h-[44px] flex-1 rounded-full bg-surface px-4 text-body"
@@ -126,6 +137,8 @@ export default function Coach() {
         <motion.button
           whileTap={{ scale: 0.92 }}
           onClick={() => input.trim() && send(input.trim())}
+          disabled={!online}
+          aria-label="Send"
           className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-accent disabled:bg-fill-strong"
         >
           <Send size={17} className="text-accent-ink" />

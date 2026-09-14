@@ -101,7 +101,7 @@ export async function withdrawHealthConsent(
     return { ok: false, plan };
   }
 
-  const current = plan ?? (await loadPlan(userId));
+  const current = plan ?? (await loadPlan(userId).catch(() => null));
   if (!current) return { ok: true, plan: null };
 
   const cleaned = withoutHealthDerived(current);
