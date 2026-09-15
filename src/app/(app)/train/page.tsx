@@ -38,6 +38,7 @@ export default function Train() {
   const setReadiness = useAppStore((s) => s.setReadiness);
   const markWarmedUp = useAppStore((s) => s.markWarmedUp);
   const startWorkout = useAppStore((s) => s.startWorkout);
+  const resumeWorkout = useAppStore((s) => s.resumeWorkout);
   const user = useAuthStore((s) => s.user);
   const [history, setHistory] = useState<WorkoutRecord[] | null>(null);
 
@@ -92,14 +93,19 @@ export default function Train() {
   const needsCheckIn = healthConsent && !session.readiness && atStart;
 
   const finishedToday = !!session.finishedAt && sameDay(session.finishedAt);
+  // Started on an earlier day and never finished. It doesn't get to stand in
+  // the way of today's session.
+  const leftBehind =
+    !!planSession && !session.finishedAt && !(session.startedAt && sameDay(session.startedAt));
+  const leftBehindProgress = leftBehind && Object.values(session.loggedSets).some((l) => l.length > 0);
 
   if (planSession && plan && finishedToday) {
     return <DoneForToday plan={plan} finished={planSession} loggedSets={session.loggedSets} />;
   }
 
-  // Nothing started, or what's here was finished on an earlier day. Only
-  // today's session can be started; on a rest day this says when the next is.
-  if (!planSession || session.finishedAt) {
+  // Nothing started, or what's here is from an earlier day. Only today's
+  // session can be started; on a rest day this says when the next is.
+  if (!planSession || session.finishedAt || leftBehind) {
     const today = sessionForToday(plan);
     const upcoming = nextSession(plan);
     return (
@@ -131,6 +137,15 @@ export default function Train() {
             className="min-h-[48px] rounded-[12px] bg-accent px-5 text-body font-semibold text-accent-ink"
           >
             Pick one from your plan
+          </button>
+        )}
+        {/* Sets were logged, so let them finish it rather than lose them. */}
+        {leftBehindProgress && planSession && (
+          <button
+            onClick={resumeWorkout}
+            className="mx-auto mt-3 block min-h-[44px] px-4 text-subhead font-semibold text-accent"
+          >
+            Finish {planSession.name} instead
           </button>
         )}
       </div>

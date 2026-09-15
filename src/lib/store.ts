@@ -31,6 +31,12 @@ type TrainingSession = {
   readiness?: Readiness | "skipped" | null;
   /** Whether the warm-up screen has been dealt with, done or skipped. */
   warmedUp?: boolean;
+  /**
+   * When it was started, or picked back up. An unfinished session from an
+   * earlier day is left behind rather than holding the Train tab. Absent on
+   * sessions saved before this was kept.
+   */
+  startedAt?: string | null;
   /** When the last set was logged and the workout saved; absent while it's still going. */
   finishedAt?: string | null;
 };
@@ -44,6 +50,7 @@ function emptySession(workoutId: string): TrainingSession {
     overrides: {},
     readiness: null,
     warmedUp: false,
+    startedAt: workoutId ? new Date().toISOString() : null,
     finishedAt: null,
   };
 }
@@ -56,6 +63,8 @@ type AppState = {
 
   session: TrainingSession;
   startWorkout: (workoutId: string) => void;
+  /** Picks an unfinished session from an earlier day back up where it was left. */
+  resumeWorkout: () => void;
   logSet: (exerciseId: string, set: SetLog) => void;
   submitRpe: (exerciseId: string, value: number) => void;
   nextExercise: () => void;
@@ -123,6 +132,7 @@ export const useAppStore = create<AppState>()(
         track("workout_started");
         set({ session: emptySession(workoutId) });
       },
+      resumeWorkout: () => set((s) => ({ session: { ...s.session, startedAt: new Date().toISOString() } })),
       logSet: (exerciseId, log) =>
         set((s) => {
           const current = s.session.loggedSets[exerciseId] ?? [];

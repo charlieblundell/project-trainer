@@ -66,6 +66,25 @@ test("a workout finished yesterday doesn't hold the Train tab", async ({ signedI
   await expect(page.getByRole("button", { name: "Start Push" })).toBeVisible();
 });
 
+test("a workout left unfinished on an earlier day doesn't hold the Train tab", async ({ signedIn }) => {
+  const { page } = signedIn;
+  // Push was started last Saturday and never finished; it's now Tuesday.
+  await page.clock.install({ time: new Date("2026-09-15T09:00:00") });
+  const store = seedFinishedSession("");
+  const state = store.state as Record<string, unknown> & { session: Record<string, unknown> };
+  state.session.finishedAt = null;
+  state.session.startedAt = new Date("2026-09-12T18:00:00").toISOString();
+  await page.evaluate((s) => localStorage.setItem("project-trainer-store", JSON.stringify(s)), store);
+
+  await page.goto("/train");
+  await expect(page.getByRole("button", { name: /log this set/i })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Start Push" })).toBeVisible();
+
+  // The sets already logged aren't thrown away without asking.
+  await page.getByRole("button", { name: "Finish Push instead" }).click();
+  await expect(page.getByRole("button", { name: /log this set/i })).toBeVisible();
+});
+
 test("reaching the completion screen is what marks the workout finished", async ({ signedIn }) => {
   const { page } = signedIn;
   const store = seedFinishedSession("");
