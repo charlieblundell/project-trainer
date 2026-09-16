@@ -17,6 +17,8 @@ test("a one-answer setup question moves on by itself", async ({ signedIn }) => {
 
 test("Home leads with the next workout and what's in it", async ({ signedIn }) => {
   const { page } = signedIn;
+  // Tuesday, Push day in the sample plan; any other day leads with the next one.
+  await page.clock.install({ time: new Date("2026-09-15T09:00:00") });
   await page.goto("/home");
 
   const next = page.getByRole("region", { name: "Your next workout" });
