@@ -123,7 +123,7 @@ function normalise(text: string): string {
 
 async function verify(source: Source): Promise<void> {
   const res = await fetch(`https://api.crossref.org/works/${encodeURIComponent(source.doi)}`, {
-    headers: { "User-Agent": "project-trainer citation check (mailto:cblundell38@gmail.com)" },
+    headers: { "User-Agent": "Your Personal Trainer citation check (mailto:cblundell38@gmail.com)" },
   });
 
   if (!res.ok) {
