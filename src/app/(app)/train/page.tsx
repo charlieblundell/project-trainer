@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, Check, Info, MoreHorizontal, Lightbulb } from "lucide-react";
 import { EXERCISES_BY_ID, substitutesFor, type Equipment } from "@/lib/exercises";
-import { useAppStore } from "@/lib/store";
+import { sessionHasSets, sessionStatus, useAppStore } from "@/lib/store";
 import { RpeSelector } from "@/components/RpeSelector";
 import { SetStepper } from "@/components/SetStepper";
 import { clsx } from "@/lib/clsx";
@@ -23,11 +23,6 @@ import { warmUpFor } from "@/lib/plan/warmup";
 import { CheckIn } from "@/components/CheckIn";
 import { WarmUp } from "@/components/WarmUp";
 import { DoneForToday } from "@/components/DoneForToday";
-
-function sameDay(iso: string, now = new Date()): boolean {
-  const d = new Date(iso);
-  return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
-}
 
 export default function Train() {
   const router = useRouter();
@@ -92,20 +87,18 @@ export default function Train() {
   // share health information.
   const needsCheckIn = healthConsent && !session.readiness && atStart;
 
-  const finishedToday = !!session.finishedAt && sameDay(session.finishedAt);
+  const status = planSession ? sessionStatus(session) : "none";
   // Started on an earlier day and never finished. It doesn't get to stand in
-  // the way of today's session.
-  const leftBehind =
-    !!planSession && !session.finishedAt && !(session.startedAt && sameDay(session.startedAt));
-  const leftBehindProgress = leftBehind && Object.values(session.loggedSets).some((l) => l.length > 0);
+  // the way of today's session, but its sets aren't thrown away either.
+  const leftBehindProgress = status === "stale" && !session.finishedAt && sessionHasSets(session);
 
-  if (planSession && plan && finishedToday) {
+  if (planSession && plan && status === "finished") {
     return <DoneForToday plan={plan} finished={planSession} loggedSets={session.loggedSets} />;
   }
 
   // Nothing started, or what's here is from an earlier day. Only today's
   // session can be started; on a rest day this says when the next is.
-  if (!planSession || session.finishedAt || leftBehind) {
+  if (!planSession || status !== "active") {
     const today = sessionForToday(plan);
     const upcoming = nextSession(plan);
     return (
@@ -260,8 +253,16 @@ function ExercisePanel({
   const canAddWeight = planned.unit === "reps" && !!def?.loadable;
   const needsCalibration = tracksWeight && planned.targetWeightKg == null;
 
+  // Coming back to an exercise part-way through starts from the weight last
+  // used on it, not an empty box.
+  const lastLogged = session.loggedSets[activeId]?.at(-1);
   const [input, setInput] = useState({
-    w: planned.targetWeightKg != null ? String(planned.targetWeightKg) : "",
+    w:
+      lastLogged && lastLogged.w > 0
+        ? String(lastLogged.w)
+        : planned.targetWeightKg != null
+          ? String(planned.targetWeightKg)
+          : "",
     r: isTimed ? String(Math.round((planned.seconds ?? 0) / 60)) : String(planned.repMax ?? 10),
   });
   const [showInfo, setShowInfo] = useState(false);
@@ -330,16 +331,37 @@ function ExercisePanel({
     else setRestEndsAt(null);
   }
 
-  async function handleSubmitRpe(value: number) {
+  const isLastExercise = session.exerciseIdx + 1 >= exerciseCount;
+  const [confirmFinish, setConfirmFinish] = useState(false);
+  const setsSoFar = Object.values(session.loggedSets).reduce((n, l) => n + l.length, 0);
+
+  async function finish() {
+    // Wait for the save so a fast navigation can't cut the request short, but
+    // never leave "Saving…" on screen if something throws: the workout is
+    // already kept on the phone by then.
+    setSaving(true);
+    try {
+      await completeWorkout();
+    } catch (e) {
+      console.error("Finishing the workout failed:", e);
+    }
+    router.push("/train/complete");
+  }
+
+  function handleSubmitRpe(value: number) {
     submitRpe(activeId, value);
-    if (session.exerciseIdx + 1 < exerciseCount) {
-      nextExercise();
+    if (isLastExercise) void finish();
+    else nextExercise();
+  }
+
+  function handleSkip() {
+    if (isLastExercise) {
+      if (setsSoFar > 0) void finish();
+      else router.push("/home");
       return;
     }
-    // Wait for the save so a fast navigation can't cut the request short.
-    setSaving(true);
-    await completeWorkout();
-    router.push("/train/complete");
+    setRestEndsAt(null);
+    nextExercise();
   }
 
   return (
@@ -542,8 +564,65 @@ function ExercisePanel({
         )
       ) : (
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-          <RpeSelector onSubmit={handleSubmitRpe} />
+          <RpeSelector
+            onSubmit={handleSubmitRpe}
+            submitLabel={isLastExercise ? "Finish workout" : "Next exercise"}
+          />
         </motion.div>
+      )}
+
+      {/*
+        A way out that isn't "log every planned set": skip a movement you can't
+        do today, or save what's done and call it. Without these a workout only
+        ever saved if every set of every exercise was logged.
+      */}
+      {!saving && (
+        <div className="mt-6 flex flex-col items-center gap-1">
+          {confirmFinish ? (
+            <div role="group" aria-label="Finish workout now" className="w-full rounded-[20px] bg-surface p-4 text-center shadow-card">
+              <p className="mb-3 text-subhead text-ink">
+                Save {setsSoFar} set{setsSoFar === 1 ? "" : "s"} and finish here?
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setConfirmFinish(false)}
+                  className="press min-h-[48px] flex-1 rounded-[12px] bg-fill text-body font-semibold text-ink"
+                >
+                  Keep going
+                </button>
+                <button
+                  onClick={() => void finish()}
+                  className="press min-h-[48px] flex-1 rounded-[12px] bg-accent text-body font-semibold text-accent-ink"
+                >
+                  Save and finish
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              {!awaitingRpe && (
+                <button
+                  onClick={handleSkip}
+                  className="min-h-[44px] px-4 text-subhead text-accent"
+                >
+                  {isLastExercise
+                    ? setsSoFar > 0
+                      ? "Skip this and finish workout"
+                      : "Skip this exercise"
+                    : "Skip this exercise"}
+                </button>
+              )}
+              {setsSoFar > 0 && !isLastExercise && (
+                <button
+                  onClick={() => setConfirmFinish(true)}
+                  className="min-h-[44px] px-4 text-subhead text-muted"
+                >
+                  Finish workout now
+                </button>
+              )}
+            </>
+          )}
+        </div>
       )}
 
       <AnimatePresence>

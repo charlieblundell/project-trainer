@@ -55,6 +55,41 @@ function emptySession(workoutId: string): TrainingSession {
   };
 }
 
+function sameDay(iso: string, now: Date): boolean {
+  const d = new Date(iso);
+  return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
+}
+
+/** A late session that runs past midnight still counts as today's. */
+const STILL_CURRENT_MS = 6 * 60 * 60 * 1000;
+
+export type SessionStatus =
+  /** Nothing open. */
+  | "none"
+  /** Open, and started today (or in the last few hours). */
+  | "active"
+  /** Finished today. */
+  | "finished"
+  /** Started on an earlier day and never finished, or finished on an earlier day. */
+  | "stale";
+
+/**
+ * The one answer to "is a workout under way?", shared by Home and the Train
+ * tab so they never disagree about it.
+ */
+export function sessionStatus(session: TrainingSession, now = new Date()): SessionStatus {
+  if (!session.workoutId) return "none";
+  if (session.finishedAt) return sameDay(session.finishedAt, now) ? "finished" : "stale";
+  const started = session.startedAt;
+  if (!started) return "stale";
+  const current = sameDay(started, now) || now.getTime() - new Date(started).getTime() < STILL_CURRENT_MS;
+  return current ? "active" : "stale";
+}
+
+export function sessionHasSets(session: TrainingSession): boolean {
+  return Object.values(session.loggedSets).some((l) => l.length > 0);
+}
+
 type AppState = {
   onboarding: OnboardingData;
   onboardingComplete: boolean;
@@ -129,6 +164,10 @@ export const useAppStore = create<AppState>()(
 
       session: emptySession(""),
       startWorkout: (workoutId) => {
+        // Tapping Start again on a workout that's already going (from Home, the
+        // Plan tab, anywhere) used to wipe every set logged so far.
+        const current = get().session;
+        if (current.workoutId === workoutId && sessionStatus(current) === "active") return;
         track("workout_started");
         set({ session: emptySession(workoutId) });
       },
@@ -170,8 +209,12 @@ export const useAppStore = create<AppState>()(
 
         // The session stored on the phone, not a server round trip: this has to
         // work in a gym with no signal.
-        const user = await signedInUser();
-        if (!user) return;
+        // Asking can fail offline with an expired token, which used to drop the
+        // workout on the floor. The account this phone's data belongs to is
+        // the right answer then.
+        const user = await signedInUser().catch(() => null);
+        const userId = user?.id ?? get().ownerId;
+        if (!userId) return;
 
         // Supabase query builders are lazy — without awaiting, the insert is
         // built and never sent. This silently dropped every logged workout.
@@ -182,38 +225,50 @@ export const useAppStore = create<AppState>()(
             : null;
 
         const row = {
-          user_id: user.id,
+          user_id: userId,
           workout_id: s.workoutId,
           logged_sets: s.loggedSets,
           rpe: s.rpeValues,
           readiness,
           completed_at: new Date().toISOString(),
         };
-        const { error } = await supabase.from("workout_sessions").insert(row);
+        const { error } = await supabase
+          .from("workout_sessions")
+          .insert(row)
+          .then(
+            (r) => r,
+            (e: Error) => ({ error: { message: e.message } })
+          );
         if (!error) {
           set((prev) => ({ sessionsLogged: prev.sessionsLogged + 1 }));
           // A good moment to send anything older that was waiting.
           void flushOutbox();
-        } else if (isNetworkError(error)) {
+        } else {
+          // No signal, an expired sign-in, a server hiccup: whatever the reason,
+          // keep it on the phone and keep trying rather than lose the workout.
+          if (!isNetworkError(error)) console.warn("Workout save refused, queued to retry:", error.message);
           queueWorkout(row);
           set((prev) => ({ sessionsLogged: prev.sessionsLogged + 1, lastSaveQueued: true }));
-        } else {
-          console.error("Failed to save workout:", error.message);
         }
 
         // Feed the results back into the plan so next week's targets move.
+        // Only exercises that were seen through (they have an effort rating)
+        // count: one set of three before finishing early isn't a failed lift.
         if (currentPlan) {
+          const finishedSets = Object.fromEntries(
+            Object.entries(s.loggedSets).filter(([id]) => s.rpeValues[id] !== undefined)
+          );
           const { plan: nextPlan, changes } = applyProgression(
             currentPlan,
             s.workoutId,
-            s.loggedSets,
+            finishedSets,
             s.rpeValues,
             equipment,
             readiness
           );
           set({ plan: nextPlan, lastChanges: changes });
           try {
-            await savePlan(user.id, nextPlan);
+            await savePlan(userId, nextPlan);
           } catch {
             // Already logged in savePlan; the in-memory plan still reflects it.
           }

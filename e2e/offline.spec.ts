@@ -53,7 +53,7 @@ test("a workout finished offline is kept, then synced when back online", async (
   }
 
   await page.getByRole("button", { name: "Log set 1 of 1" }).click();
-  await page.getByRole("button", { name: "Next exercise" }).click();
+  await page.getByRole("button", { name: "Finish workout", exact: true }).click();
 
   await expect(page.getByRole("heading", { name: "Workout complete" })).toBeVisible();
   await expect(page.getByText("Saved on this phone", { exact: false })).toBeVisible();

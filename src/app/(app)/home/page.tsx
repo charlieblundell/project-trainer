@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Check, ChevronRight, Flame, MessageCircle, Play, Settings } from "lucide-react";
-import { useAppStore } from "@/lib/store";
+import { sessionHasSets, sessionStatus, useAppStore } from "@/lib/store";
 import { useAuthStore } from "@/lib/auth";
 import { displayName } from "@/lib/displayName";
 import { clsx } from "@/lib/clsx";
@@ -40,6 +40,7 @@ export default function Home() {
   const router = useRouter();
   const startWorkout = useAppStore((s) => s.startWorkout);
   const plan = useAppStore((s) => s.plan);
+  const session = useAppStore((s) => s.session);
   const user = useAuthStore((s) => s.user);
   const [records, setRecords] = useState<WorkoutRecord[] | null>(null);
 
@@ -59,7 +60,10 @@ export default function Home() {
 
   const todayName = todayWeekday();
   const todayIndex = WEEKDAY_ORDER.indexOf(todayName);
-  const trainedToday = trainedDays.has(todayIndex);
+  const status = sessionStatus(session);
+  // A workout finished here counts straight away, before the server (or a
+  // queued save) shows up in history.
+  const trainedToday = trainedDays.has(todayIndex) || status === "finished";
 
   const name = displayName(user);
   const note = useMemo(() => homeNote(history, plan), [history, plan]);
@@ -67,10 +71,13 @@ export default function Home() {
   const today = sessionForToday(plan);
   const upcoming = today ?? nextSession(plan);
   const isRestDay = !today && !!upcoming;
+  // Already under way: carry on with it rather than starting over.
+  const inProgress = status === "active" && !!upcoming && session.workoutId === upcoming.id;
+  const logged = inProgress && sessionHasSets(session);
 
   function start() {
     if (!upcoming) return;
-    startWorkout(upcoming.id);
+    if (!inProgress) startWorkout(upcoming.id);
     router.push("/train");
   }
 
@@ -148,7 +155,9 @@ export default function Home() {
               )}
               {trainedToday
                 ? "Done today"
-                : isRestDay
+                : inProgress
+                  ? "In progress"
+                  : isRestDay
                   ? `Rest day · next up ${WEEKDAY_LABELS[upcoming.weekday]}`
                   : "Today"}
             </span>
@@ -190,11 +199,17 @@ export default function Home() {
                 onClick={start}
                 className={clsx(
                   "flex min-h-[52px] w-full items-center justify-center gap-2 rounded-[16px] text-body font-semibold",
-                  trainedToday ? "border border-white/40 text-white" : "bg-white text-ink"
+                  trainedToday && !inProgress ? "border border-white/40 text-white" : "bg-white text-ink"
                 )}
               >
-                {!trainedToday && <Play size={16} fill="currentColor" aria-hidden />}
-                {trainedToday ? "Train again anyway" : "Start workout"}
+                {(!trainedToday || inProgress) && <Play size={16} fill="currentColor" aria-hidden />}
+                {inProgress
+                  ? logged
+                    ? "Continue workout"
+                    : "Open workout"
+                  : trainedToday
+                    ? "Train again anyway"
+                    : "Start workout"}
               </motion.button>
             )}
           </div>

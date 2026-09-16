@@ -3,7 +3,13 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 
-export function RpeSelector({ onSubmit }: { onSubmit: (value: number) => void }) {
+export function RpeSelector({
+  onSubmit,
+  submitLabel = "Next exercise",
+}: {
+  onSubmit: (value: number) => void;
+  submitLabel?: string;
+}) {
   const [value, setValue] = useState(7);
   const pct = ((value - 1) / 9) * 100;
 
@@ -41,7 +47,7 @@ export function RpeSelector({ onSubmit }: { onSubmit: (value: number) => void })
         onClick={() => onSubmit(value)}
         className="min-h-[54px] w-full rounded-[14px] bg-accent text-body font-semibold text-accent-ink"
       >
-        Next exercise
+        {submitLabel}
       </motion.button>
     </div>
   );

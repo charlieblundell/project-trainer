@@ -47,7 +47,7 @@ test("the Train tab says well done after today's workout", async ({ signedIn }) 
   await expect(page.getByText("sets", { exact: true })).toBeVisible();
   await expect(page.getByText("5", { exact: true })).toBeVisible();
   // Not the last exercise again.
-  await expect(page.getByRole("button", { name: /log this set/i })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: /log (this )?set/i })).toHaveCount(0);
 
   await page.getByRole("button", { name: "Back home" }).click();
   await expect(page).toHaveURL(/\/home$/);
@@ -77,12 +77,12 @@ test("a workout left unfinished on an earlier day doesn't hold the Train tab", a
   await page.evaluate((s) => localStorage.setItem("project-trainer-store", JSON.stringify(s)), store);
 
   await page.goto("/train");
-  await expect(page.getByRole("button", { name: /log this set/i })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: /log (this )?set/i })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Start Push" })).toBeVisible();
 
   // The sets already logged aren't thrown away without asking.
   await page.getByRole("button", { name: "Finish Push instead" }).click();
-  await expect(page.getByRole("button", { name: /log this set/i })).toBeVisible();
+  await expect(page.getByRole("button", { name: /log (this )?set/i })).toBeVisible();
 });
 
 test("reaching the completion screen is what marks the workout finished", async ({ signedIn }) => {
