@@ -48,6 +48,20 @@ jobs:
       - run: npx tsc --noEmit
       - run: npm run lint
 
+      # The payment endpoints can only be checked against a running server, so
+      # this step brings one up on a port the browser tests don't use. No Stripe
+      # account is involved: the payloads are signed locally with a throwaway
+      # secret, which is what Stripe does with the real one.
+      - name: Check the payment endpoints refuse what they should
+        env:
+          STRIPE_WEBHOOK_SECRET: whsec_local_check
+          STRIPE_SECRET_KEY: sk_test_placeholder
+        run: |
+          npx next dev -p 3100 > "$RUNNER_TEMP/next-dev.log" 2>&1 &
+          server=$!
+          trap 'kill $server' EXIT
+          npm run check:webhook || { cat "$RUNNER_TEMP/next-dev.log"; exit 1; }
+
       - name: Install the browser
         run: npx playwright install --with-deps chromium
 
