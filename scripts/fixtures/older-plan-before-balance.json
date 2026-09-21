@@ -1,0 +1,338 @@
+{
+ "plan": {
+  "createdAt": "2026-09-21T10:30:26.300Z",
+  "goal": "General health",
+  "level": 1,
+  "daysPerWeek": 3,
+  "refreshes": 0,
+  "retired": [],
+  "sessions": [
+   {
+    "id": "strength-a-0",
+    "name": "Strength A",
+    "focus": "Strength & Mobility",
+    "weekday": "mon",
+    "estMinutes": 58,
+    "region": "full",
+    "exercises": [
+     {
+      "exerciseId": "leg_press",
+      "unit": "weight_reps",
+      "sets": 2,
+      "repMin": 10,
+      "repMax": 12,
+      "restSeconds": 75,
+      "targetWeightKg": null
+     },
+     {
+      "exerciseId": "machine_chest_press",
+      "unit": "weight_reps",
+      "sets": 2,
+      "repMin": 10,
+      "repMax": 12,
+      "restSeconds": 75,
+      "targetWeightKg": null
+     },
+     {
+      "exerciseId": "cable_row",
+      "unit": "weight_reps",
+      "sets": 2,
+      "repMin": 10,
+      "repMax": 12,
+      "restSeconds": 75,
+      "targetWeightKg": null
+     },
+     {
+      "exerciseId": "cable_crunch",
+      "unit": "weight_reps",
+      "sets": 2,
+      "repMin": 10,
+      "repMax": 12,
+      "restSeconds": 60,
+      "targetWeightKg": null
+     },
+     {
+      "exerciseId": "arm_circles",
+      "unit": "reps",
+      "sets": 2,
+      "repMin": 10,
+      "repMax": 12,
+      "restSeconds": 60,
+      "targetWeightKg": null
+     },
+     {
+      "exerciseId": "leg_curl",
+      "unit": "weight_reps",
+      "sets": 2,
+      "repMin": 10,
+      "repMax": 12,
+      "restSeconds": 60,
+      "targetWeightKg": null
+     },
+     {
+      "exerciseId": "calf_raise",
+      "unit": "reps",
+      "sets": 2,
+      "repMin": 10,
+      "repMax": 12,
+      "restSeconds": 60,
+      "targetWeightKg": null
+     },
+     {
+      "exerciseId": "cable_fly",
+      "unit": "weight_reps",
+      "sets": 2,
+      "repMin": 10,
+      "repMax": 12,
+      "restSeconds": 60,
+      "targetWeightKg": null
+     },
+     {
+      "exerciseId": "leg_extension",
+      "unit": "weight_reps",
+      "sets": 2,
+      "repMin": 10,
+      "repMax": 12,
+      "restSeconds": 60,
+      "targetWeightKg": null
+     },
+     {
+      "exerciseId": "db_rdl",
+      "unit": "weight_reps",
+      "sets": 2,
+      "repMin": 10,
+      "repMax": 12,
+      "restSeconds": 75,
+      "targetWeightKg": null
+     },
+     {
+      "exerciseId": "barbell_curl",
+      "unit": "weight_reps",
+      "sets": 2,
+      "repMin": 10,
+      "repMax": 12,
+      "restSeconds": 60,
+      "targetWeightKg": null
+     },
+     {
+      "exerciseId": "overhead_extension",
+      "unit": "weight_reps",
+      "sets": 2,
+      "repMin": 10,
+      "repMax": 12,
+      "restSeconds": 60,
+      "targetWeightKg": null
+     },
+     {
+      "exerciseId": "chest_supported_row",
+      "unit": "weight_reps",
+      "sets": 2,
+      "repMin": 10,
+      "repMax": 12,
+      "restSeconds": 75,
+      "targetWeightKg": null
+     },
+     {
+      "exerciseId": "db_calf_raise",
+      "unit": "weight_reps",
+      "sets": 2,
+      "repMin": 10,
+      "repMax": 12,
+      "restSeconds": 60,
+      "targetWeightKg": null
+     }
+    ]
+   },
+   {
+    "id": "steady-cardio-1",
+    "name": "Steady Cardio",
+    "focus": "Conditioning",
+    "weekday": "wed",
+    "estMinutes": 25,
+    "region": "full",
+    "exercises": [
+     {
+      "exerciseId": "steady_walk",
+      "unit": "time",
+      "sets": 1,
+      "seconds": 1200,
+      "restSeconds": 0,
+      "targetWeightKg": null
+     },
+     {
+      "exerciseId": "ankle_mobilisation",
+      "unit": "reps",
+      "sets": 2,
+      "repMin": 10,
+      "repMax": 12,
+      "restSeconds": 60,
+      "targetWeightKg": null
+     }
+    ]
+   },
+   {
+    "id": "strength-b-2",
+    "name": "Strength B",
+    "focus": "Strength & Mobility",
+    "weekday": "fri",
+    "estMinutes": 58,
+    "region": "full",
+    "exercises": [
+     {
+      "exerciseId": "db_rdl",
+      "unit": "weight_reps",
+      "sets": 2,
+      "repMin": 10,
+      "repMax": 12,
+      "restSeconds": 75,
+      "targetWeightKg": null
+     },
+     {
+      "exerciseId": "landmine_press",
+      "unit": "weight_reps",
+      "sets": 2,
+      "repMin": 10,
+      "repMax": 12,
+      "restSeconds": 75,
+      "targetWeightKg": null
+     },
+     {
+      "exerciseId": "step_up",
+      "unit": "weight_reps",
+      "sets": 2,
+      "repMin": 10,
+      "repMax": 12,
+      "restSeconds": 75,
+      "targetWeightKg": null
+     },
+     {
+      "exerciseId": "cable_crunch",
+      "unit": "weight_reps",
+      "sets": 2,
+      "repMin": 10,
+      "repMax": 12,
+      "restSeconds": 60,
+      "targetWeightKg": null
+     },
+     {
+      "exerciseId": "wall_angel",
+      "unit": "reps",
+      "sets": 2,
+      "repMin": 10,
+      "repMax": 12,
+      "restSeconds": 60,
+      "targetWeightKg": null
+     },
+     {
+      "exerciseId": "cable_fly",
+      "unit": "weight_reps",
+      "sets": 2,
+      "repMin": 10,
+      "repMax": 12,
+      "restSeconds": 60,
+      "targetWeightKg": null
+     },
+     {
+      "exerciseId": "db_curl",
+      "unit": "weight_reps",
+      "sets": 2,
+      "repMin": 10,
+      "repMax": 12,
+      "restSeconds": 60,
+      "targetWeightKg": null
+     },
+     {
+      "exerciseId": "calf_raise",
+      "unit": "reps",
+      "sets": 2,
+      "repMin": 10,
+      "repMax": 12,
+      "restSeconds": 60,
+      "targetWeightKg": null
+     },
+     {
+      "exerciseId": "lat_pulldown",
+      "unit": "weight_reps",
+      "sets": 2,
+      "repMin": 10,
+      "repMax": 12,
+      "restSeconds": 75,
+      "targetWeightKg": null
+     },
+     {
+      "exerciseId": "leg_extension",
+      "unit": "weight_reps",
+      "sets": 2,
+      "repMin": 10,
+      "repMax": 12,
+      "restSeconds": 60,
+      "targetWeightKg": null
+     },
+     {
+      "exerciseId": "leg_curl",
+      "unit": "weight_reps",
+      "sets": 2,
+      "repMin": 10,
+      "repMax": 12,
+      "restSeconds": 60,
+      "targetWeightKg": null
+     },
+     {
+      "exerciseId": "triceps_pushdown",
+      "unit": "weight_reps",
+      "sets": 2,
+      "repMin": 10,
+      "repMax": 12,
+      "restSeconds": 60,
+      "targetWeightKg": null
+     },
+     {
+      "exerciseId": "machine_chest_press",
+      "unit": "weight_reps",
+      "sets": 2,
+      "repMin": 10,
+      "repMax": 12,
+      "restSeconds": 75,
+      "targetWeightKg": null
+     },
+     {
+      "exerciseId": "db_calf_raise",
+      "unit": "weight_reps",
+      "sets": 2,
+      "repMin": 10,
+      "repMax": 12,
+      "restSeconds": 60,
+      "targetWeightKg": null
+     }
+    ]
+   }
+  ],
+  "avoiding": [],
+  "notes": []
+ },
+ "profile": {
+  "experience": "I'm new to training",
+  "likedExercises": [],
+  "dislikedExercises": [],
+  "considerations": null,
+  "equipment": [
+   "dumbbell",
+   "machine",
+   "cable",
+   "bodyweight",
+   "bench",
+   "barbell",
+   "squat_rack",
+   "pullup_bar"
+  ],
+  "goal": "General health",
+  "days": 3,
+  "length": 60,
+  "trainingDays": [
+   "mon",
+   "wed",
+   "fri"
+  ],
+  "age": 70
+ }
+}

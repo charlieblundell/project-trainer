@@ -388,6 +388,23 @@ const STEADY_IDS = new Set([
   "elliptical", "swim", "stair_climb", "seated_march",
 ]);
 
+/**
+ * Core work that curls or twists the spine under load. Left out for anyone
+ * whose notes mention their bones: it's the standard precaution with
+ * osteoporosis, and planks, bird dogs and Pallof presses train the same
+ * muscles without it. A judgement call, labelled as one on the Why screen.
+ */
+export const SPINE_FLEXION_IDS = new Set([
+  "cable_crunch",
+  "bicycle_crunch",
+  "seated_torso_twist",
+  "hanging_knee_raise",
+  "hanging_leg_raise",
+]);
+
+/** Different movements in one session for anyone with a caution, before spare time goes into sets. */
+const MAX_MOVEMENTS_WHEN_NEW = 7;
+
 /** Balance exercises, added to every session for anyone with a caution. */
 export const BALANCE_IDS = new Set(["standing_balance", "tandem_stance"]);
 
@@ -593,9 +610,23 @@ export function generatePlan(profile: GeneratorProfile, options: { keep?: Iterab
   const { avoiding, cautions } = readNotes(profile);
   // Balance or bones: no jumping, gentle finishers, balance work every session.
   const gentle = cautions.length > 0;
+  /*
+   * How many different movements a session can hold before spare time goes
+   * into more sets instead, for anyone the plan is careful with. A 70-year-old
+   * beginner was being handed twelve exercises a session at two sets each:
+   * twelve things to learn, and a session that's mostly walking between
+   * machines. It only limits the top-up toward the upper end of each range:
+   * reaching every muscle's minimum still adds whatever movement it takes, or
+   * arms would go untrained for want of a curl. Balance work comes on top.
+   *
+   * Not for every beginner: a younger one uses the spare time on more work,
+   * which the cap would leave unspent.
+   */
+  const capWhenNew = gentle ? MAX_MOVEMENTS_WHEN_NEW : Infinity;
+  let maxMovements = Infinity;
   const notes: string[] = [];
 
-  const pool = poolFor(profile);
+  const pool = poolFor(profile).filter((ex) => !cautions.includes("bone") || !SPINE_FLEXION_IDS.has(ex.id));
   const avoidingSet = new Set(avoiding);
 
   const preferLowImpact = goal === "General health" || (profile.age ?? 0) >= 60 || gentle;
@@ -689,6 +720,7 @@ export function generatePlan(profile: GeneratorProfile, options: { keep?: Iterab
             primaryGroup(ex) === group &&
             ex.unit !== "time" &&
             ex.unit !== "distance" &&
+            ex.pattern !== "mobility" &&
             !usedThisSession.has(ex.id) &&
             (ex.level <= level || keep.has(ex.id)) &&
             !touchesAvoided(ex, avoidingSet)
@@ -704,7 +736,7 @@ export function generatePlan(profile: GeneratorProfile, options: { keep?: Iterab
 
       const forGroup = chosen.filter((planned) => {
         const def = EXERCISES_BY_ID[planned.exerciseId];
-        return def && primaryGroup(def) === group;
+        return def && def.pattern !== "mobility" && primaryGroup(def) === group;
       });
       const compoundsFor = forGroup.filter((planned) => EXERCISES_BY_ID[planned.exerciseId]?.compound).length;
 
@@ -720,6 +752,7 @@ export function generatePlan(profile: GeneratorProfile, options: { keep?: Iterab
       };
 
       for (const exercise of candidates) {
+        if (chosen.length >= maxMovements) break;
         // Two heavy presses for chest is a session; a fourth "to fill time" is
         // fatigue dressed up as volume. Extra sets on what's there do it better.
         if (exercise.compound && compoundsFor >= 2) continue;
@@ -739,7 +772,8 @@ export function generatePlan(profile: GeneratorProfile, options: { keep?: Iterab
       for (let at = chosen.length - 1; at >= 0; at -= 1) {
         const planned = chosen[at];
         const def = EXERCISES_BY_ID[planned.exerciseId];
-        if (!def || primaryGroup(def) !== group || planned.sets >= MAX_SETS) continue;
+        // A drill isn't training the muscle, so more of it doesn't close the gap.
+        if (!def || def.pattern === "mobility" || primaryGroup(def) !== group || planned.sets >= MAX_SETS) continue;
         const trial = chosen.map((e, j) => (j === at ? { ...e, sets: e.sets + 1 } : e));
         if (fits(trial)) {
           chosen[at] = trial[at];
@@ -826,7 +860,9 @@ export function generatePlan(profile: GeneratorProfile, options: { keep?: Iterab
     }
 
     // 4. Time left over goes toward the top of each muscle's range.
+    maxMovements = capWhenNew;
     if (template.trains.length > 0) fillToward("max");
+    maxMovements = Infinity;
 
     trimTo(sessionMinutes, wantsFinisher);
 
@@ -989,6 +1025,7 @@ export function generatePlan(profile: GeneratorProfile, options: { keep?: Iterab
   }
   if (cautions.includes("bone")) {
     notes.push("Lifting is good for bone, but check with your doctor before loading heavily, and build the weights up slowly.");
+    notes.push("Nothing in your plan curls or twists your spine under load, like crunches, so your core work is planks and holds instead.");
   }
 
   if (missingEquipmentFor.size > 0) {
@@ -1038,7 +1075,8 @@ export type Refresh = { plan: Plan; swapped: { from: string; to: string }[] };
  * isolation, core and mobility slots are where variety is free.
  */
 export function refreshAccessories(plan: Plan, profile: GeneratorProfile): Refresh {
-  const pool = poolFor(profile);
+  const cautions = plan.cautions ?? readNotes(profile).cautions;
+  const pool = poolFor(profile).filter((ex) => !cautions.includes("bone") || !SPINE_FLEXION_IDS.has(ex.id));
   const level = experienceToLevel(profile.experience);
   const liked = new Set(profile.likedExercises);
   const avoiding = new Set(plan.avoiding);

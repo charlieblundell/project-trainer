@@ -204,6 +204,28 @@ export const PLAN_RULES: PlanRule[] = [
     },
   },
   {
+    id: "fewer-exercises-when-new",
+    title: "Fewer exercises, more sets",
+    explain:
+      "Once every muscle has its minimum, a session tops up with more sets of what's already there rather than new movements, past about seven. There's less to learn and less time spent moving between machines.",
+    basis: {
+      kind: "judgement",
+      why: "The weekly set counts are research; how many different exercises to spread them over is a coaching choice.",
+    },
+    appliesTo: ({ plan }) => (plan.cautions ?? []).length > 0,
+  },
+  {
+    id: "spine-with-fragile-bones",
+    title: "No crunches with fragile bones",
+    explain:
+      "If you've told us about osteoporosis or low bone density, nothing in your plan curls or twists your spine under load. Crunches and twists are swapped for planks, bird dogs and Pallof presses, which train the same muscles.",
+    basis: {
+      kind: "judgement",
+      why: "It's the standard precaution in osteoporosis exercise guidance, but we haven't checked a trial showing crunches cause fractures, so we call it ours.",
+    },
+    appliesTo: ({ plan }) => (plan.cautions ?? []).includes("bone"),
+  },
+  {
     id: "two-per-muscle",
     title: "Two exercises per muscle",
     explain:

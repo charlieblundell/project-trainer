@@ -80,13 +80,18 @@ export function contribution(def: ExerciseDef, sets: number): Partial<Record<Mus
   return out;
 }
 
-/** Sets per group across a list of planned exercises. Timed work doesn't count. */
+/**
+ * Sets per group across a list of planned exercises. Timed work doesn't count,
+ * and nor does mobility: arm circles are counted in reps, but they're not a
+ * hard set for the shoulders, and counting them let a drill stand in for
+ * shoulder training.
+ */
 export function setsByGroup(exercises: PlannedExercise[]): Record<MuscleGroup, number> {
   const totals = Object.fromEntries(MUSCLE_GROUPS.map((g) => [g, 0])) as Record<MuscleGroup, number>;
   for (const planned of exercises) {
     if (planned.unit === "time" || planned.unit === "distance") continue;
     const def = EXERCISES_BY_ID[planned.exerciseId];
-    if (!def) continue;
+    if (!def || def.pattern === "mobility") continue;
     for (const [group, sets] of Object.entries(contribution(def, planned.sets))) {
       totals[group as MuscleGroup] += sets;
     }

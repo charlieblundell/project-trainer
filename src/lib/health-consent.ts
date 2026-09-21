@@ -54,6 +54,7 @@ const HEALTH_NOTE_MARKERS = [
   "usually well tolerated",
   "short balance exercise",
   "check with your doctor before loading heavily",
+  "curls or twists your spine under load",
 ];
 
 /** The plan without anything that was worked out from someone's injury notes. */

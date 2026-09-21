@@ -20,7 +20,7 @@ import { useAuthStore } from "@/lib/auth";
 import { loadHistory } from "@/lib/progress/storage";
 import type { WorkoutRecord } from "@/lib/progress/types";
 import { adjustForReadiness, isLowReadiness } from "@/lib/plan/readiness";
-import { warmUpFor } from "@/lib/plan/warmup";
+import { warmUpFor, warmUpProfile } from "@/lib/plan/warmup";
 import { CheckIn } from "@/components/CheckIn";
 import { WarmUp } from "@/components/WarmUp";
 import { DoneForToday } from "@/components/DoneForToday";
@@ -77,8 +77,8 @@ export default function Train() {
 
   const planSession = sessionById(plan, session.workoutId);
   const warmUp = useMemo(
-    () => (planSession ? warmUpFor(planSession, equipment) : null),
-    [planSession, equipment]
+    () => (planSession ? warmUpFor(planSession, equipment, warmUpProfile(plan)) : null),
+    [planSession, equipment, plan]
   );
   const readiness = session.readiness && session.readiness !== "skipped" ? session.readiness : null;
   const basePlanned = planSession?.exercises[session.exerciseIdx];
