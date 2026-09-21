@@ -15,6 +15,7 @@ import {
 import type { OnboardingData } from "@/lib/types";
 import { grantHealthConsent } from "@/lib/health-consent";
 import { affectsPlan } from "@/lib/profile-changes";
+import { ageProblem } from "@/lib/age";
 import { saveProfileChanges } from "@/lib/profile-update";
 import {
   EquipmentPicker,
@@ -51,7 +52,8 @@ function toggle(list: string[], value: string): string[] {
 function missing(section: ProfileSection, o: OnboardingData): string | null {
   switch (section) {
     case "training":
-      return o.goal && o.experience ? null : "Choose a goal and experience level.";
+      if (!o.goal || !o.experience) return "Choose a goal and experience level.";
+      return ageProblem(o.age);
     case "schedule":
       if (!o.days || !o.length) return "Choose how often and how long you train.";
       return o.trainingDays.length === o.days
@@ -185,7 +187,7 @@ function Editor({ section, saved }: { section: ProfileSection; saved: Onboarding
         {header}
         <div className="mb-5 flex flex-col gap-3 text-subhead leading-relaxed text-ink">
           <p>
-            Your bodyweight, height, age, sex and any injuries, and the optional check-in before workouts about sleep
+            Your bodyweight, height, sex and any injuries, and the optional check-in before workouts about sleep
             and soreness, count as health information under Australian privacy law. We need your permission before
             collecting them.
           </p>
@@ -238,6 +240,12 @@ function Editor({ section, saved }: { section: ProfileSection; saved: Onboarding
               value={valueFor("experience", draft)}
               onSelect={(opt) => patch(patchFor("experience", opt, draft))}
             />
+            <div className="mt-6">
+              <NumberField label="Age" unit="years" value={draft.age} onChange={(v) => patch({ age: v })} />
+            </div>
+            <p className="mt-2 text-footnote leading-relaxed text-muted">
+              Optional. From 65, your plan adds balance work, gentler warm-ups and nothing that jumps.
+            </p>
           </>
         )}
 
@@ -306,7 +314,6 @@ function Editor({ section, saved }: { section: ProfileSection; saved: Onboarding
           <>
             <div className="flex flex-col gap-4">
               <NumberField label="Bodyweight" unit="kg" value={draft.bodyweightKg} onChange={(v) => patch({ bodyweightKg: v })} />
-              <NumberField label="Age" unit="years" value={draft.age} onChange={(v) => patch({ age: v })} />
               <NumberField label="Height" unit="cm" value={draft.heightCm} onChange={(v) => patch({ heightCm: v })} />
               <SexPicker value={draft.sex} onChange={(sex) => patch({ sex })} />
             </div>

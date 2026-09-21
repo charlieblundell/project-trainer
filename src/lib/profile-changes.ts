@@ -8,7 +8,7 @@ export function planProfile(o: OnboardingData): GeneratorProfile {
   return {
     ...profileFromOnboarding(o),
     considerations: consented ? o.considerations : null,
-    age: consented ? o.age : null,
+    age: o.age,
   };
 }
 

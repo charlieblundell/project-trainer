@@ -24,7 +24,7 @@ export function HealthConsentPrompt({
       </h1>
       <div className="mb-6 flex flex-col gap-3 text-[15px] leading-relaxed text-ink">
         <p>
-          You&apos;ve given us details like your bodyweight, age or injury notes. These count as health
+          You&apos;ve given us details like your bodyweight or injury notes. These count as health
           information under Australian privacy law, so we need your permission to keep using them.
         </p>
         <p className="text-muted">

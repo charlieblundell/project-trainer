@@ -22,7 +22,7 @@ export default function Privacy() {
         <>
           <p>We collect what we need to build and adjust your training plan, run the coach, and handle payments.</p>
           <p>
-            Some of it — like injury notes, bodyweight and age — is health information. We only collect it with your
+            Some of it — like injury notes and bodyweight — is health information. We only collect it with your
             consent, and it&apos;s optional.
           </p>
           <p>We don&apos;t sell your information, show you ads, or use it for marketing without your consent.</p>
@@ -50,11 +50,11 @@ export default function Privacy() {
           name.
         </p>
         <p>
-          <strong>Your training profile.</strong> Your goal, training experience, how often and how long you train,
+          <strong>Your training profile.</strong> Your goal, training experience, your age if you give it, how often and how long you train,
           where you train and what equipment you have, exercises you like or want to avoid, and the days you train.
         </p>
         <p>
-          <strong>Health information.</strong> Your bodyweight, height, age and sex if you provide them, and any notes
+          <strong>Health information.</strong> Your bodyweight, height and sex if you provide them, and any notes
           you give us about injuries or physical limitations, and your answers to the optional pre-workout check-in about
           sleep, soreness and joint pain. This is &ldquo;sensitive information&rdquo; under the
           Privacy Act — see section 3.

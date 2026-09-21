@@ -55,6 +55,7 @@ function profileGroups(o: OnboardingData): ProfileGroup[] {
       rows: [
         ["Goal", o.goal ?? "Not set"],
         ["Experience", o.experience ?? "Not set"],
+        ["Age", o.age ? `${o.age}` : "Not given"],
       ],
     },
     {
@@ -93,7 +94,6 @@ function profileGroups(o: OnboardingData): ProfileGroup[] {
       href: "/settings/body",
       rows: [
         ["Bodyweight", o.bodyweightKg ? `${o.bodyweightKg} kg` : "Not given"],
-        ["Age", o.age ? `${o.age}` : "Not given"],
         ["Height", o.heightCm ? `${o.heightCm} cm` : "Not given"],
         ["Sex", o.sex ? (SEX_LABELS[o.sex] ?? o.sex) : "Not given"],
         ["Injuries", o.considerations?.trim() || "None given"],
@@ -204,8 +204,8 @@ function HealthDetails() {
         <div className="text-subhead font-semibold text-ink">{shared ? "Shared with your consent" : "Not shared"}</div>
         <div className="text-footnote leading-relaxed text-muted">
           {shared
-            ? "Your bodyweight, height, age, sex and injury notes are used to tailor your plan."
-            : "Your plan doesn't use your bodyweight, height, age, sex or injury notes."}
+            ? "Your bodyweight, height, sex and injury notes are used to tailor your plan."
+            : "Your plan doesn't use your bodyweight, height, sex or injury notes."}
         </div>
 
         {!shared && (
@@ -229,7 +229,7 @@ function HealthDetails() {
         {shared && confirming && (
           <div className="mt-3">
             <p className="mb-2.5 text-footnote leading-relaxed text-ink">
-              This deletes your bodyweight, height, age, sex, injury notes and check-in answers, and removes anything your plan
+              This deletes your bodyweight, height, sex, injury notes and check-in answers, and removes anything your plan
               worked out from them. Your workouts and progress stay.
             </p>
             <div className="flex gap-2">

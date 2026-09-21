@@ -20,9 +20,10 @@ export async function saveSetupProfile(userId: string, onboarding: OnboardingDat
       liked_exercises: onboarding.likedExercises,
       disliked_exercises: onboarding.dislikedExercises,
       training_days: onboarding.trainingDays,
+      // Age isn't health information, so it's kept whatever they chose about that.
+      age: onboarding.age,
       // Health details are only stored, or used for the plan, with consent.
       bodyweight_kg: consented ? onboarding.bodyweightKg : null,
-      age: consented ? onboarding.age : null,
       height_cm: consented ? onboarding.heightCm : null,
       sex: consented ? onboarding.sex : null,
       considerations: consented ? onboarding.considerations : null,
