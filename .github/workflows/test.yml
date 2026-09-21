@@ -60,8 +60,10 @@ jobs:
           STRIPE_SECRET_KEY: sk_test_placeholder
         run: |
           npx next dev -p 3100 > "$RUNNER_TEMP/next-dev.log" 2>&1 &
-          server=$!
-          trap 'kill $server' EXIT
+          # Killing npx leaves the Next server it started running, and Next 16
+          # refuses a second dev server in the same folder, which is exactly
+          # what the browser tests start next. So everything Next goes.
+          trap 'pkill -f "next dev" || true; pkill -f next-server || true; sleep 2' EXIT
           npm run check:webhook || { cat "$RUNNER_TEMP/next-dev.log"; exit 1; }
 
       - name: Install the browser
