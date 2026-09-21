@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { destinationAfterSignIn } from "@/lib/after-sign-in";
 import { AppLoader } from "@/components/AppLoader";
 
 export default function AuthCallback() {
@@ -34,10 +33,8 @@ export default function AuthCallback() {
         return;
       }
 
-      // Only a brand-new account is sent to the setup questions.
-      const destination = await destinationAfterSignIn(session.user.id);
-      if (cancelled) return;
-      router.replace(destination);
+      // New accounts too: Home shows them round and offers setup from there.
+      router.replace("/home");
     }
 
     run();

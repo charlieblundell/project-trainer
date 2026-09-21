@@ -3,7 +3,7 @@ import { TypeMark } from "@/components/TypeMark";
 import { marketingFontClasses } from "@/lib/fonts/marketing";
 
 /** Shared by the Terms and Privacy Policy so both read the same way. */
-export const LEGAL_LAST_UPDATED = "11 September 2026";
+export const LEGAL_LAST_UPDATED = "21 September 2026";
 
 export const OPERATOR = {
   name: "Charles James Blundell",

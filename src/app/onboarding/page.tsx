@@ -234,7 +234,7 @@ export default function Onboarding() {
 
   function back() {
     setQuery("");
-    if (step === 0) router.push("/signup");
+    if (step === 0) router.push("/home");
     else setStep(step - 1);
   }
 

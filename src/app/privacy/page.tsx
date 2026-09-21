@@ -69,6 +69,14 @@ export default function Privacy() {
           request to apply usage limits, but we do not keep a copy of your messages on our servers.
         </p>
         <p>
+          <strong>Coach notes.</strong> The coach also writes short notes elsewhere in the app: a few lines after you
+          finish a workout, from the sets you logged, and a summary of your last four weeks on the Progress screen,
+          from your workout records. Those notes are kept on your device, not on our servers. If you&apos;ve agreed to
+          share health information, the notes you give us about injuries or limitations are also sent to our AI
+          provider to work out which areas your plan should steer around, and the result is saved with your plan.
+          Each of these counts towards the same usage limits as the coach.
+        </p>
+        <p>
           <strong>Subscription details.</strong> Your trial end date, whether you have a subscription, which plan, and
           when it renews. Your card details are collected by Stripe directly — we never receive or store your full
           card number.
@@ -139,7 +147,8 @@ export default function Privacy() {
             "Your training plan — which exercises, sets, reps and rest you're given — is generated from your goal, experience, schedule, equipment, preferences, age and any injury notes.",
             "Your targets are adjusted automatically from the weights, reps and effort ratings you log.",
             "If you use the pre-workout check-in, poor sleep or heavy soreness takes a set off each exercise that day, and stops a tough session lowering your targets.",
-            "The AI coach's replies are generated from your question, your profile, your plan and your recent workouts.",
+            "The AI coach's replies are generated from your question, your profile, your plan and your recent workouts, and its notes after a workout and on the Progress screen from the workouts you've logged.",
+            "If you've shared injury notes, the AI coach reads them to suggest which areas your plan should steer around, and whether it should add balance work. This only ever adds caution; it never removes an area you've told us about.",
             "Whether you can use the app is decided automatically from your trial end date and subscription status.",
           ]}
         />
@@ -159,7 +168,7 @@ export default function Privacy() {
             <><strong>Supabase</strong> — stores your account, profile and training data, and sends sign-in emails.</>,
             <><strong>Vercel</strong> — hosts the app, runs its servers and counts page visits.</>,
             <><strong>PostHog</strong> — records the pages and actions described in section 2, stored in the European Union.</>,
-            <><strong>Anthropic</strong> — generates the AI coach&apos;s replies from your message and the training details sent with it.</>,
+            <><strong>Anthropic</strong> — generates the AI coach&apos;s replies and notes from your message and the training details sent with it, and reads your injury notes when building your plan if you&apos;ve agreed to share health information.</>,
             <><strong>Stripe</strong> — processes subscriptions and payments, and emails receipts and yearly renewal reminders.</>,
             <><strong>Google</strong> — sends our account emails, such as sign-in codes, through Gmail, and handles sign-in if you choose to sign in with Google.</>,
           ]}

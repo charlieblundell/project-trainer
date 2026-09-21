@@ -8,7 +8,15 @@ import {
   type MovementPattern,
 } from "@/lib/exercises";
 import type { OnboardingData, Weekday } from "@/lib/types";
-import type { GeneratorProfile, Plan, PlannedExercise, PlannedSession, Region } from "./types";
+import type {
+  Caution,
+  GeneratorProfile,
+  NotesReading,
+  Plan,
+  PlannedExercise,
+  PlannedSession,
+  Region,
+} from "./types";
 import {
   MUSCLE_GROUPS,
   isLowPriority,
@@ -161,6 +169,9 @@ const T: Record<string, Template> = {
 /** Which sessions make up a week, given how often they train and what for. */
 function splitFor(days: number, goal: string, level: Level): Template[] {
   if (goal === "General health") {
+    // Strength on at least two days a week is the guideline for every adult,
+    // so two days means two strength sessions, not one and a walk.
+    if (days <= 2) return [T.healthA, T.healthB].slice(0, Math.max(days, 1));
     const rotation = [T.healthA, T.steady, T.healthB, T.steady, T.healthA, T.steady];
     return rotation.slice(0, days);
   }
@@ -301,6 +312,43 @@ export function parseConsiderations(text: string | null): BodyPart[] {
   return found;
 }
 
+/*
+ * Words that change the whole plan rather than one joint. Matched on word
+ * boundaries so "fallen behind at work" doesn't read as a fall risk but
+ * "I've had a couple of falls" does.
+ */
+const CAUTION_HINTS: Record<Caution, RegExp> = {
+  balance: /\b(balance|unsteady|wobbly|dizz\w*|vertigo|falls?|fell|falling)\b/,
+  bone: /\b(osteopor\w*|osteopenia|bone density|brittle bones?|fragile bones?)\b/,
+};
+
+/** Balance, bones: the cautions someone's own notes mention. */
+export function parseCautions(text: string | null): Caution[] {
+  if (!text?.trim()) return [];
+  const lower = text.toLowerCase();
+  return (Object.keys(CAUTION_HINTS) as Caution[]).filter((c) => CAUTION_HINTS[c].test(lower));
+}
+
+/**
+ * The age from which balance work is part of every week. WHO's guideline for
+ * older adults asks for balance and strength on three or more days a week,
+ * to prevent falls.
+ */
+export const OLDER_ADULT_AGE = 65;
+
+/** What a plan has to allow for: their notes, the coach's reading of them, and their age. */
+export function readNotes(profile: GeneratorProfile): NotesReading {
+  const avoiding = new Set(parseConsiderations(profile.considerations));
+  const cautions = new Set(parseCautions(profile.considerations));
+  for (const part of profile.notesReading?.avoiding ?? []) avoiding.add(part);
+  for (const caution of profile.notesReading?.cautions ?? []) cautions.add(caution);
+  if ((profile.age ?? 0) >= OLDER_ADULT_AGE) cautions.add("balance");
+  return {
+    avoiding: [...avoiding],
+    cautions: (["balance", "bone"] as const).filter((c) => cautions.has(c)),
+  };
+}
+
 export function experienceToLevel(experience: string | null): Level {
   if (experience === "I've trained consistently for years") return 3;
   if (experience === "I've been training a while") return 2;
@@ -339,6 +387,9 @@ const STEADY_IDS = new Set([
   "steady_walk", "incline_walk", "steady_run", "steady_bike", "steady_row",
   "elliptical", "swim", "stair_climb", "seated_march",
 ]);
+
+/** Balance exercises, added to every session for anyone with a caution. */
+export const BALANCE_IDS = new Set(["standing_balance", "tandem_stance"]);
 
 export function touchesAvoided(ex: ExerciseDef, avoiding: Set<BodyPart>): boolean {
   return ex.loads.some((part) => avoiding.has(part));
@@ -396,6 +447,8 @@ function selectForSlot(
 
   const candidates = ctx.pool.filter((ex) => {
     if (ex.pattern !== pattern) return false;
+    // Balance work is added on its own terms (see BALANCE_IDS), not as core work.
+    if (BALANCE_IDS.has(ex.id)) return false;
     if (ex.level > ctx.level && !ctx.keep.has(ex.id)) return false;
     if (ctx.usedThisSession.has(ex.id)) return false;
     // "Upper" isn't specific enough for a split: curls are upper body, and they
@@ -452,21 +505,33 @@ export function estimateMinutes(exercises: PlannedExercise[]): number {
 /** Goals where conditioning is added on top of the lifting, never in place of it. */
 const FINISHER_GOALS = new Set(["Lose fat", "Improve fitness"]);
 
-/** A short interval block to end a lifting session with. */
+/**
+ * A short conditioning block to end a lifting session with. Within their
+ * experience, like everything else: a beginner's plan once ended every
+ * session with ten minutes of skipping. With a balance or bone caution it's
+ * low-impact only, and a steady walk or bike counts, since nobody unsteady on
+ * their feet should be finishing with jumps.
+ */
 function pickFinisher(
   pool: ExerciseDef[],
   avoiding: Set<BodyPart>,
-  used: Set<string>
+  used: Set<string>,
+  level: Level,
+  gentle: boolean
 ): ExerciseDef | undefined {
+  const within = pool.filter(
+    (ex) =>
+      ex.pattern === "conditioning" &&
+      (!gentle || !!ex.lowImpact) &&
+      ex.level <= level &&
+      !used.has(ex.id) &&
+      !touchesAvoided(ex, avoiding)
+  );
+  // Intervals where they're within reach; otherwise a steady effort, which
+  // every interval option in the library is harder than.
+  const intervals = within.filter((ex) => !STEADY_IDS.has(ex.id));
   return (
-    pool
-      .filter(
-        (ex) =>
-          ex.pattern === "conditioning" &&
-          !STEADY_IDS.has(ex.id) &&
-          !used.has(ex.id) &&
-          !touchesAvoided(ex, avoiding)
-      )
+    (intervals.length > 0 ? intervals : within)
       // Gentlest first: this ends a lifting session, it doesn't replace one.
       .sort(
         (a, b) =>
@@ -525,13 +590,15 @@ export function generatePlan(profile: GeneratorProfile, options: { keep?: Iterab
   const level = experienceToLevel(profile.experience);
   const days = profile.days ?? 3;
   let sessionMinutes = profile.length ?? 45;
-  const avoiding = parseConsiderations(profile.considerations);
+  const { avoiding, cautions } = readNotes(profile);
+  // Balance or bones: no jumping, gentle finishers, balance work every session.
+  const gentle = cautions.length > 0;
   const notes: string[] = [];
 
   const pool = poolFor(profile);
   const avoidingSet = new Set(avoiding);
 
-  const preferLowImpact = goal === "General health" || (profile.age ?? 0) >= 60;
+  const preferLowImpact = goal === "General health" || (profile.age ?? 0) >= 60 || gentle;
 
   const templates = splitFor(days, goal, level);
   const weekdays =
@@ -747,7 +814,7 @@ export function generatePlan(profile: GeneratorProfile, options: { keep?: Iterab
     if (FINISHER_GOALS.has(goal) && template.trains.length > 0) {
       const spare = sessionMinutes - estimateMinutes(chosen);
       const finisher =
-        wantsFinisher && spare >= 8 ? pickFinisher(pool, avoidingSet, usedThisSession) : undefined;
+        wantsFinisher && spare >= 8 ? pickFinisher(pool, avoidingSet, usedThisSession, level, gentle) : undefined;
       if (finisher) {
         take(finisher, {
           ...prescribe(finisher, goal),
@@ -817,6 +884,48 @@ export function generatePlan(profile: GeneratorProfile, options: { keep?: Iterab
       }
     }
 
+    /*
+     * Balance work in every session for anyone with a balance or bone caution,
+     * which includes everyone 65 and over: in older adults, balance and
+     * functional exercise cut the rate of falls by about a quarter. It's short,
+     * and it goes straight after the main lifts, while they're fresh, rather
+     * than at the end when their legs are tired.
+     */
+    if (gentle && !chosen.some((e) => BALANCE_IDS.has(e.exerciseId))) {
+      const balance = pool
+        .filter((ex) => BALANCE_IDS.has(ex.id) && !touchesAvoided(ex, avoidingSet))
+        .sort((a, b) => a.id.localeCompare(b.id))[0];
+      if (balance) {
+        const planned: PlannedExercise = {
+          ...prescribe(balance, goal),
+          sets: 2,
+          seconds: 30,
+          restSeconds: 30,
+        };
+        // Room comes from accessory sets first, then a finisher's minutes.
+        for (let guard = 0; guard < 12 && estimateMinutes([...chosen, planned]) > sessionMinutes; guard += 1) {
+          const donor = chosen
+            .map((e, j) => ({ e, j }))
+            .filter(({ e, j }) => j >= PROTECTED && e.sets > 2 && e.unit !== "time" && e.unit !== "distance")
+            .sort((a, b) => b.e.sets - a.e.sets)[0];
+          if (donor) {
+            chosen[donor.j] = { ...donor.e, sets: donor.e.sets - 1 };
+            continue;
+          }
+          const timed = chosen.findIndex(
+            (e) => (e.unit === "time" || e.unit === "distance") && (e.seconds ?? 0) > 360
+          );
+          if (timed < 0) break;
+          const t = chosen[timed];
+          chosen[timed] = { ...t, seconds: Math.max(360, (t.seconds ?? 0) - 120) };
+        }
+        usedThisSession.add(balance.id);
+        usedThisWeek.add(balance.id);
+        // A couple of minutes over beats leaving it out: it's the point of the caution.
+        chosen.splice(Math.min(PROTECTED, chosen.length), 0, planned);
+      }
+    }
+
     sessions.push({
       id: `${template.name.toLowerCase().replace(/\s+/g, "-")}-${i}`,
       name: template.name,
@@ -864,6 +973,24 @@ export function generatePlan(profile: GeneratorProfile, options: { keep?: Iterab
     }
   }
 
+  if (gentle) {
+    const fromNotes = new Set([
+      ...parseCautions(profile.considerations),
+      ...(profile.notesReading?.cautions ?? []),
+    ]);
+    const why = cautions.includes("bone")
+      ? "Because of what you said about your bones"
+      : fromNotes.has("balance")
+        ? "Because of what you said about your balance"
+        : "From 65, balance matters as much as strength, so";
+    notes.push(
+      `${why}${why.endsWith("so") ? "" : ","} every session has a short balance exercise and nothing involves jumping. Keep a counter or chair within reach for it.`
+    );
+  }
+  if (cautions.includes("bone")) {
+    notes.push("Lifting is good for bone, but check with your doctor before loading heavily, and build the weights up slowly.");
+  }
+
   if (missingEquipmentFor.size > 0) {
     notes.push(
       `Your equipment doesn't cover ${[...missingEquipmentFor].map(describePattern).join(", ")}, so those slots were skipped.`
@@ -885,6 +1012,8 @@ export function generatePlan(profile: GeneratorProfile, options: { keep?: Iterab
     retired: [],
     sessions,
     avoiding,
+    cautions,
+    ...(profile.notesReading ? { notesReading: profile.notesReading } : {}),
     notes,
   };
 }
@@ -930,7 +1059,8 @@ export function refreshAccessories(plan: Plan, profile: GeneratorProfile): Refre
 
     const exercises = session.exercises.map((planned, slotIndex) => {
       const def = EXERCISES_BY_ID[planned.exerciseId];
-      if (!def || !ACCESSORY_PATTERNS.has(def.pattern)) return planned;
+      // Balance work is there for a reason, not for variety: a refresh would turn it into crunches.
+      if (!def || !ACCESSORY_PATTERNS.has(def.pattern) || BALANCE_IDS.has(def.id)) return planned;
 
       const base = {
         pool,
@@ -1032,7 +1162,10 @@ export function rebuildPlan(
     }
   }
 
-  const fresh = generatePlan(profile, preferCurrent ? { keep: previous.keys() } : {});
+  // Their notes haven't been re-read, so the last reading of them still stands.
+  const withReading =
+    profile.notesReading || !current.notesReading ? profile : { ...profile, notesReading: current.notesReading };
+  const fresh = generatePlan(withReading, preferCurrent ? { keep: previous.keys() } : {});
 
   const sessions = fresh.sessions.map((session) => {
     const exercises = session.exercises.map((planned): PlannedExercise => {

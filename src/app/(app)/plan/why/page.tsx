@@ -41,6 +41,7 @@ import {
   type VolumeRow,
 } from "@/lib/plan/rules";
 import { clsx } from "@/lib/clsx";
+import { AskCoachLink } from "@/components/AskCoachLink";
 
 /*
  * How your plan is built.
@@ -237,6 +238,12 @@ function RuleDetail({ rule, personal }: { rule: PlanRule; personal: ForYou | nul
           </span>
         </div>
       )}
+
+      <AskCoachLink
+        className="mt-3"
+        label="Ask the coach about this"
+        question={`Can you explain "${rule.title}" and what it means for my plan?`}
+      />
     </>
   );
 }

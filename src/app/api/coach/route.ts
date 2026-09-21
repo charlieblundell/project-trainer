@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import Anthropic from "@anthropic-ai/sdk";
-import { createClient } from "@supabase/supabase-js";
+import type Anthropic from "@anthropic-ai/sdk";
+import { askText, modelErrorResponse } from "@/lib/ai/model";
 import { displayName } from "@/lib/displayName";
 import {
   WEEKDAY_LABELS,
@@ -10,30 +10,15 @@ import {
   todayWeekday,
 } from "@/lib/plan/helpers";
 import type { Plan } from "@/lib/plan/types";
-import type { SupabaseClient } from "@supabase/supabase-js";
 import { EQUIPMENT_LABELS, EXERCISES_BY_ID, type Equipment } from "@/lib/exercises";
 import { claimsIndex, detailFor, relevantFindings } from "@/lib/evidence";
-import { BILLING_COLUMNS, billingFromRow, hasAccess, type BillingRow } from "@/lib/billing/entitlement";
+import { authorize, loadPlanForUser, recordUsage } from "@/lib/ai/gate";
 import type { SetLog } from "@/lib/types";
-
-/** Reads the user's newest plan through their own token, so RLS still applies. */
-async function loadPlanForUser(client: SupabaseClient, userId: string): Promise<Plan | null> {
-  const { data } = await client
-    .from("plans")
-    .select("data")
-    .eq("user_id", userId)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  return (data?.data as Plan) ?? null;
-}
 
 function namesFor(ids: string[] | null | undefined): string {
   if (!ids?.length) return "";
   return ids.map((id) => EXERCISES_BY_ID[id]?.name ?? id).join(", ");
 }
-
-const anthropic = new Anthropic();
 
 type IncomingMessage = { role: "user" | "assistant"; text: string };
 
@@ -41,10 +26,6 @@ type IncomingMessage = { role: "user" | "assistant"; text: string };
 const MAX_MESSAGES = 20;
 /** A long question fits easily; a pasted novel does not. */
 const MAX_MESSAGE_CHARS = 2000;
-/** Stops a runaway script. Nobody types eleven questions in a minute. */
-const PER_MINUTE_LIMIT = 10;
-/** A hard ceiling on what one account can cost in a day. */
-const PER_DAY_LIMIT = 100;
 
 /**
  * The browser sends whatever it likes, so nothing in the body is trusted:
@@ -74,41 +55,9 @@ function parseMessages(body: unknown): IncomingMessage[] | null {
 }
 
 export async function POST(req: NextRequest) {
-  const authHeader = req.headers.get("authorization");
-  if (!authHeader) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
-  }
-
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { global: { headers: { Authorization: authHeader } } }
-  );
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
-  }
-
-  // Access is decided here, not in the browser. The lock screen is a
-  // convenience; this check is what actually protects the API bill.
-  const { data: billingRow } = await supabase
-    .from("billing")
-    .select(BILLING_COLUMNS)
-    .eq("user_id", user.id)
-    .maybeSingle();
-  if (!billingRow || !hasAccess(billingFromRow(billingRow as BillingRow))) {
-    return NextResponse.json(
-      {
-        error: "Your free trial has ended. Subscribe to keep training with your coach.",
-        code: "subscription_required",
-      },
-      { status: 402 }
-    );
-  }
+  const auth = await authorize(req);
+  if (!auth.ok) return auth.response;
+  const { supabase, user } = auth;
 
   let body: unknown;
   try {
@@ -124,41 +73,8 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Counted before the model is called, so parallel requests can't all slip
-  // under the limit at once.
-  const now = Date.now();
-  const [{ count: lastMinute }, { count: lastDay }] = await Promise.all([
-    supabase
-      .from("coach_usage")
-      .select("id", { count: "exact", head: true })
-      .eq("user_id", user.id)
-      .gte("created_at", new Date(now - 60_000).toISOString()),
-    supabase
-      .from("coach_usage")
-      .select("id", { count: "exact", head: true })
-      .eq("user_id", user.id)
-      .gte("created_at", new Date(now - 86_400_000).toISOString()),
-  ]);
-
-  if ((lastMinute ?? 0) >= PER_MINUTE_LIMIT) {
-    return NextResponse.json(
-      { error: "That's a lot of questions at once — give it a minute and ask again." },
-      { status: 429 }
-    );
-  }
-  if ((lastDay ?? 0) >= PER_DAY_LIMIT) {
-    return NextResponse.json(
-      { error: "You've reached today's coach limit. It resets over the next 24 hours." },
-      { status: 429 }
-    );
-  }
-
-  const { error: usageError } = await supabase.from("coach_usage").insert({ user_id: user.id });
-  if (usageError) {
-    // Failing closed: if usage can't be recorded, it can't be limited either.
-    console.error("Failed to record coach usage:", usageError.message);
-    return NextResponse.json({ error: "Coach is unavailable right now." }, { status: 503 });
-  }
+  const refused = await recordUsage(supabase, user.id);
+  if (refused) return refused.response;
 
   const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single();
 
@@ -169,7 +85,7 @@ export async function POST(req: NextRequest) {
     .order("completed_at", { ascending: false })
     .limit(5);
 
-  const plan = await loadPlanForUser(supabase, user.id);
+  const plan = await loadPlanForUser<Plan>(supabase, user.id);
   const planSessionsById = new Map((plan?.sessions ?? []).map((s) => [s.id, s]));
 
   const historySummary = (recentSessions ?? [])
@@ -216,7 +132,9 @@ export async function POST(req: NextRequest) {
     "You are the in-app AI coach for a fitness app called Your Personal Trainer.",
     "Answer in a warm, direct, conversational voice, 2-4 sentences unless asked for more detail.",
     "Use the athlete's real profile, plan and training history below rather than asking them to repeat information.",
-    "The plan below is already built for them - when they ask what they are doing today, tell them what today's session is; do not offer to build one from scratch.",
+    plan
+      ? "The plan below is already built for them - when they ask what they are doing today, tell them what today's session is; do not offer to build one from scratch."
+      : "They haven't built their plan yet. The app builds it from a few quick questions - the 'Build my plan' button on Home - so point them there rather than writing out a full program in chat. You can still answer general questions.",
     "Never diagnose injuries or medical conditions. If they mention pain, injury, or a medical concern, respond conservatively: suggest modifying or stopping the movement and seeing a qualified professional, and do not prescribe treatment.",
     "",
     "EVIDENCE",
@@ -271,45 +189,17 @@ export async function POST(req: NextRequest) {
     .filter((line): line is string => line !== null)
     .join("\n");
 
-  const apiMessages: Anthropic.MessageParam[] = messages.map((m) => ({
+  const apiMessages: Anthropic.Beta.BetaMessageParam[] = messages.map((m) => ({
     role: m.role,
     content: m.text,
   }));
 
   try {
-    const response = await anthropic.messages.create({
-      model: "claude-opus-5",
-      max_tokens: 1024,
-      system: systemPrompt,
-      output_config: { effort: "low" },
-      messages: apiMessages,
-    });
-
-    if (response.stop_reason === "refusal") {
-      return NextResponse.json({
-        reply: "I can't help with that one — let's talk about your training instead.",
-      });
-    }
-
-    const textBlock = response.content.find((b) => b.type === "text");
+    const reply = await askText({ system: systemPrompt, messages: apiMessages, maxTokens: 1024 });
     return NextResponse.json({
-      reply: textBlock?.text ?? "Sorry, I couldn't put together an answer just now.",
+      reply: reply ?? "I can't help with that one — let's talk about your training instead.",
     });
   } catch (err) {
-    console.error("Coach API error:", err);
-    if (err instanceof Anthropic.AuthenticationError) {
-      return NextResponse.json({ error: "Coach is misconfigured (bad API key)." }, { status: 500 });
-    }
-    if (err instanceof Anthropic.RateLimitError) {
-      return NextResponse.json({ error: "Coach is busy right now — try again in a moment." }, { status: 429 });
-    }
-    // Includes the monthly spend cap being reached on the Anthropic account.
-    if (err instanceof Anthropic.APIError) {
-      return NextResponse.json(
-        { error: "Your coach isn't available right now. Try again later — the rest of the app works as normal." },
-        { status: 502 }
-      );
-    }
-    return NextResponse.json({ error: "Something went wrong." }, { status: 500 });
+    return modelErrorResponse(err);
   }
 }

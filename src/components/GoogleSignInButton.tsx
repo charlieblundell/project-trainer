@@ -88,7 +88,7 @@ export function GoogleSignInButton({ fallback }: { fallback: ReactNode }) {
               console.error("Google sign-in failed:", error.message);
               setError("Google sign-in didn't work. Try again, or use your email instead.");
             }
-            // On success, RedirectIfSignedIn takes them home, or to setup if they're new.
+            // On success, RedirectIfSignedIn takes them home.
           },
         });
 

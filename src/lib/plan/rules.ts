@@ -146,6 +146,27 @@ export const PLAN_RULES: PlanRule[] = [
     appliesTo: ({ level }) => level === 1,
   },
   {
+    id: "balance-work",
+    title: "Balance work in every session",
+    explain:
+      "In older adults, balance and functional exercise cuts the rate of falls by about a quarter, and the WHO asks for balance and strength work on three or more days a week from 65. So every session has a short balance exercise, straight after the main lifts, and nothing in the plan involves jumping.",
+    basis: { kind: "research", findings: ["balance-exercise-prevents-falls"] },
+    appliesTo: ({ plan }) => (plan.cautions ?? []).length > 0,
+    forYou: ({ plan }) => {
+      const cautions = plan.cautions ?? [];
+      if (cautions.includes("bone")) return "Your notes mention your bones, so falls matter more than usual.";
+      return "It's in your plan because of your age or what you said about your balance.";
+    },
+  },
+  {
+    id: "strength-twice-weekly",
+    title: "Strength on at least two days",
+    explain:
+      "The international guideline for health is muscle-strengthening work on two or more days a week, whatever your age. So a two-day health plan is two strength sessions, and walking or cardio days come on top from the third day.",
+    basis: { kind: "research", findings: ["activity-guidelines"] },
+    appliesTo: ({ goal }) => goal === "General health",
+  },
+  {
     id: "warm-up",
     title: "A short warm-up, mostly moving",
     explain:

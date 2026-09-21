@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
+import Link from "next/link";
 import { Send } from "lucide-react";
 import { COACH_PROMPTS } from "@/lib/data";
 import { useAppStore } from "@/lib/store";
@@ -9,18 +11,36 @@ import { supabase } from "@/lib/supabase";
 import { track } from "@/lib/analytics";
 import { useOnline } from "@/lib/offline/network";
 
-export default function Coach() {
+function CoachBody() {
+  const router = useRouter();
+  const params = useSearchParams();
   const messages = useAppStore((s) => s.messages);
   const addMessage = useAppStore((s) => s.addMessage);
-  const [input, setInput] = useState("");
+  // A question from an "Ask the coach" link elsewhere in the app.
+  const [input, setInput] = useState(() => params.get("ask")?.slice(0, 2000) ?? "");
   const [loading, setLoading] = useState(false);
   // The coach's answers come from the server; there's nothing to ask it offline.
   const online = useOnline();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const hasPlan = useAppStore((s) => s.plan !== null);
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
+
+  /*
+   * Arriving from an "Ask the coach" link elsewhere in the app: the question
+   * is waiting in the box, to send as it is or to make their own. It isn't
+   * sent for them, so nothing is asked they didn't mean to ask. Taken out of
+   * the address afterwards, or a reload would put it back.
+   */
+  const arrivedWithQuestion = params.has("ask");
+  useEffect(() => {
+    if (!arrivedWithQuestion) return;
+    router.replace("/coach", { scroll: false });
+    inputRef.current?.focus();
+  }, [arrivedWithQuestion, router]);
 
   async function send(text: string) {
     if (!online) return;
@@ -103,7 +123,16 @@ export default function Coach() {
         </p>
       )}
 
-      {online && messages.length <= 1 && (
+      {!hasPlan && (
+        <p className="mb-3 rounded-[14px] bg-surface px-4 py-3 text-subhead text-ink shadow-card">
+          Your coach knows your plan and history, so it&apos;s most useful once you have one.{" "}
+          <Link href="/onboarding" className="font-semibold text-accent">
+            Build my plan
+          </Link>
+        </p>
+      )}
+
+      {online && messages.length <= 1 && !input && (
         <div className="mb-3.5 flex flex-wrap gap-2">
           {COACH_PROMPTS.map((p, i) => (
             <motion.button
@@ -123,6 +152,8 @@ export default function Coach() {
 
       <div className="flex gap-2">
         <input
+          ref={inputRef}
+          aria-label="Message your coach"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => {
@@ -145,5 +176,13 @@ export default function Coach() {
         </motion.button>
       </div>
     </div>
+  );
+}
+
+export default function Coach() {
+  return (
+    <Suspense fallback={null}>
+      <CoachBody />
+    </Suspense>
   );
 }

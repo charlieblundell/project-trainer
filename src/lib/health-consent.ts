@@ -52,6 +52,8 @@ const HEALTH_NOTE_MARKERS = [
   "Steering away from anything that loads",
   "every option there would have loaded a sore area",
   "usually well tolerated",
+  "short balance exercise",
+  "check with your doctor before loading heavily",
 ];
 
 /** The plan without anything that was worked out from someone's injury notes. */
@@ -59,6 +61,8 @@ export function withoutHealthDerived(plan: Plan): Plan {
   return {
     ...plan,
     avoiding: [],
+    cautions: [],
+    notesReading: undefined,
     notes: plan.notes.filter((note) => !HEALTH_NOTE_MARKERS.some((marker) => note.includes(marker))),
   };
 }

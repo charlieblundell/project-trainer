@@ -194,6 +194,26 @@ export const LOW_IMPACT_EXERCISES: ExerciseDef[] = [
     loads: ["ankle"],
     lowImpact: true,
     cues: ["Fingertips on the chair for safety.", "Balance work matters more with age, not less."],
+    substitutes: ["tandem_stance"],
+  },
+  {
+    // The balance exercise for someone who owns nothing: a kitchen counter
+    // does the chair's job.
+    id: "tandem_stance",
+    name: "Heel-to-Toe Stand",
+    equipment: ["bodyweight"],
+    pattern: "core",
+    muscles: ["Core", "Ankles"],
+    compound: false,
+    level: 1,
+    unit: "time",
+    loads: ["ankle"],
+    lowImpact: true,
+    cues: [
+      "Stand one foot directly in front of the other, heel touching toe, next to a counter or wall.",
+      "Hands hover just above the counter, ready if you need it. Swap which foot is in front each set.",
+    ],
+    substitutes: ["standing_balance"],
   },
   {
     id: "wall_angel",

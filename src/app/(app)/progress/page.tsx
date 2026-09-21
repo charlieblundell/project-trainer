@@ -17,6 +17,11 @@ import { Sparkline } from "@/components/Sparkline";
 import { ProgressSkeleton } from "@/components/Skeleton";
 import { onSynced } from "@/lib/offline/outbox";
 import { clsx } from "@/lib/clsx";
+import { CoachNote } from "@/components/CoachNote";
+import { callAi } from "@/lib/ai/client";
+
+/** How far back the coach's summary looks. Older than this, there's nothing current to say. */
+const SUMMARY_WEEKS = 4;
 
 /** A stable empty array, so the memos below don't recompute on every render. */
 const NO_RECORDS: WorkoutRecord[] = [];
@@ -60,6 +65,8 @@ export default function Progress() {
   const totals = useMemo(() => trainingTotals(history, daysPerWeek), [history, daysPerWeek]);
   const weeks = useMemo(() => sessionsPerWeek(history), [history]);
   const busiestWeek = Math.max(1, ...weeks.map((w) => w.count));
+  const latest = history.reduce<string | null>((a, r) => (a && a > r.completedAt ? a : r.completedAt), null);
+  const recent = useMemo(() => sessionsPerWeek(history, SUMMARY_WEEKS).some((w) => w.count > 0), [history]);
 
   if (records === null) {
     return (
@@ -109,6 +116,17 @@ export default function Progress() {
   return (
     <div>
       <h1 className="mb-5 text-largetitle font-bold text-ink">Your progress</h1>
+
+      {recent && (
+        <CoachNote
+          className="mb-5"
+          title="Your month, from your coach"
+          // Written again after each new workout, and at most once a day otherwise.
+          cacheKey={`week:${new Date().toDateString()}:${history.length}:${latest}`}
+          load={() => callAi<{ summary?: string | null }>("/api/week-summary", {}).then((r) => r?.summary ?? null)}
+          followUp="Looking at my last month of training, "
+        />
+      )}
 
       <div className="mb-6 flex gap-1 rounded-[10px] bg-fill p-[3px]">
         {(["Strength", "Training"] as const).map((t) => (

@@ -1,5 +1,5 @@
 import { EXERCISES_BY_ID } from "@/lib/exercises";
-import { experienceToLevel, rebuildPlan } from "./generate";
+import { BALANCE_IDS, experienceToLevel, rebuildPlan } from "./generate";
 import { isHandEdited } from "./edit";
 import { MUSCLE_GROUPS, setsByGroup, type MuscleGroup } from "./volume";
 import type { GeneratorProfile, Plan } from "./types";
@@ -17,7 +17,7 @@ import type { GeneratorProfile, Plan } from "./types";
  * again; it's what lets a dismissed offer come back for a new improvement
  * without nagging about the old one.
  */
-export const PLAN_RULES_VERSION = 2;
+export const PLAN_RULES_VERSION = 3;
 
 export type SessionChange = {
   name: string;
@@ -130,13 +130,30 @@ export function planUpgrade(current: Plan, profile: GeneratorProfile): PlanUpgra
   if (!changedExercises && gains.length === 0) return null;
 
   const round = (n: number) => (Number.isInteger(n) ? String(n) : n.toFixed(1));
-  const highlights = gains
-    .slice(0, 3)
-    .map(({ group, from, to }) =>
-      from < 1
-        ? `${MUSCLE_NAMES[group]} now get trained — ${round(to)} sets a week, up from none`
-        : `${MUSCLE_NAMES[group]}: ${round(from)} → ${round(to)} sets a week`
-    );
+
+  // For someone who needs it, balance work is the most important change of all.
+  const hasBalance = (plan: Plan) =>
+    plan.sessions.some((s) => s.exercises.some((e) => BALANCE_IDS.has(e.exerciseId)));
+  const lead: string[] = [];
+  if (hasBalance(next) && !hasBalance(current)) {
+    lead.push("A short balance exercise in every session, which cuts the rate of falls");
+  }
+  // A cardio day's ankle drills are counted in reps, so it's the session's focus that says what it is.
+  const strengthDays = (plan: Plan) => plan.sessions.filter((s) => s.focus !== "Conditioning").length;
+  if (strengthDays(next) > strengthDays(current)) {
+    lead.push(`Strength work on ${strengthDays(next)} days a week, up from ${strengthDays(current)}`);
+  }
+
+  const highlights = [
+    ...lead,
+    ...gains
+      .slice(0, 3)
+      .map(({ group, from, to }) =>
+        from < 1
+          ? `${MUSCLE_NAMES[group]} now get trained — ${round(to)} sets a week, up from none`
+          : `${MUSCLE_NAMES[group]}: ${round(from)} → ${round(to)} sets a week`
+      ),
+  ].slice(0, 3);
 
   const longerRest = next.sessions.some((s) =>
     s.exercises.slice(0, 2).some((e, j) => {
