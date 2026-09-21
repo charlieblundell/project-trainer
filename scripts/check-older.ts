@@ -5,15 +5,21 @@
  * my feet" was given ten minutes of skipping four times a week.
  * Run with: npm run check:older
  */
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { EXERCISES_BY_ID } from "../src/lib/exercises";
 import {
   BALANCE_IDS,
+  SPINE_FLEXION_IDS,
   generatePlan,
   parseCautions,
   rebuildPlan,
   refreshAccessories,
 } from "../src/lib/plan/generate";
 import { planUpgrade } from "../src/lib/plan/upgrade";
+import { warmUpFor, warmUpProfile } from "../src/lib/plan/warmup";
+import { setsByGroup } from "../src/lib/plan/volume";
+import type { Equipment } from "../src/lib/exercises";
 import type { GeneratorProfile, Plan } from "../src/lib/plan/types";
 
 let failures = 0;
@@ -44,6 +50,12 @@ const conditioning = (plan: Plan) =>
   exercisesOf(plan)
     .map((e) => EXERCISES_BY_ID[e.exerciseId])
     .filter((d) => d?.pattern === "conditioning" || d?.pattern === "plyometric");
+/** The exercises someone has to learn to lift: not the drills, the balance work or the cardio. */
+const lifts = (exercises: Plan["sessions"][number]["exercises"]) =>
+  exercises.filter((e) => {
+    const d = EXERCISES_BY_ID[e.exerciseId];
+    return d && !BALANCE_IDS.has(d.id) && d.pattern !== "mobility" && d.pattern !== "conditioning";
+  });
 /** Sessions built around lifting, rather than a walk with some drills. */
 const strengthDays = (plan: Plan) =>
   plan.sessions.filter((s) => s.focus !== "Conditioning").length;
@@ -174,6 +186,67 @@ expect(
   planUpgrade(walkDay, { ...base, age: 50 })?.highlights.some((h) => h.startsWith("Strength work on 2 days")),
   true
 );
+
+console.log("\nSessions someone new can learn\n");
+const fullGym = generatePlan({ ...base, equipment: [...GYM, "barbell", "squat_rack"] });
+expect(
+  "no more than eight lifts a session, besides drills and balance",
+  fullGym.sessions.map((s) => lifts(s.exercises).length).every((n) => n <= 8),
+  true
+);
+expect(
+  "a drill never counts as a hard set",
+  setsByGroup([{ exerciseId: "arm_circles", unit: "reps", sets: 3, repMin: 10, repMax: 12, restSeconds: 60, targetWeightKg: null }]).shoulders,
+  0
+);
+expect(
+  "nor gets extra sets to fill a target",
+  exercisesOf(fullGym).filter((e) => EXERCISES_BY_ID[e.exerciseId]?.pattern === "mobility").every((e) => e.sets <= 2),
+  true
+);
+
+console.log("\nWarm-ups\n");
+const chairHome = generatePlan({ ...base, age: 80, days: 3, length: 20, equipment: ["bodyweight", "chair", "bands", "mat"], trainingDays: ["mon", "wed", "fri"] });
+const warm = warmUpFor(chairHome.sessions[0], ["bodyweight", "chair", "bands", "mat"] as Equipment[], warmUpProfile(chairHome));
+expect("an 80-year-old's warm-up is all low impact", warm.moves.every((m) => EXERCISES_BY_ID[m.id]?.lowImpact), true);
+expect("and never the World's Greatest Stretch", warm.moves.some((m) => m.id === "worlds_greatest_stretch"), false);
+const beginner = warmUpFor(young.sessions[0], ["bodyweight", "mat"] as Equipment[], warmUpProfile(young));
+expect("a beginner's warm-up stays within their level", beginner.moves.every((m) => (EXERCISES_BY_ID[m.id]?.level ?? 9) <= 1), true);
+expect(
+  "a warm-up doesn't repeat the session's own drills",
+  seventy.sessions.every((s) =>
+    warmUpFor(s, GYM as Equipment[], warmUpProfile(seventy)).moves.every((m) => !s.exercises.some((e) => e.exerciseId === m.id))
+  ),
+  true
+);
+
+console.log("\nA real plan from before these rules\n");
+// Built by the previous rules for a 70-year-old: fourteen exercises a session, no balance work.
+const before = JSON.parse(
+  readFileSync(join(__dirname, "fixtures", "older-plan-before-balance.json"), "utf8")
+) as { plan: Plan; profile: GeneratorProfile };
+const beforeOffer = planUpgrade(before.plan, before.profile);
+expect("is offered the new plan", beforeOffer !== null, true);
+expect("led by the balance work", beforeOffer?.highlights[0]?.startsWith("A short balance exercise"), true);
+expect(
+  "with fewer lifts to learn on its strength days",
+  beforeOffer?.next.sessions
+    .filter((s) => s.focus !== "Conditioning")
+    .every((s) => lifts(s.exercises).length <= 8),
+  true
+);
+
+console.log("\nFragile bones\n");
+expect("no crunches or twists", exercisesOf(frail).some((e) => SPINE_FLEXION_IDS.has(e.exerciseId)), false);
+expect("and the plan says so", frail.notes.some((n) => n.includes("curls or twists your spine")), true);
+expect(
+  "a refresh doesn't bring them back",
+  [0, 1, 2].reduce((plan) => refreshAccessories(plan, { ...base, considerations: "osteoporosis" }).plan, frail).sessions.some((s) =>
+    s.exercises.some((e) => SPINE_FLEXION_IDS.has(e.exerciseId))
+  ),
+  false
+);
+expect("without that caution, crunches are still allowed", exercisesOf(seventy).some((e) => SPINE_FLEXION_IDS.has(e.exerciseId)), true);
 
 async function main() {
   // health-consent makes a Supabase client as it loads; nothing here talks to it.

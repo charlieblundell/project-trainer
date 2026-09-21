@@ -1,5 +1,5 @@
-import { EXERCISES_BY_ID, availableExercises, type Equipment, type ExerciseDef } from "@/lib/exercises";
-import type { PlannedSession, Region } from "./types";
+import { EXERCISES_BY_ID, availableExercises, type Equipment, type ExerciseDef, type Level } from "@/lib/exercises";
+import type { Plan, PlannedSession, Region } from "./types";
 
 /*
  * A short warm-up for the session about to be trained: a few mobility moves
@@ -75,9 +75,30 @@ function rampUpFor(session: PlannedSession): string | null {
   return `One easy set of ${name} at about ${light} kg, then straight into your working sets.`;
 }
 
-export function warmUpFor(session: PlannedSession, owned: Equipment[]): WarmUp {
+/**
+ * Who the warm-up is for. Within their experience, like the session itself
+ * (a beginner was being warmed up with the World's Greatest Stretch, a deep
+ * lunge and twist), and low-impact moves only for anyone the plan is careful
+ * with: 65 and over, or a balance or bone caution.
+ */
+export type WarmUpFor = { level?: Level; gentle?: boolean };
+
+/** What to pass for a given plan. */
+export function warmUpProfile(plan: Pick<Plan, "level" | "cautions"> | null): WarmUpFor {
+  return { level: plan?.level, gentle: (plan?.cautions ?? []).length > 0 };
+}
+
+export function warmUpFor(session: PlannedSession, owned: Equipment[], who: WarmUpFor = {}): WarmUp {
   const wanted = WANTED[session.region] ?? WANTED.full;
-  const pool = availableExercises(owned).filter((ex) => ex.pattern === "mobility");
+  // A move the session already has as work isn't also the warm-up.
+  const inSession = new Set(session.exercises.map((e) => e.exerciseId));
+  const pool = availableExercises(owned).filter(
+    (ex) =>
+      ex.pattern === "mobility" &&
+      !inSession.has(ex.id) &&
+      (who.level === undefined || ex.level <= who.level) &&
+      (!who.gentle || !!ex.lowImpact)
+  );
 
   const ranked = pool
     .map((def) => ({ def, score: scoreMove(def, wanted) }))

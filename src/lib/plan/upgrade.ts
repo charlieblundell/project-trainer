@@ -19,6 +19,9 @@ import type { GeneratorProfile, Plan } from "./types";
  */
 export const PLAN_RULES_VERSION = 3;
 
+/** The share of their loaded sets a rebuilt plan has to keep to be offered. */
+const LIGHTEST_ACCEPTED = 0.8;
+
 export type SessionChange = {
   name: string;
   added: string[];
@@ -86,10 +89,20 @@ export function planUpgrade(current: Plan, profile: GeneratorProfile): PlanUpgra
       .some((e) => e.unit === "weight_reps" && EXERCISES_BY_ID[e.exerciseId]?.equipment.includes("barbell"));
   if (usesBarbell(current) && !usesBarbell(next)) return null;
 
-  // Nor does it make the week lighter: fewer loaded lifts is not an upgrade.
-  const loadedLifts = (plan: Plan) =>
-    plan.sessions.flatMap((s) => s.exercises).filter((e) => e.unit === "weight_reps").length;
-  if (loadedLifts(next) < loadedLifts(current)) return null;
+  /*
+   * Nor does it make the week much lighter. Counted in loaded sets rather than
+   * exercises, and with some give: an older lifter's twelve exercises becoming
+   * eight, with a few minutes handed to balance work, is a little less lifting
+   * and a much better plan, and the strict count refused exactly the people
+   * who needed it. A rebuild onto bodyweight loses nearly all of it, and is
+   * still refused.
+   */
+  const loadedSets = (plan: Plan) =>
+    plan.sessions
+      .flatMap((s) => s.exercises)
+      .filter((e) => e.unit === "weight_reps")
+      .reduce((sum, e) => sum + e.sets, 0);
+  if (loadedSets(next) < loadedSets(current) * LIGHTEST_ACCEPTED) return null;
 
   const before = setsByGroup(current.sessions.flatMap((s) => s.exercises));
   const after = setsByGroup(next.sessions.flatMap((s) => s.exercises));
