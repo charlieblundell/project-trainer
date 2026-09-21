@@ -33,6 +33,7 @@ import { Rise, useCountUp } from "@/components/Rise";
 import { WeekCardSkeleton } from "@/components/Skeleton";
 import { onSynced } from "@/lib/offline/outbox";
 import { Welcome } from "@/components/Welcome";
+import { AddAgeCard } from "@/components/AddAgeCard";
 
 /** A stable empty array, so the memos below don't recompute on every render. */
 const NO_RECORDS: WorkoutRecord[] = [];
@@ -304,6 +305,7 @@ export default function Home() {
       {plan && (
         <Rise order={2}>
           <PlanUpgradeCard className="mb-4" />
+          <AddAgeCard className="mb-4" />
         </Rise>
       )}
 

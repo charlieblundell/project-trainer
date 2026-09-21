@@ -60,7 +60,7 @@ export function samplePlan(): Plan {
   };
 }
 
-const PROFILE = {
+export const PROFILE = {
   id: USER_ID,
   goal: "Build muscle",
   // Matches the sample plan, which is built at level 2. A profile that says less
