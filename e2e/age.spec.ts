@@ -1,4 +1,4 @@
-import { test, expect } from "./signed-in";
+import { test, expect, PROFILE } from "./signed-in";
 
 /*
  * Age is asked on its own, early in setup, rather than with the health
@@ -32,4 +32,34 @@ test("setup asks for an age on its own, and checks it", async ({ signedIn }) => 
   await expect(next).toHaveText("Continue");
   await next.click();
   await expect(page.getByRole("heading", { name: "How often can you train?" })).toBeVisible();
+});
+
+test("someone whose age the app doesn't know is asked for it on Home, once", async ({ signedIn }) => {
+  const { page } = signedIn;
+  // Set up before age was its own question, without sharing health details.
+  await page.route("**/rest/v1/profiles*", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        ...PROFILE,
+        age: null,
+        bodyweight_kg: null,
+        height_cm: null,
+        sex: null,
+        considerations: null,
+        health_consent_at: null,
+      }),
+    })
+  );
+
+  await page.goto("/home");
+  const card = page.getByRole("link", { name: /Add your age/ });
+  await expect(card).toHaveAttribute("href", "/settings/training");
+
+  await page.getByRole("button", { name: "Don't ask about my age" }).click();
+  await expect(card).toHaveCount(0);
+  await page.reload();
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  await expect(card).toHaveCount(0);
 });
