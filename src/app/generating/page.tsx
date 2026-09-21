@@ -83,7 +83,7 @@ export default function Generating() {
         dislikedExercises: onboarding.dislikedExercises,
         trainingDays: onboarding.trainingDays,
         considerations: consented ? onboarding.considerations : null,
-        age: consented ? onboarding.age : null,
+        age: onboarding.age,
         notesReading,
       });
       await savePlan(signedIn.id, plan);

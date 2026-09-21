@@ -252,7 +252,25 @@ async function main() {
   // health-consent makes a Supabase client as it loads; nothing here talks to it.
   process.env.NEXT_PUBLIC_SUPABASE_URL ??= "http://localhost:54321";
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??= "unused";
-  const { withoutHealthDerived } = await import("../src/lib/health-consent");
+  const { withoutHealthDerived, hasHealthDetails, CLEARED_HEALTH_FIELDS } = await import("../src/lib/health-consent");
+  const { planProfile } = await import("../src/lib/profile-changes");
+  const { EMPTY_ONBOARDING } = await import("../src/lib/types");
+
+  console.log("\nAge without sharing health details\n");
+  const declined = planProfile({
+    ...EMPTY_ONBOARDING,
+    goal: "General health",
+    experience: "I'm new to training",
+    age: 72,
+    considerations: "bad knee",
+    healthConsent: false,
+  });
+  expect("their age still reaches the plan", declined.age, 72);
+  expect("their injury notes don't", declined.considerations, null);
+  expect("so the plan still gets balance work", everySessionBalances(generatePlan(declined)), true);
+  expect("an age alone isn't treated as health details", hasHealthDetails({ age: 72 } as never), false);
+  expect("and withdrawing consent keeps it", "age" in CLEARED_HEALTH_FIELDS, false);
+
   const withdrawn = withoutHealthDerived(frail);
   expect("withdrawing health consent clears the cautions", [withdrawn.cautions, withdrawn.notesReading ?? null], [[], null]);
   expect("and their notes", withdrawn.notes.some((n) => n.includes("short balance exercise")), false);

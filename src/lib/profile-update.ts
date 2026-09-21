@@ -32,10 +32,10 @@ export async function saveProfileChanges(
       liked_exercises: after.likedExercises,
       disliked_exercises: after.dislikedExercises,
       training_days: after.trainingDays,
+      age: after.age,
       // Health details are only stored with consent. The record of when consent
       // was given is left alone: editing isn't consenting again.
       bodyweight_kg: consented ? after.bodyweightKg : null,
-      age: consented ? after.age : null,
       height_cm: consented ? after.heightCm : null,
       sex: consented ? after.sex : null,
       considerations: consented ? after.considerations : null,

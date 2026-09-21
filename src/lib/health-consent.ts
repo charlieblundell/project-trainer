@@ -3,14 +3,13 @@ import { loadPlan, savePlan } from "@/lib/plan/storage";
 import type { Plan } from "@/lib/plan/types";
 
 /*
- * Health information — bodyweight, height, age, sex and injury notes — is
+ * Health information — bodyweight, height, sex and injury notes — is
  * sensitive information under the Privacy Act, so it's only collected and
  * kept with consent, and removed when that consent is withdrawn.
  */
 
 export const CLEARED_HEALTH_FIELDS = {
   bodyweightKg: null,
-  age: null,
   heightCm: null,
   sex: null,
   considerations: null,
@@ -18,7 +17,6 @@ export const CLEARED_HEALTH_FIELDS = {
 
 type HealthRow = {
   bodyweight_kg?: number | null;
-  age?: number | null;
   height_cm?: number | null;
   sex?: string | null;
   considerations?: string | null;
@@ -27,7 +25,6 @@ type HealthRow = {
 export function hasHealthDetails(row: HealthRow): boolean {
   return (
     row.bodyweight_kg != null ||
-    row.age != null ||
     row.height_cm != null ||
     row.sex != null ||
     !!row.considerations?.trim()
@@ -82,7 +79,6 @@ export async function withdrawHealthConsent(
     .from("profiles")
     .update({
       bodyweight_kg: null,
-      age: null,
       height_cm: null,
       sex: null,
       considerations: null,

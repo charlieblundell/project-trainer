@@ -21,6 +21,7 @@ import {
 } from "@/lib/exercises";
 import type { Weekday } from "@/lib/types";
 import { CLEARED_HEALTH_FIELDS } from "@/lib/health-consent";
+import { ageProblem } from "@/lib/age";
 import {
   EquipmentPicker,
   ExercisePicker,
@@ -35,7 +36,7 @@ import {
   valueFor,
 } from "@/components/ProfileFields";
 
-type StepKind = "single" | "multi" | "exercises" | "weekdays" | "consent" | "about" | "text" | "choice";
+type StepKind = "single" | "multi" | "exercises" | "weekdays" | "consent" | "about" | "text" | "choice" | "age";
 
 /** Screens that collect health information, shown only with consent. */
 const HEALTH_STEPS = new Set(["about", "considerations"]);
@@ -51,6 +52,16 @@ type Step = {
 const STEPS: Step[] = [
   { key: "goal", kind: "single", question: "What's your main goal?" },
   { key: "experience", kind: "single", question: "How experienced are you?" },
+  {
+    // Asked on its own, not with the health details: a plan for someone of 70
+    // is built differently, and that shouldn't depend on agreeing to share
+    // their injuries and bodyweight too.
+    key: "age",
+    kind: "age",
+    question: "How old are you?",
+    hint: "From 65, your plan adds balance work, gentler warm-ups and nothing that jumps.",
+    optional: true,
+  },
   { key: "days", kind: "single", question: "How often can you train?" },
   { key: "length", kind: "single", question: "How long do you usually have?" },
   { key: "environment", kind: "single", question: "Where do you train?" },
@@ -167,6 +178,7 @@ export default function Onboarding() {
   }
 
   function canContinue(): boolean {
+    if (current.key === "age") return ageProblem(onboarding.age) === null;
     if (current.optional) return true;
     switch (current.key) {
       case "goal":
@@ -336,7 +348,7 @@ export default function Onboarding() {
             <div>
               <div className="mb-5 flex flex-col gap-3 text-subhead leading-relaxed text-ink">
                 <p>
-                  The next two questions ask for your bodyweight, height, age, sex and any injuries, and
+                  The next two questions ask for your bodyweight, height, sex and any injuries, and
                   before workouts you can optionally tell us how you slept and whether anything hurts.
                   These count as health information under Australian privacy law, so we need your
                   permission before collecting them.
@@ -396,6 +408,22 @@ export default function Onboarding() {
             </div>
           )}
 
+          {current.kind === "age" && (
+            <div>
+              <NumberField
+                label="Age"
+                unit="years"
+                value={onboarding.age}
+                onChange={(v) => setOnboarding({ age: v })}
+              />
+              {ageProblem(onboarding.age) && (
+                <p role="alert" className="mt-3 text-subhead text-warning">
+                  {ageProblem(onboarding.age)}
+                </p>
+              )}
+            </div>
+          )}
+
           {current.kind === "about" && (
             <div className="flex flex-col gap-4">
               <NumberField
@@ -403,12 +431,6 @@ export default function Onboarding() {
                 unit="kg"
                 value={onboarding.bodyweightKg}
                 onChange={(v) => setOnboarding({ bodyweightKg: v })}
-              />
-              <NumberField
-                label="Age"
-                unit="years"
-                value={onboarding.age}
-                onChange={(v) => setOnboarding({ age: v })}
               />
               <NumberField
                 label="Height"
@@ -507,10 +529,7 @@ function continueLabel(step: Step, onboarding: ReturnType<typeof useAppStore.get
     (step.key === "likedExercises" && onboarding.likedExercises.length === 0) ||
     (step.key === "dislikedExercises" && onboarding.dislikedExercises.length === 0) ||
     (step.key === "considerations" && !onboarding.considerations) ||
-    (step.key === "about" &&
-      !onboarding.bodyweightKg &&
-      !onboarding.age &&
-      !onboarding.heightCm &&
-      !onboarding.sex);
+    (step.key === "age" && !onboarding.age) ||
+    (step.key === "about" && !onboarding.bodyweightKg && !onboarding.heightCm && !onboarding.sex);
   return empty ? "Skip" : "Continue";
 }
