@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { OnboardingData, SetLog, ChatMessage } from "./types";
+import type { OnboardingData, SetLog, ChatMessage, Chat } from "./types";
 import { EMPTY_ONBOARDING } from "./types";
 import { supabase } from "./supabase";
 import type { Plan } from "./plan/types";
@@ -119,8 +119,22 @@ type AppState = {
    */
   markSessionFinished: () => void;
 
-  messages: ChatMessage[];
+  /**
+   * Conversations with the coach, oldest first, kept on this phone only. The
+   * last is the one open in the Coach tab.
+   */
+  chats: Chat[];
   addMessage: (msg: ChatMessage) => void;
+  /** Changes one message in the open chat, such as a proposal being applied. */
+  updateMessage: (index: number, patch: Partial<ChatMessage>) => void;
+  /** Starts a fresh chat, unless the open one hasn't been used yet. */
+  newChat: () => void;
+  /** Starts a fresh chat if the open one was last used on an earlier day. */
+  startDayIfNeeded: () => void;
+  /** Brings an earlier chat back to carry on with. */
+  openChat: (id: string) => void;
+  deleteChat: (id: string) => void;
+  deleteAllChats: () => void;
 
   plan: Plan | null;
   setPlan: (plan: Plan | null) => void;
@@ -153,6 +167,25 @@ const INITIAL_GREETING: ChatMessage = {
   role: "assistant",
   text: "Hey. What can I help with?",
 };
+
+/** Past chats kept on the phone. Older ones drop off. */
+const KEEP_CHATS = 30;
+
+function freshChat(now = new Date()): Chat {
+  const at = now.toISOString();
+  return { id: `chat-${now.getTime()}-${Math.random().toString(36).slice(2, 7)}`, startedAt: at, updatedAt: at, messages: [INITIAL_GREETING] };
+}
+
+/** Whether anything has been asked in a chat, beyond the greeting. */
+export function chatUsed(chat: Chat): boolean {
+  return chat.messages.some((m) => m.role === "user");
+}
+
+/** The open chat's messages changed, and it moves to the end as the latest. */
+function withActive(chats: Chat[], change: (chat: Chat) => Chat): Chat[] {
+  const active = chats[chats.length - 1] ?? freshChat();
+  return [...chats.slice(0, -1), change(active)];
+}
 
 export const useAppStore = create<AppState>()(
   persist(
@@ -275,8 +308,48 @@ export const useAppStore = create<AppState>()(
         }
       },
 
-      messages: [INITIAL_GREETING],
-      addMessage: (msg) => set((s) => ({ messages: [...s.messages, msg] })),
+      chats: [freshChat()],
+      addMessage: (msg) =>
+        set((s) => ({
+          chats: withActive(s.chats, (chat) => ({
+            ...chat,
+            messages: [...chat.messages, msg],
+            updatedAt: new Date().toISOString(),
+          })),
+        })),
+      updateMessage: (index, patch) =>
+        set((s) => ({
+          chats: withActive(s.chats, (chat) => ({
+            ...chat,
+            messages: chat.messages.map((m, i) => (i === index ? { ...m, ...patch } : m)),
+          })),
+        })),
+      newChat: () =>
+        set((s) => {
+          const active = s.chats[s.chats.length - 1];
+          if (active && !chatUsed(active)) return {};
+          return { chats: [...s.chats, freshChat()].slice(-KEEP_CHATS) };
+        }),
+      startDayIfNeeded: () => {
+        const active = get().chats[get().chats.length - 1];
+        if (!active || !chatUsed(active)) return;
+        if (new Date(active.updatedAt).toDateString() !== new Date().toDateString()) get().newChat();
+      },
+      openChat: (id) =>
+        set((s) => {
+          const chat = s.chats.find((c) => c.id === id);
+          if (!chat) return {};
+          // An untouched chat left open is just dropped for the one they picked.
+          const active = s.chats[s.chats.length - 1];
+          const rest = s.chats.filter((c) => c.id !== id && (c !== active || chatUsed(c)));
+          return { chats: [...rest, { ...chat, updatedAt: new Date().toISOString() }] };
+        }),
+      deleteChat: (id) =>
+        set((s) => {
+          const rest = s.chats.filter((c) => c.id !== id);
+          return { chats: rest.length > 0 ? rest : [freshChat()] };
+        }),
+      deleteAllChats: () => set({ chats: [freshChat()] }),
 
       plan: null,
       setPlan: (plan) => set({ plan: plan ? normalizePlan(plan) : null }),
@@ -322,7 +395,7 @@ export const useAppStore = create<AppState>()(
         if (get().ownerId === userId) return;
         set({
           ownerId: userId,
-          messages: [INITIAL_GREETING],
+          chats: [freshChat()],
           session: emptySession(""),
           lastCompletedSummary: null,
           lastChanges: [],
@@ -338,7 +411,7 @@ export const useAppStore = create<AppState>()(
     }),
     {
       name: "project-trainer-store",
-      version: 3,
+      version: 4,
       // A saved copy from an older build is missing whatever fields have been
       // added since. Backfilling defaults keeps existing browsers from
       // restoring a half-shaped object over the current one.
@@ -351,6 +424,8 @@ export const useAppStore = create<AppState>()(
           // plan session) and the shape of a swap. An in-progress session from
           // before that can't be resumed, so drop it rather than half-render it.
           ...(from < 3 ? { session: emptySession(""), lastCompletedSummary: null } : {}),
+          // v4 keeps chats as a list. The one conversation before it becomes the first.
+          ...(from < 4 ? { chats: chatsFromV3((state as { messages?: ChatMessage[] }).messages) } : {}),
         } as AppState;
       },
       merge: (persisted, current) => {
@@ -368,4 +443,9 @@ export const useAppStore = create<AppState>()(
   )
 );
 
-
+/** The single conversation an older build kept, as the first chat in the list. */
+function chatsFromV3(messages: ChatMessage[] | undefined): Chat[] {
+  if (!messages || !messages.some((m) => m.role === "user")) return [freshChat()];
+  const at = new Date().toISOString();
+  return [{ id: "chat-earlier", startedAt: at, updatedAt: at, messages }];
+}

@@ -64,8 +64,8 @@ export default function Privacy() {
           times you log, and your effort ratings.
         </p>
         <p>
-          <strong>Coach messages.</strong> The questions you ask the AI coach. Your conversation is stored on your own
-          device, and each message is sent to our AI provider to generate a reply. We record the time of each coach
+          <strong>Coach messages.</strong> The questions you ask the AI coach. Your conversations are stored on your own
+          device (you can delete them under Past chats), and each message is sent to our AI provider to generate a reply. We record the time of each coach
           request to apply usage limits, but we do not keep a copy of your messages on our servers.
         </p>
         <p>
@@ -148,6 +148,7 @@ export default function Privacy() {
             "Your targets are adjusted automatically from the weights, reps and effort ratings you log.",
             "If you use the pre-workout check-in, poor sleep or heavy soreness takes a set off each exercise that day, and stops a tough session lowering your targets.",
             "The AI coach's replies are generated from your question, your profile, your plan and your recent workouts, and its notes after a workout and on the Progress screen from the workouts you've logged.",
+            "The AI coach can suggest changes to your plan in chat, such as swapping an exercise or moving a day. Nothing changes unless you tap Apply, and you can undo it.",
             "If you've shared injury notes, the AI coach reads them to suggest which areas your plan should steer around, and whether it should add balance work. This only ever adds caution; it never removes an area you've told us about.",
             "Whether you can use the app is decided automatically from your trial end date and subscription status.",
           ]}

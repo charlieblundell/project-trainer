@@ -39,6 +39,38 @@ export async function askText({ system, messages, maxTokens }: Ask): Promise<str
 }
 
 /**
+ * A written answer, plus any tool the model chose to call alongside it. The
+ * tools here are proposals the app checks and shows, never actions taken, so
+ * there's no loop: the call is read, not run.
+ */
+export async function askWithTools({
+  system,
+  messages,
+  maxTokens,
+  tools,
+}: Ask & { tools: Anthropic.Beta.BetaTool[] }): Promise<{ text: string | null; calls: { name: string; input: unknown }[] } | null> {
+  const response = await anthropic.beta.messages.create({
+    ...FALLBACK,
+    model: MODEL,
+    max_tokens: maxTokens,
+    system,
+    output_config: { effort: "low" },
+    tools,
+    messages,
+  });
+  if (response.stop_reason === "refusal") return null;
+  const text = response.content
+    .filter((b): b is Anthropic.Beta.BetaTextBlock => b.type === "text")
+    .map((b) => b.text)
+    .join("\n")
+    .trim();
+  const calls = response.content
+    .filter((b): b is Anthropic.Beta.BetaToolUseBlock => b.type === "tool_use")
+    .map((b) => ({ name: b.name, input: b.input }));
+  return { text: text || null, calls };
+}
+
+/**
  * An answer in a fixed shape, or null if it declined or didn't fit. The
  * schema constrains the model; the caller still validates every field,
  * because what comes back is only trusted as far as the code checks it.
