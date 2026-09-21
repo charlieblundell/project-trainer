@@ -4,6 +4,7 @@ import { savePlan } from "@/lib/plan/storage";
 import type { Plan } from "@/lib/plan/types";
 import type { OnboardingData } from "@/lib/types";
 import { affectsPlan, planProfile } from "@/lib/profile-changes";
+import { readNotes } from "@/lib/ai/client";
 
 export type ProfileSaveResult = { ok: true; plan: Plan | null; rebuilt: boolean } | { ok: false };
 
@@ -48,7 +49,11 @@ export async function saveProfileChanges(
 
   if (!plan || !affectsPlan(before, after)) return { ok: true, plan, rebuilt: false };
 
-  const next = rebuildPlan(plan, planProfile(after));
+  // New notes are read again; otherwise the plan keeps its last reading of them.
+  const profile = planProfile(after);
+  const notesChanged = planProfile(before).considerations !== profile.considerations;
+  if (notesChanged) profile.notesReading = (await readNotes(profile.considerations)) ?? { avoiding: [], cautions: [] };
+  const next = rebuildPlan(plan, profile);
   try {
     await savePlan(userId, next);
   } catch {

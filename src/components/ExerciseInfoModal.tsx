@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { X } from "lucide-react";
+import { AskCoachLink } from "@/components/AskCoachLink";
 
 export function ExerciseInfoModal({
   exercise,
@@ -58,6 +59,12 @@ export function ExerciseInfoModal({
             </div>
           </>
         )}
+
+        <AskCoachLink
+          className="mt-4"
+          label={`Ask the coach about ${exercise.name}`}
+          question={`How do I get ${exercise.name} right, and what could I do instead if it doesn't suit me?`}
+        />
       </motion.div>
     </motion.div>
   );

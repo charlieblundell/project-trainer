@@ -10,6 +10,9 @@ import { sessionBackground, sessionStyle } from "@/lib/sessionStyle";
 import { InstallPrompt } from "@/components/InstallPrompt";
 import { InviteFriends } from "@/components/InviteFriends";
 import { FinishBadge } from "@/components/FinishBadge";
+import { CoachNote } from "@/components/CoachNote";
+import { callAi } from "@/lib/ai/client";
+import { EXERCISES_BY_ID } from "@/lib/exercises";
 
 const container = {
   hidden: {},
@@ -53,6 +56,20 @@ export default function TrainComplete() {
     (c) => c.kind === "increase" || c.kind === "harder_variant" || c.kind === "add_reps"
   );
   const style = planSession ? sessionStyle(planSession) : null;
+  const sessionName = planSession?.name ?? "Workout";
+
+  // What the coach is told: the sets as logged, and what the app already said changes.
+  const debriefBody = {
+    session: sessionName,
+    exercises: Object.entries(summary.loggedSets)
+      .filter(([, sets]) => sets.length > 0)
+      .map(([id, sets]) => ({
+        name: EXERCISES_BY_ID[id]?.name ?? id,
+        sets: sets.slice(0, 12),
+        change: changes.find((c) => c.exerciseId === id)?.reason.slice(0, 200),
+      }))
+      .slice(0, 20),
+  };
 
   return (
     <div className="mx-auto max-w-sm">
@@ -140,6 +157,19 @@ export default function TrainComplete() {
             </ul>
           )}
         </motion.section>
+
+        {debriefBody.exercises.length > 0 && (
+          <motion.div variants={item}>
+            <CoachNote
+              className="mb-6"
+              cacheKey={`debrief:${summary.workoutId}:${totalSets}:${JSON.stringify(summary.loggedSets).length}`}
+              load={() =>
+                callAi<{ debrief?: string | null }>("/api/debrief", debriefBody).then((r) => r?.debrief ?? null)
+              }
+              followUp={`About today's ${sessionName} session: `}
+            />
+          </motion.div>
+        )}
 
         <motion.button
           variants={item}

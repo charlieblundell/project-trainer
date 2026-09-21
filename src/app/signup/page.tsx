@@ -88,7 +88,7 @@ export default function SignUp() {
       setError("That code didn't work. Check it's from the most recent email, or send a new one.");
     }
     // On success the sign-in listener picks up the session and
-    // RedirectIfSignedIn takes them home, or to setup if they're new.
+    // RedirectIfSignedIn takes them home.
   }
 
   async function signInWithGoogle() {

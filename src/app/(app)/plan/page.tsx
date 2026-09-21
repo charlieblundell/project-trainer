@@ -1,5 +1,6 @@
 "use client";
 
+import { AskCoachLink } from "@/components/AskCoachLink";
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -275,6 +276,11 @@ export default function Plan() {
                 <BookOpen size={16} aria-hidden />
                 Why these sets and reps?
               </Link>
+              <AskCoachLink
+                className="w-full justify-center font-normal text-body"
+                label={`Ask the coach about ${preview.name}`}
+                question={`What's my ${preview.name} session for, and how hard should it feel?`}
+              />
             </motion.div>
           </motion.div>
         )}

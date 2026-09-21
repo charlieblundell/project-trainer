@@ -123,11 +123,17 @@ function json(body: unknown, headers: Record<string, string> = {}) {
  * network, so a new query shows up as an obvious empty state, never as a test
  * that quietly talked to production.
  */
-export async function stubSupabase(page: Page, plan: Plan | null) {
+export async function stubSupabase(page: Page, plan: Plan | null, { newAccount = false } = {}) {
   const saved: Plan[] = [];
 
   await page.route("**/auth/v1/**", (route) =>
     route.fulfill(json(route.request().url().includes("/user") ? TEST_USER : { user: TEST_USER }))
+  );
+
+  // The coach's notes never reach the real model from a test. A spec that
+  // wants one registers its own answer, which takes precedence over this.
+  await page.route(/\/api\/(debrief|week-summary|read-notes)$/, (route) =>
+    route.fulfill(json({ debrief: null, summary: null, reading: { avoiding: [], cautions: [] } }))
   );
 
   await page.route("**/rest/v1/**", (route) => {
@@ -144,7 +150,8 @@ export async function stubSupabase(page: Page, plan: Plan | null) {
       const latest = saved[saved.length - 1] ?? plan;
       return route.fulfill(json(latest ? { data: latest } : null));
     }
-    if (table.startsWith("profiles")) return route.fulfill(json(PROFILE));
+    // A brand-new account has a profile row but hasn't answered anything yet.
+    if (table.startsWith("profiles")) return route.fulfill(json(newAccount ? { id: USER_ID } : PROFILE));
     if (table.startsWith("billing")) return route.fulfill(json(null));
     if (table.startsWith("workout_sessions")) {
       // A HEAD count comes back in the range header, not the body.
@@ -166,30 +173,33 @@ type Fixtures = {
 export const test = base.extend<Fixtures>({
   signedIn: async ({ page, baseURL }, use) => {
     const { saved } = await stubSupabase(page, samplePlan());
-
-    const projectRef = supabaseProjectRef();
-
-    await page.addInitScript(
-      ({ ref, user }) => {
-        const hour = 60 * 60;
-        window.localStorage.setItem(
-          `sb-${ref}-auth-token`,
-          JSON.stringify({
-            access_token: "test-access-token",
-            refresh_token: "test-refresh-token",
-            token_type: "bearer",
-            expires_in: hour,
-            expires_at: Math.floor(Date.now() / 1000) + hour,
-            user,
-          })
-        );
-      },
-      { ref: projectRef, user: TEST_USER }
-    );
-
+    await plantSession(page);
     await page.goto(baseURL!);
     await use({ page, saved });
   },
 });
+
+/** Signs the browser in as the test user, before any of the app's scripts run. */
+export async function plantSession(page: Page) {
+  const projectRef = supabaseProjectRef();
+
+  await page.addInitScript(
+    ({ ref, user }) => {
+      const hour = 60 * 60;
+      window.localStorage.setItem(
+        `sb-${ref}-auth-token`,
+        JSON.stringify({
+          access_token: "test-access-token",
+          refresh_token: "test-refresh-token",
+          token_type: "bearer",
+          expires_in: hour,
+          expires_at: Math.floor(Date.now() / 1000) + hour,
+          user,
+        })
+      );
+    },
+    { ref: projectRef, user: TEST_USER }
+  );
+}
 
 export { expect } from "@playwright/test";

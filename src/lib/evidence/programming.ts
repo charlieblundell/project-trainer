@@ -405,6 +405,37 @@ export const PROGRAMMING: Finding[] = [
     ],
   },
   {
+    id: "balance-exercise-prevents-falls",
+    topic: "programming",
+    claim:
+      "In older adults, balance and functional exercise reduces the rate of falls by about a quarter.",
+    practical:
+      "A few minutes of standing balance work — one foot, or heel to toe, with something to hold nearby — belongs in every session from your mid-sixties on, alongside the lifting rather than instead of it.",
+    strength: "strong",
+    limits:
+      "The trials are mostly in people living at home, averaging mid-seventies. Whether it prevents fall-related fractures is less certain than whether it prevents falls.",
+    tags: ["falls", "fall", "balance", "unsteady", "wobbly", "older", "osteoporosis", "fracture"],
+    sources: [
+      {
+        authors:
+          "Sherrington C, Fairhall NJ, Wallbank GK, Tiedemann A, Michaleff ZA, Howard K, Clemson L, Hopewell S, Lamb SE",
+        year: 2019,
+        title: "Exercise for preventing falls in older people living in the community",
+        journal: "Cochrane Database of Systematic Reviews",
+        locator: "1(1):CD012424",
+        doi: "10.1002/14651858.CD012424.pub2",
+      },
+      {
+        authors: "Bull FC, Al-Ansari SS, Biddle S, Borodulin K, Buman MP, Cardon G, et al.",
+        year: 2020,
+        title: "World Health Organization 2020 guidelines on physical activity and sedentary behaviour",
+        journal: "British Journal of Sports Medicine",
+        locator: "54(24):1451–1462",
+        doi: "10.1136/bjsports-2020-102955",
+      },
+    ],
+  },
+  {
     id: "menstrual-cycle-no-special-programming",
     topic: "programming",
     claim:

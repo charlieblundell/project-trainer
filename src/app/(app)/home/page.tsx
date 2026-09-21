@@ -32,6 +32,7 @@ import { greeting, homeNote } from "@/lib/homeNote";
 import { Rise, useCountUp } from "@/components/Rise";
 import { WeekCardSkeleton } from "@/components/Skeleton";
 import { onSynced } from "@/lib/offline/outbox";
+import { Welcome } from "@/components/Welcome";
 
 /** A stable empty array, so the memos below don't recompute on every render. */
 const NO_RECORDS: WorkoutRecord[] = [];
@@ -120,15 +121,7 @@ export default function Home() {
       </div>
 
       {!plan ? (
-        <div className="rounded-[20px] bg-surface shadow-card p-6 text-center">
-          <p className="mb-4 text-subhead text-muted">You don&apos;t have a plan yet.</p>
-          <button
-            onClick={() => router.push("/onboarding")}
-            className="min-h-[44px] rounded-[12px] bg-accent px-5 text-body font-semibold text-accent-ink"
-          >
-            Build my plan
-          </button>
-        </div>
+        <Welcome />
       ) : upcoming && style && Icon ? (
         <motion.section
           initial={{ opacity: 0, y: 10 }}
@@ -340,6 +333,7 @@ export default function Home() {
         </Rise>
       )}
 
+      {plan && (
       <Rise order={4}>
       <Link
         href="/coach"
@@ -365,6 +359,7 @@ export default function Home() {
         />
       </Link>
       </Rise>
+      )}
 
       {plan && (
         <Rise order={5}>

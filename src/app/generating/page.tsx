@@ -8,6 +8,7 @@ import { GENERATING_STEPS } from "@/lib/data";
 import { useAppStore } from "@/lib/store";
 import { LogoMark } from "@/components/Wordmark";
 import { supabase } from "@/lib/supabase";
+import { readNotes } from "@/lib/ai/client";
 import { generatePlan } from "@/lib/plan/generate";
 import { savePlan } from "@/lib/plan/storage";
 import { track } from "@/lib/analytics";
@@ -68,6 +69,10 @@ export default function Generating() {
       const consented = onboarding.healthConsent === true;
       await saveSetupProfile(signedIn.id, onboarding);
 
+      // After the profile save, which is what records their consent: the
+      // server only reads health notes for someone who's agreed to it.
+      const notesReading = consented ? await readNotes(onboarding.considerations) : undefined;
+
       const plan = generatePlan({
         goal: onboarding.goal,
         experience: onboarding.experience,
@@ -79,6 +84,7 @@ export default function Generating() {
         trainingDays: onboarding.trainingDays,
         considerations: consented ? onboarding.considerations : null,
         age: consented ? onboarding.age : null,
+        notesReading,
       });
       await savePlan(signedIn.id, plan);
       track("plan_built", { from: "generating" });

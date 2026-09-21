@@ -11,6 +11,7 @@ import { SetStepper } from "@/components/SetStepper";
 import { clsx } from "@/lib/clsx";
 import Link from "next/link";
 import { ExerciseInfoModal } from "@/components/ExerciseInfoModal";
+import { AskCoachLink } from "@/components/AskCoachLink";
 import { ExerciseSwapPanel } from "@/components/ExerciseSwapPanel";
 import { WEEKDAY_LABELS, nextSession, sessionById, sessionForToday, targetLabel } from "@/lib/plan/helpers";
 import type { PlannedExercise } from "@/lib/plan/types";
@@ -620,6 +621,12 @@ function ExercisePanel({
                   Finish workout now
                 </button>
               )}
+              {/* The workout is kept while they ask, and carries on from here. */}
+              <AskCoachLink
+                className="px-4"
+                label="Something not right? Ask the coach"
+                question={`${def?.name ?? "This exercise"} doesn't feel right today. What should I change?`}
+              />
             </>
           )}
         </div>
