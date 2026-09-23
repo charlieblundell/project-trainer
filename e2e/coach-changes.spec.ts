@@ -86,7 +86,8 @@ test("a new day starts a new chat, and yesterday's is under Past chats", async (
             updatedAt: yesterday,
             messages: [
               { role: "assistant", text: "Hey. What can I help with?" },
-              { role: "user", text: "Can I swap squats for leg press?" },
+              // Not one of the suggested questions, which a fresh chat shows as buttons.
+              { role: "user", text: "Could I do leg press on Saturday instead of squats?" },
               { role: "assistant", text: "Yes, leg press works your quads just as well." },
             ],
           },
@@ -97,13 +98,17 @@ test("a new day starts a new chat, and yesterday's is under Past chats", async (
   );
 
   await page.goto("/coach");
-  // Today's chat is fresh.
-  await expect(page.getByText("Can I swap squats for leg press?")).toHaveCount(0);
+  // Today's chat is fresh: wait for it to be on screen before checking what
+  // isn't, or the check passes on a page that hasn't rendered yet.
+  await expect(page.getByRole("button", { name: "What am I doing today?" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "New chat" })).toBeDisabled();
+  await expect(page.getByText("Could I do leg press on Saturday instead of squats?")).toHaveCount(0);
 
   await page.getByRole("button", { name: "Past chats" }).click();
   const sheet = page.getByRole("dialog", { name: "Past chats" });
   await expect(sheet).toContainText("Yesterday");
-  await sheet.getByRole("button", { name: /^Can I swap squats for leg press/ }).click();
+  await sheet.getByRole("button", { name: /^Could I do leg press on Saturday/ }).click();
+
   await expect(page.getByText("Yes, leg press works your quads just as well.")).toBeVisible();
 });
 
