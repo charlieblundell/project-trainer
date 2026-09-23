@@ -153,5 +153,33 @@ const beginnerWeek = weekly(beginner);
 expect("a new lifter trains full body", beginner.sessions.every((s) => s.name.startsWith("Full Body")), true);
 expect("and nothing is trained past a beginner's ceiling", MUSCLE_GROUPS.every((g) => beginnerWeek[g] <= weeklyTarget("Build muscle", 1, g).max + 4), true);
 
+console.log("\nBands train in the range a band can make hard\n");
+const bandsOnly = generatePlan({
+  goal: "Lose fat",
+  experience: "I'm new to training",
+  days: 3,
+  length: 30,
+  equipment: ["bands", "bodyweight", "mat"],
+  likedExercises: [],
+  dislikedExercises: [],
+  trainingDays: ["mon", "wed", "fri"],
+  considerations: null,
+  age: 30,
+});
+const bandWork = bandsOnly.sessions
+  .flatMap((s) => s.exercises)
+  .filter((e) => { const d = EXERCISES_BY_ID[e.exerciseId]; return d?.equipment.includes("bands") && d.unit === "reps"; });
+expect("there is band work to check", bandWork.length > 0, true);
+expect("band sets aim for 12 to 20", bandWork.every((e) => e.repMin === 12 && e.repMax === 20), true);
+expect("with a minute's rest, not two", bandWork.every((e) => e.restSeconds === 60), true);
+expect(
+  "a 30-minute session fits more than two lifts",
+  bandsOnly.sessions.every((s) => s.exercises.filter((e) => e.unit !== "time" && e.unit !== "distance").length >= 3),
+  true
+);
+const gymLifts = build("Lose fat", "I'm new to training", 3, 45).sessions.flatMap((s) => s.exercises).filter((e) => e.unit === "weight_reps");
+expect("weights keep the heavy range", gymLifts.some((e) => e.repMax === 10), true);
+
 console.log(failures === 0 ? "\nAll checks passed.\n" : `\n${failures} failure(s).\n`);
+
 process.exit(failures === 0 ? 0 : 1);

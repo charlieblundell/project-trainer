@@ -1,4 +1,6 @@
-import type { Level } from "@/lib/exercises";
+import { EXERCISES_BY_ID, type Level } from "@/lib/exercises";
+import { isLightLoad } from "./generate";
+
 import { MUSCLE_GROUPS, setsByGroup, weeklyTarget, type MuscleGroup } from "./volume";
 import type { Plan } from "./types";
 
@@ -117,7 +119,24 @@ export const PLAN_RULES: PlanRule[] = [
     appliesTo: ({ goal }) => ["Get stronger", "Build muscle", "Lose fat"].includes(goal),
   },
   {
+    id: "light-bands-more-reps",
+    title: "Bands for higher reps",
+    explain:
+      "Light loads build about as much muscle as heavy ones when each set is taken close to your limit, and a band can't make six reps hard. So band exercises aim for 12 to 20 reps, with a minute's rest rather than the long rest a heavy lift needs.",
+    basis: { kind: "research", findings: ["load-range-hypertrophy", "rest-between-sets"] },
+    // Only the heavy-rep goals change anything; the others already train bands in that range.
+    appliesTo: ({ plan, goal }) =>
+      ["Get stronger", "Build muscle", "Lose fat"].includes(goal) &&
+      plan.sessions.some((s) =>
+        s.exercises.some((e) => {
+          const def = EXERCISES_BY_ID[e.exerciseId];
+          return !!def && isLightLoad(def);
+        })
+      ),
+  },
+  {
     id: "progress-not-failure",
+
     title: "When your weights go up",
     explain:
       "Stopping a rep or two short builds almost as much and costs far less. So the plan raises your target when you reach the top of the rep range and your effort rating says there was something left.",
@@ -141,7 +160,8 @@ export const PLAN_RULES: PlanRule[] = [
     id: "beginners",
     title: "New lifters start on less",
     explain:
-      "People new to lifting progress on very little, so your weekly set targets start lower — easier to recover from and to keep turning up for. More still helps early, so the targets rise as you move up. The evidence here is limited.",
+      "People new to lifting progress on very little, so your weekly set targets start lower — easier to recover from and to keep turning up for. Each lift starts at three sets at most, so a short session reaches every muscle instead of spending itself on one lift. More still helps early, so the targets rise as you move up. The evidence here is limited.",
+
     basis: { kind: "research", findings: ["beginners-start-small"] },
     appliesTo: ({ level }) => level === 1,
   },

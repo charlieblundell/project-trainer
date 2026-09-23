@@ -246,10 +246,19 @@ const PRESCRIPTIONS: Record<string, { compound: Prescription; isolation: Prescri
   },
 };
 
-/** The sets, reps and rest a movement gets for a goal. Shared with the plan editor. */
-export function prescribe(exercise: ExerciseDef, goal: string): PlannedExercise {
+/**
+ * The most sets a new lifter's movement starts on. Four sets of a main lift,
+ * three times a week, was twelve squat sets: a beginner's whole weekly
+ * allowance for quads on one lift, in sessions too short for anything to
+ * train their back. Spare time still tops these up toward each muscle's range.
+ */
+const BEGINNER_MAX_SETS = 3;
+
+/** The sets, reps and rest a movement gets for a goal and experience. Shared with the plan editor. */
+export function prescribe(exercise: ExerciseDef, goal: string, level?: Level): PlannedExercise {
   const table = PRESCRIPTIONS[goal] ?? PRESCRIPTIONS["Build muscle"];
-  const base = exercise.compound ? table.compound : table.isolation;
+  const chosen = exercise.compound ? table.compound : table.isolation;
+  const base = level === 1 ? { ...chosen, sets: Math.min(chosen.sets, BEGINNER_MAX_SETS) } : chosen;
 
   if (exercise.unit === "time") {
     const isCardio = exercise.pattern === "conditioning";
@@ -275,6 +284,25 @@ export function prescribe(exercise: ExerciseDef, goal: string): PlannedExercise 
     };
   }
 
+  /*
+   * A band can't make six reps hard, and a set that isn't close to failure
+   * isn't doing much. Light loads build muscle as well as heavy ones when the
+   * set is taken near the limit, so band work goes to higher reps. The long
+   * rest a heavy compound needs isn't needed either: that's about the next
+   * heavy set losing reps, and nothing here is heavy.
+   */
+  if (isLightLoad(exercise) && base.repMax < LIGHT_REP_MIN) {
+    return {
+      exerciseId: exercise.id,
+      unit: exercise.unit,
+      sets: base.sets,
+      repMin: LIGHT_REP_MIN,
+      repMax: LIGHT_REP_MAX,
+      restSeconds: table.isolation.restSeconds,
+      targetWeightKg: null,
+    };
+  }
+
   return {
     exerciseId: exercise.id,
     unit: exercise.unit,
@@ -285,6 +313,23 @@ export function prescribe(exercise: ExerciseDef, goal: string): PlannedExercise 
     targetWeightKg: null,
   };
 }
+
+const LIGHT_REP_MIN = 12;
+const LIGHT_REP_MAX = 20;
+
+/**
+ * Resistance from a band rather than a weight. A band on a pull-up bar is
+ * helping, not loading, so it doesn't count.
+ */
+export function isLightLoad(exercise: ExerciseDef): boolean {
+  return (
+    exercise.unit === "reps" &&
+    exercise.equipment.includes("bands") &&
+    !exercise.equipment.includes("pullup_bar") &&
+    exercise.pattern !== "mobility"
+  );
+}
+
 
 /* ------------------------------------------------------------------ *
  * Reading the user's own notes
@@ -797,7 +842,7 @@ export function generatePlan(profile: GeneratorProfile, options: { keep?: Iterab
         droppedForInjury.add(pattern);
         continue;
       }
-      take(result.exercise, prescribe(result.exercise, goal));
+      take(result.exercise, prescribe(result.exercise, goal, level));
     }
 
     /**
@@ -900,9 +945,16 @@ export function generatePlan(profile: GeneratorProfile, options: { keep?: Iterab
         // stimulus again. Past two, the next step is another set, below.
         if (forGroup.length >= 2) break;
         if (isRegression(exercise)) continue;
-        const planned = prescribe(exercise, goal);
+        const planned = prescribe(exercise, goal, level);
         if (fits([...chosen, planned])) {
           take(exercise, planned);
+          return true;
+        }
+        // Two sets of something beats none: a short session that can't hold
+        // the full prescription can still give an untrained muscle its start.
+        const shorter = { ...planned, sets: 2 };
+        if (planned.sets > 2 && forGroup.length === 0 && fits([...chosen, shorter])) {
+          take(exercise, shorter);
           return true;
         }
       }
@@ -1020,7 +1072,7 @@ export function generatePlan(profile: GeneratorProfile, options: { keep?: Iterab
           .sort((a, b) => score(b, chosen.length, ctx) - score(a, chosen.length, ctx) || a.id.localeCompare(b.id))[0];
 
         if (calf) {
-          const planned = { ...prescribe(calf, goal), sets: Math.max(2, Math.min(3, floor - have)) };
+          const planned = { ...prescribe(calf, goal, level), sets: Math.max(2, Math.min(3, floor - have)) };
           // Make room from the accessory carrying the most sets, never a main lift.
           for (let guard = 0; guard < 12 && estimateMinutes([...chosen, planned]) > sessionMinutes; guard += 1) {
             const donor = chosen
@@ -1267,7 +1319,8 @@ export function refreshAccessories(plan: Plan, profile: GeneratorProfile): Refre
       usedThisWeek.add(result.exercise.id);
       justRetired.push(def.id);
       swapped.push({ from: def.name, to: result.exercise.name });
-      return prescribe(result.exercise, plan.goal);
+      return prescribe(result.exercise, plan.goal, plan.level);
+
     });
 
     return { ...session, exercises, estMinutes: estimateMinutes(exercises) };

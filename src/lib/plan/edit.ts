@@ -175,7 +175,7 @@ export function addExercise(plan: Plan, sessionId: string, exerciseId: string): 
   if (!def) return plan;
   return mapSession(plan, sessionId, (session) => ({
     ...session,
-    exercises: [...session.exercises, prescribe(def, plan.goal)],
+    exercises: [...session.exercises, prescribe(def, plan.goal, plan.level)],
   }));
 }
 
@@ -249,7 +249,7 @@ export function replaceExercise(plan: Plan, sessionId: string, index: number, ex
   const def = EXERCISES_BY_ID[exerciseId];
   if (!def) return plan;
   return mapExercise(plan, sessionId, index, (exercise) => {
-    const fresh = prescribe(def, plan.goal);
+    const fresh = prescribe(def, plan.goal, plan.level);
     const sameUnit = fresh.unit === exercise.unit;
     // A different kind of movement can't inherit numbers that don't apply to it.
     return sameUnit

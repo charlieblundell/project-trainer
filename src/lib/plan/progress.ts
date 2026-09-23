@@ -2,6 +2,8 @@ import { EXERCISES_BY_ID, countsSeconds, formatDuration, type Equipment, type Ex
 import type { SetLog } from "@/lib/types";
 import type { Plan, PlannedExercise, PlannedSession } from "./types";
 import { isLowReadiness, type Readiness } from "./readiness";
+import { isLightLoad } from "./generate";
+
 
 export type ChangeKind =
   | "calibrated"
@@ -162,6 +164,20 @@ function progressBodyweight(
       exerciseName: name,
       kind: "hold",
       reason: `Keep working toward ${repMax} reps.`,
+      next: { ...planned, streak: 0 },
+    };
+  }
+
+  /*
+   * A band gets harder by swapping it for a stronger one, not by climbing a
+   * ladder of variations or adding reps past twenty.
+   */
+  if (def && isLightLoad(def) && repMax >= REP_CEILING) {
+    return {
+      exerciseId: planned.exerciseId,
+      exerciseName: name,
+      kind: "increase",
+      reason: `${repMax} reps on every set — time for a stronger band, or a shorter grip on this one. Aim for ${repMin} with it.`,
       next: { ...planned, streak: 0 },
     };
   }
