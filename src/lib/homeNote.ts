@@ -1,4 +1,5 @@
-import { sessionById } from "@/lib/plan/helpers";
+import { WEEKDAY_LABELS, nextSession, sessionById, sessionForToday } from "@/lib/plan/helpers";
+
 import type { Plan } from "@/lib/plan/types";
 import type { WorkoutRecord } from "@/lib/progress/types";
 
@@ -24,7 +25,11 @@ function startOfDay(d: Date): number {
  */
 export function homeNote(records: WorkoutRecord[], plan: Plan | null, now = new Date()): string | null {
   if (!plan) return null;
-  if (records.length === 0) return "Your first session is ready when you are.";
+  if (records.length === 0) {
+    // On a rest day "ready when you are" promises a session they can't start yet.
+    const next = sessionForToday(plan, now) ? null : nextSession(plan, now);
+    return next ? `Your first session is on ${WEEKDAY_LABELS[next.weekday]}.` : "Your first session is ready when you are.";
+  }
 
   const last = records.reduce((a, b) => (a.completedAt > b.completedAt ? a : b));
   const when = new Date(last.completedAt);

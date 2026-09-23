@@ -252,10 +252,13 @@ export default function Home() {
               const trained = trainedDays.has(i);
               const planned = plan.sessions.find((s) => s.weekday === day);
               const isToday = i === todayIndex;
+              // A session day gone by without a workout: shown quietly, not in
+              // the colour of one still to come, and never as a red mark.
+              const passed = !!planned && !trained && i < todayIndex;
               const dayStyle = planned ? sessionStyle(planned) : null;
               const DayIcon = dayStyle?.icon;
               const label = `${WEEKDAY_LABELS[day]}${isToday ? " (today)" : ""}: ${
-                trained ? "trained" : planned ? `${planned.name} planned` : "rest"
+                trained ? "trained" : passed ? `${planned.name}, not logged` : planned ? `${planned.name} planned` : "rest"
               }`;
               return (
                 <motion.li
@@ -283,7 +286,7 @@ export default function Home() {
                     style={
                       trained
                         ? { backgroundColor: "var(--success)" }
-                        : dayStyle
+                        : dayStyle && !passed
                           ? sessionBackground(dayStyle)
                           : { backgroundColor: "var(--fill)" }
                     }
@@ -291,8 +294,9 @@ export default function Home() {
                     {trained ? (
                       <Check size={17} strokeWidth={3} className="text-white" />
                     ) : DayIcon ? (
-                      <DayIcon size={15} strokeWidth={2.3} className="text-white" />
+                      <DayIcon size={15} strokeWidth={2.3} className={passed ? "text-faint" : "text-white"} />
                     ) : null}
+
                   </span>
                 </motion.li>
               );

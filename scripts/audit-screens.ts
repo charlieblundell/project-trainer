@@ -53,8 +53,11 @@ async function main() {
   let i = 10;
   for (const s of screens) { await page.goto(`${BASE}/${s}`); await shot(page, `${i++}-${s.replace("/", "-")}`); }
 
-  // A workout, walked into the way a person does.
+  // A workout, walked into the way a person does. A session only starts on its
+  // own day, so the clock is set to a Tuesday, the sample plan's Push day.
+  await page.clock.install({ time: new Date("2026-09-15T09:00:00") });
   await page.goto(BASE + "/home"); await page.waitForTimeout(800);
+
   await page.getByRole("button", { name: "Start workout" }).first().click();
   await shot(page, "30-checkin", false);
   for (const a of ["Well", "Not sore", "None"]) { const b = page.getByRole("button", { name: a, exact: true }); if (await b.count()) await b.first().click(); }
@@ -62,6 +65,14 @@ async function main() {
   await shot(page, "31-warmup", false);
   const skip = page.getByRole("button", { name: /skip the warm-up|done — start the workout/i }); if (await skip.count()) await skip.first().click();
   await shot(page, "32-train");
+  // Finishing early leads to the summary screen.
+  const more = page.getByRole("button", { name: /more options|finish/i });
+  if (await more.count()) {
+    await more.first().click();
+    const finish = page.getByRole("button", { name: /finish workout|finish now|yes, finish/i });
+    if (await finish.count()) { await finish.first().click(); await shot(page, "33-complete"); }
+  }
   await browser.close();
+
 }
 main().catch((e) => { console.error(e); process.exit(1); });

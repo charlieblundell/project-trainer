@@ -174,7 +174,7 @@ function SessionCard({
       {open && (
         <div className="border-t border-line px-4 pb-4 pt-3.5">
           <label className="text-footnote font-semibold text-muted" htmlFor={`name-${session.id}`}>
-            NAME
+            Name
           </label>
           <input
             id={`name-${session.id}`}
@@ -293,7 +293,7 @@ function NumberBox({
 
   return (
     <label className="flex-1">
-      <span className="text-[11px] text-muted">{label}</span>
+      <span className="text-caption text-muted">{label}</span>
       <input
         type="number"
         inputMode="numeric"
@@ -439,7 +439,7 @@ function ExerciseRow({
         </div>
       )}
       {exercise.targetWeightKg == null && (weighted || addsWeight) && (
-        <p className="mt-1.5 text-[11px] leading-relaxed text-muted">
+        <p className="mt-1.5 text-caption text-muted">
           {weighted
             ? "Left empty, you'll find a working weight on your next session."
             : "Left empty, this stays a bodyweight exercise."}

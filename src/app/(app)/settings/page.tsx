@@ -108,13 +108,26 @@ function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-AU", { day: "numeric", month: "long", year: "numeric" });
 }
 
+function freeEarlyAccess() {
+  return {
+    title: "Free early access",
+    detail:
+      "Subscriptions aren't open yet, so everything is free for now. When they open, you'll have at least 7 more days free before you'd need to subscribe.",
+    action: "none" as const,
+  };
+}
+
 /** What to say about someone's subscription, and what they can do about it. */
+
 function billingSummary(billing: Billing | null): {
   title: string;
   detail: string;
   action: "subscribe" | "manage" | "none";
   urgent?: boolean;
 } {
+  // While payments are paused nobody can be subscribed, so a status that
+  // didn't load changes nothing, and a Subscribe button would lead nowhere.
+  if (!billing && !PAYMENTS_OPEN) return freeEarlyAccess();
   if (!billing) {
     return { title: "Subscription", detail: "Your subscription status couldn't be loaded.", action: "subscribe" };
   }
@@ -141,14 +154,8 @@ function billingSummary(billing: Billing | null): {
     return { title: plan, detail: "Active.", action: "manage" };
   }
 
-  if (!PAYMENTS_OPEN) {
-    return {
-      title: "Free early access",
-      detail:
-        "Subscriptions aren't open yet, so everything is free for now. When they open, you'll have at least 7 more days free before you'd need to subscribe.",
-      action: "none",
-    };
-  }
+  if (!PAYMENTS_OPEN) return freeEarlyAccess();
+
 
   if (inTrial(billing)) {
     const days = trialDaysLeft(billing);

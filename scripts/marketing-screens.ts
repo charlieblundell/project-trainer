@@ -14,6 +14,8 @@
 import { chromium, type Page } from "@playwright/test";
 import path from "node:path";
 import { samplePlan, stubSupabase, supabaseProjectRef, TEST_USER } from "../e2e/signed-in";
+import { upgradeDismissKey } from "../src/lib/plan/upgrade";
+
 
 /** iPhone 15 at 3x, which is what the landing page's Screen component expects. */
 const VIEWPORT = { width: 390, height: 844 };
@@ -45,7 +47,18 @@ function marketingPlan() {
   // Six exercises is not a 38-minute session; the fixture's estimate was
   // written for two.
   plan.sessions[0].estMinutes = 52;
+  /*
+   * A session only starts on its own day, so Push is put on today, whatever
+   * day the photos are taken: the home screen shows a session ready to start,
+   * not a rest day. (Faking the browser's clock instead stops the app's
+   * animations, and every screen photographs blank.)
+   */
+  const days = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"] as const;
+  const today = new Date().getDay();
+  plan.sessions[0].weekday = days[today];
+  plan.sessions[1].weekday = days[(today + 3) % 7];
   return plan;
+
 }
 
 async function main() {
@@ -81,11 +94,13 @@ async function main() {
     }
   );
 
-  // The install card is a prompt, not the product, and it owns half the home
-  // screen until it's dismissed.
-  await page.addInitScript(() => {
+  // The install card and the improved-plan offer are prompts, not the product,
+  // and between them they own half the home screen until they're dismissed.
+  await page.addInitScript((upgradeKey) => {
     window.localStorage.setItem("install-prompt-dismissed-at", String(Date.now()));
-  });
+    window.localStorage.setItem(upgradeKey, "1");
+  }, upgradeDismissKey());
+
 
   await page.goto(BASE);
   await settle(page);
@@ -98,14 +113,23 @@ async function main() {
   await page.evaluate(() => {
     const key = "project-trainer-store";
     const saved = JSON.parse(window.localStorage.getItem(key) ?? "{}");
+    const now = new Date().toISOString();
     saved.state = {
       ...saved.state,
-      messages: [
-        { role: "assistant", text: "Hey. What can I help with?" },
-        { role: "user", text: "Can I swap squats for leg press? My knee's been sore." },
+      // Today's chat, so opening the coach doesn't start a fresh one.
+      chats: [
         {
-          role: "assistant",
-          text: "Yes — swapped for today. Machines and free weights build muscle about equally well, so you lose nothing by using one while a joint settles. I've kept the same sets and reps, and you'll find a working weight on your first set.",
+          id: "marketing-chat",
+          startedAt: now,
+          updatedAt: now,
+          messages: [
+            { role: "assistant", text: "Hey. What can I help with?" },
+            { role: "user", text: "Can I swap squats for leg press? My knee's been sore." },
+            {
+              role: "assistant",
+              text: "Yes — swapped for today. Machines and free weights build muscle about equally well, so you lose nothing by using one while a joint settles. I've kept the same sets and reps, and you'll find a working weight on your first set.",
+            },
+          ],
         },
       ],
     };
@@ -125,7 +149,7 @@ async function main() {
    */
   await page.goto(`${BASE}/home`);
   await settle(page);
-  await page.getByRole("button", { name: /start workout|start it early/i }).first().click();
+  await page.getByRole("button", { name: /start workout/i }).first().click();
   await settle(page);
 
   for (const answer of ["Well", "Not sore", "None"]) {
