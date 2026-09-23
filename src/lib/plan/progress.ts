@@ -1,4 +1,4 @@
-import { EXERCISES_BY_ID, type Equipment, type ExerciseDef } from "@/lib/exercises";
+import { EXERCISES_BY_ID, countsSeconds, formatDuration, type Equipment, type ExerciseDef } from "@/lib/exercises";
 import type { SetLog } from "@/lib/types";
 import type { Plan, PlannedExercise, PlannedSession } from "./types";
 import { isLowReadiness, type Readiness } from "./readiness";
@@ -215,14 +215,89 @@ function progressBodyweight(
   };
 }
 
+/**
+ * A hold (a plank, a balance stand) is logged in seconds and grows in seconds,
+ * up to a minute. Past that, holding longer mostly trains patience, so the next
+ * step is the harder version: a heel-to-toe stand becomes a single-leg one.
+ */
+function progressHold(
+  planned: PlannedExercise,
+  def: ExerciseDef | undefined,
+  sets: SetLog[],
+  owned: Equipment[]
+): Change {
+  const name = def?.name ?? planned.exerciseId;
+  const target = planned.seconds ?? 30;
+  // The weakest set is the honest one: a 40-second hold on the good leg and 15
+  // on the other isn't 40 seconds.
+  const logged = Math.min(...sets.map((s) => s.r));
+  const HOLD_CEILING = 60;
+  const MAX_HOLD = 120;
+
+  if (logged < target) {
+    return {
+      exerciseId: planned.exerciseId,
+      exerciseName: name,
+      kind: "hold",
+      reason: `Building toward ${formatDuration(target, true)} on every set.`,
+      next: { ...planned, streak: 0 },
+    };
+  }
+
+  const harder = def?.harder ? EXERCISES_BY_ID[def.harder] : undefined;
+  const set = new Set<Equipment>([...owned, "bodyweight"]);
+  const reachable =
+    harder && harder.unit === "time" && harder.equipment.every((req) => set.has(req));
+
+  if (target >= HOLD_CEILING && harder && reachable) {
+    const streak = (planned.streak ?? 0) + 1;
+    if (streak < 2) {
+      return {
+        exerciseId: planned.exerciseId,
+        exerciseName: name,
+        kind: "hold",
+        reason: `${formatDuration(target, true)} on every set — one more session like that and you move up to ${harder.name}.`,
+        next: { ...planned, streak },
+      };
+    }
+    return {
+      exerciseId: planned.exerciseId,
+      exerciseName: name,
+      kind: "harder_variant",
+      reason: `Two steady sessions at ${formatDuration(target, true)}, so you're moving up to ${harder.name}.`,
+      next: { ...planned, exerciseId: harder.id, seconds: 20, streak: 0 },
+    };
+  }
+
+  if (target >= MAX_HOLD) {
+    return {
+      exerciseId: planned.exerciseId,
+      exerciseName: name,
+      kind: "hold",
+      reason: `${formatDuration(target, true)} is plenty for this one — keep it steady.`,
+      next: { ...planned, streak: 0 },
+    };
+  }
+
+  // Short holds grow in small steps: 20 to 30 seconds is a big jump on one leg.
+  const step = target < 30 ? 5 : 10;
+  const nextSeconds = Math.min(MAX_HOLD, target + step);
+  return {
+    exerciseId: planned.exerciseId,
+    exerciseName: name,
+    kind: "longer",
+    reason: `Held ${formatDuration(logged, true)}, so next time is ${formatDuration(nextSeconds, true)}.`,
+    next: { ...planned, seconds: nextSeconds, streak: 0 },
+  };
+}
+
 function progressTimed(planned: PlannedExercise, def: ExerciseDef | undefined, sets: SetLog[]): Change {
   const name = def?.name ?? planned.exerciseId;
   const targetMinutes = Math.round((planned.seconds ?? 0) / 60);
   const loggedMinutes = Math.max(...sets.map((s) => s.r));
 
   if (loggedMinutes >= targetMinutes) {
-    // Cardio grows in useful chunks; a plank grows in seconds.
-    const step = def?.pattern === "conditioning" ? 300 : 15;
+    const step = 300;
     const nextSeconds = (planned.seconds ?? 0) + step;
     return {
       exerciseId: planned.exerciseId,
@@ -279,9 +354,12 @@ export function applyProgression(
         change = loaded
           ? progressWeighted(planned, def, sets, rpe, isLowReadiness(readiness), true)
           : progressBodyweight(planned, def, sets, owned);
+      } else if (countsSeconds(planned.exerciseId, planned.unit)) {
+        change = progressHold(planned, def, sets, owned);
       } else {
         change = progressTimed(planned, def, sets);
       }
+
 
       changes.push(change);
       return change.next;

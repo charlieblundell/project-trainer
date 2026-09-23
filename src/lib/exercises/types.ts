@@ -26,7 +26,13 @@ export type MovementPattern =
   | "isolation"
   | "plyometric"
   | "conditioning"
-  | "mobility";
+  | "mobility"
+  /**
+   * Standing balance, still or walking. Its own pattern so a swap offers
+   * another balance exercise rather than a plank, and so nothing picking core
+   * work can land on it by accident.
+   */
+  | "balance";
 
 /**
  * Joints and structures a movement puts under meaningful load. Used to steer
@@ -75,6 +81,14 @@ export type ExerciseDef = {
   cues?: string[];
   /** True for movements that are gentle on joints and suit deconditioned users. */
   lowImpact?: boolean;
+  /**
+   * Done lying, kneeling or on all fours. Getting down to the floor and back up
+   * is itself hard for many older beginners, so their plans reach for a
+   * standing or seated version first. Anything that needs the mat is on the
+   * floor; this also marks the floor work that doesn't list a mat, like push-ups.
+   */
+  floor?: boolean;
+
   /**
    * A bodyweight movement that will take added load — a dumbbell held, a plate
    * on the hips, a belt — without becoming a different exercise. These start

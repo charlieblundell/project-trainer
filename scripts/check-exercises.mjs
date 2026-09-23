@@ -25,6 +25,7 @@ for (const file of files) {
         ?.split(",")
         .map((s) => s.trim().replace(/"/g, ""))
         .filter(Boolean) ?? [],
+      hasCues: /\bcues: \[/.test(block),
       easier: block.match(/easier: "([^"]+)"/)?.[1],
       harder: block.match(/harder: "([^"]+)"/)?.[1],
       substitutes: [...block.matchAll(/substitutes: \[([^\]]*)\]/g)][0]?.[1]
@@ -50,6 +51,8 @@ for (const ex of exercises) {
   for (const sub of ex.substitutes) {
     if (!byId.has(sub)) problems.push(`${ex.id}.substitutes -> missing "${sub}" (${ex.file})`);
   }
+  // The info panel is the only coaching someone gets mid-set.
+  if (!ex.hasCues) problems.push(`${ex.id} has no coaching cues (${ex.file})`);
 }
 
 console.log(`Loaded ${exercises.length} exercises from ${files.length} files\n`);
@@ -77,8 +80,9 @@ for (const [label, owned] of Object.entries(profiles)) {
 }
 
 if (problems.length) {
-  console.log(`\n${problems.length} broken reference(s):`);
+  console.log(`\n${problems.length} problem(s):`);
   for (const p of problems) console.log("  " + p);
   process.exit(1);
 }
-console.log("\nAll cross-references resolve.");
+console.log("\nAll cross-references resolve, and every exercise has cues.");
+

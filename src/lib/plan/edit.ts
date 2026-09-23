@@ -21,6 +21,7 @@ export const LIMITS = {
   reps: { min: 1, max: 50 },
   restSeconds: { min: 0, max: 600 },
   minutes: { min: 1, max: 120 },
+  holdSeconds: { min: 5, max: 600 },
   weightKg: { min: 0, max: 500 },
 } as const;
 
@@ -200,8 +201,10 @@ export type ExercisePatch = {
   sets?: number;
   repMin?: number;
   repMax?: number;
-  /** Minutes, for timed work — stored as seconds. */
+  /** Minutes, for cardio — stored as seconds. */
   minutes?: number;
+  /** Seconds, for a hold like a plank or a balance stand. */
+  seconds?: number;
   restSeconds?: number;
   targetWeightKg?: number | null;
 };
@@ -221,6 +224,8 @@ export function updateExercise(
       next.restSeconds = Math.round(clamp(patch.restSeconds, LIMITS.restSeconds));
     }
     if (patch.minutes !== undefined) next.seconds = Math.round(clamp(patch.minutes, LIMITS.minutes)) * 60;
+    if (patch.seconds !== undefined) next.seconds = Math.round(clamp(patch.seconds, LIMITS.holdSeconds));
+
     if (patch.targetWeightKg !== undefined) {
       next.targetWeightKg =
         patch.targetWeightKg === null ? null : clamp(patch.targetWeightKg, LIMITS.weightKg);

@@ -15,6 +15,7 @@ export const BAND_EXERCISES: ExerciseDef[] = [
     level: 2,
     unit: "reps",
     loads: ["shoulder", "wrist", "elbow"],
+    floor: true,
     easier: "pushup",
     substitutes: ["pushup", "band_chest_press"],
     cues: ["Band across your upper back, ends under your hands."],
@@ -137,6 +138,7 @@ export const BAND_EXERCISES: ExerciseDef[] = [
     unit: "reps",
     loads: ["hip", "spine"],
     substitutes: ["bw_good_morning"],
+    cues: ["Band under your feet and around the back of your neck.", "Push your hips back with a flat back, then stand tall."],
   },
   {
     id: "band_hip_thrust",
@@ -150,6 +152,7 @@ export const BAND_EXERCISES: ExerciseDef[] = [
     loads: ["hip"],
     lowImpact: true,
     substitutes: ["glute_bridge", "hip_thrust"],
+    cues: ["Lie on your back, band across your hips held down by your hands.", "Drive your hips up and squeeze at the top."],
   },
   {
     id: "band_lateral_walk",
@@ -175,6 +178,7 @@ export const BAND_EXERCISES: ExerciseDef[] = [
     unit: "reps",
     loads: ["shoulder"],
     substitutes: ["lateral_raise"],
+    cues: ["Stand on the band, a handle in each hand.", "Raise your arms out to the side to shoulder height."],
   },
   {
     id: "band_curl",
@@ -187,6 +191,7 @@ export const BAND_EXERCISES: ExerciseDef[] = [
     unit: "reps",
     loads: ["elbow"],
     substitutes: ["db_curl"],
+    cues: ["Stand on the band, palms forward, elbows by your sides.", "Curl up, then let the band lower your hands slowly."],
   },
   {
     id: "band_triceps_pushdown",
@@ -199,6 +204,7 @@ export const BAND_EXERCISES: ExerciseDef[] = [
     unit: "reps",
     loads: ["elbow"],
     substitutes: ["triceps_pushdown"],
+    cues: ["Band anchored high, elbows pinned at your sides.", "Push down until your arms are straight."],
   },
   {
     id: "band_pallof_press",
@@ -212,5 +218,34 @@ export const BAND_EXERCISES: ExerciseDef[] = [
     loads: ["spine"],
     lowImpact: true,
     cues: ["Anchor at chest height to your side.", "Press straight out and resist the twist."],
+  },
+
+  // ---- added ----
+  {
+    id: "band_chest_fly",
+    name: "Band Chest Fly",
+    equipment: ["bands"],
+    pattern: "isolation",
+    muscles: ["Chest", "Front delts"],
+    compound: false,
+    level: 1,
+    unit: "reps",
+    loads: ["shoulder"],
+    substitutes: ["cable_fly", "db_fly"],
+    cues: ["Band anchored behind you at chest height.", "Arms slightly bent, hug them together in front of you and return slowly."],
+  },
+  {
+    id: "band_glute_kickback",
+    name: "Band Glute Kickback",
+    equipment: ["bands", "chair"],
+    pattern: "isolation",
+    muscles: ["Glutes", "Hamstrings"],
+    compound: false,
+    level: 1,
+    unit: "reps",
+    loads: ["hip"],
+    lowImpact: true,
+    substitutes: ["standing_hip_extension", "band_hip_thrust"],
+    cues: ["Band around your ankles, holding a chair for balance.", "Push one leg back against the band without arching your lower back."],
   },
 ];

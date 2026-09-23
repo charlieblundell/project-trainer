@@ -149,7 +149,7 @@ export const PLAN_RULES: PlanRule[] = [
     id: "balance-work",
     title: "Balance work in every session",
     explain:
-      "In older adults, balance and functional exercise cuts the rate of falls by about a quarter, and the WHO asks for balance and strength work on three or more days a week from 65. So every session has a short balance exercise, straight after the main lifts, and nothing in the plan involves jumping.",
+      "In older adults, balance and functional exercise cuts the rate of falls by about a quarter, and the WHO asks for balance and strength work on three or more days a week from 65. So every session has a short balance exercise, straight after the main lifts, and nothing in the plan involves jumping. Standing holds and walking drills take turns through the week, and each gets harder as you get steadier: a heel-to-toe stand becomes a one-leg stand once you can hold it for a minute.",
     basis: { kind: "research", findings: ["balance-exercise-prevents-falls"] },
     appliesTo: ({ plan }) => (plan.cautions ?? []).length > 0,
     forYou: ({ plan }) => {
@@ -207,7 +207,8 @@ export const PLAN_RULES: PlanRule[] = [
     id: "fewer-exercises-when-new",
     title: "Fewer exercises, more sets",
     explain:
-      "Once every muscle has its minimum, a session tops up with more sets of what's already there rather than new movements, past about seven. There's less to learn and less time spent moving between machines.",
+      "A muscle that's already being worked gets another set of that lift before it gets a new exercise, and once every muscle has its minimum, a session tops up with more sets rather than new movements past about seven. There's less to learn and less time spent moving between machines.",
+
     basis: {
       kind: "judgement",
       why: "The weekly set counts are research; how many different exercises to spread them over is a coaching choice.",
@@ -215,7 +216,19 @@ export const PLAN_RULES: PlanRule[] = [
     appliesTo: ({ plan }) => (plan.cautions ?? []).length > 0,
   },
   {
+    id: "off-the-floor",
+    title: "On your feet, not the floor",
+    explain:
+      "Getting down to the floor and back up is hard work on its own, so where there's a standing or seated version of an exercise your plan uses it: a plank against the kitchen counter, a step-up onto the bottom stair rather than a chair. Step-ups onto a chair or bench are left out, since they're a high step onto something that can tip.",
+    basis: {
+      kind: "judgement",
+      why: "A practical choice to make sessions safer to do alone and easier to start, not something a trial has tested.",
+    },
+    appliesTo: ({ plan, level }) => (plan.cautions ?? []).length > 0 && level === 1,
+  },
+  {
     id: "spine-with-fragile-bones",
+
     title: "No crunches with fragile bones",
     explain:
       "If you've told us about osteoporosis or low bone density, nothing in your plan curls or twists your spine under load. Crunches and twists are swapped for planks, bird dogs and Pallof presses, which train the same muscles.",

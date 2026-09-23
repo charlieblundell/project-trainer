@@ -1,4 +1,4 @@
-import { EXERCISES_BY_ID } from "@/lib/exercises";
+import { EXERCISES_BY_ID, countsSeconds, formatDuration } from "@/lib/exercises";
 import type { Weekday } from "@/lib/types";
 import type { Plan, PlannedExercise, PlannedSession } from "./types";
 
@@ -58,8 +58,8 @@ export function exerciseName(planned: PlannedExercise): string {
 /** "62.5 kg x 8", "3 x 8-12", "20 min" — whatever suits how it's measured. */
 export function targetLabel(planned: PlannedExercise): string {
   if (planned.unit === "time" || planned.unit === "distance") {
-    const mins = Math.round((planned.seconds ?? 0) / 60);
-    return planned.sets > 1 ? `${planned.sets} x ${mins} min` : `${mins} min`;
+    const duration = formatDuration(planned.seconds ?? 0, countsSeconds(planned.exerciseId, planned.unit));
+    return planned.sets > 1 ? `${planned.sets} x ${duration}` : duration;
   }
   const reps = planned.repMin === planned.repMax ? `${planned.repMax}` : `${planned.repMin}-${planned.repMax}`;
   if (planned.targetWeightKg != null) {

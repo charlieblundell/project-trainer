@@ -1,4 +1,11 @@
-import { EXERCISES_BY_ID, availableExercises, type Equipment, type ExerciseDef, type Level } from "@/lib/exercises";
+import {
+  EXERCISES_BY_ID,
+  availableExercises,
+  onTheFloor,
+  type Equipment,
+  type ExerciseDef,
+  type Level,
+} from "@/lib/exercises";
 import type { Plan, PlannedSession, Region } from "./types";
 
 /*
@@ -100,9 +107,17 @@ export function warmUpFor(session: PlannedSession, owned: Equipment[], who: Warm
       (!who.gentle || !!ex.lowImpact)
   );
 
+  /*
+   * Someone the plan is careful with warms up on their feet or in a chair
+   * where it can: the warm-up shouldn't start by getting down on the floor.
+   * Floor moves still fill in if there's nothing else.
+   */
+  const floorPenalty = (def: ExerciseDef) => (who.gentle && onTheFloor(def) ? 10 : 0);
   const ranked = pool
     .map((def) => ({ def, score: scoreMove(def, wanted) }))
     .filter((entry) => entry.score > 0)
+    .map((entry) => ({ ...entry, score: entry.score - floorPenalty(entry.def) }))
+
     .sort((a, b) => b.score - a.score || a.def.id.localeCompare(b.def.id));
 
   const picked: ExerciseDef[] = [];

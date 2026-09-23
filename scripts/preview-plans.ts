@@ -5,6 +5,8 @@
  */
 import { generatePlan } from "../src/lib/plan/generate";
 import { EXERCISES_BY_ID } from "../src/lib/exercises";
+import { targetLabel } from "../src/lib/plan/helpers";
+
 import type { GeneratorProfile } from "../src/lib/plan/types";
 
 const base: GeneratorProfile = {
@@ -99,11 +101,8 @@ for (const { label, profile } of profiles) {
     }
     for (const ex of session.exercises) {
       const def = EXERCISES_BY_ID[ex.exerciseId];
-      const target =
-        ex.unit === "time" || ex.unit === "distance"
-          ? `${ex.sets} x ${Math.round((ex.seconds ?? 0) / 60)} min`
-          : `${ex.sets} x ${ex.repMin}-${ex.repMax}`;
-      console.log(`      ${(def?.name ?? ex.exerciseId).padEnd(30)} ${target.padEnd(14)} rest ${ex.restSeconds}s`);
+      const target = targetLabel(ex);
+      console.log(`      ${(def?.name ?? ex.exerciseId).padEnd(34)} ${target.padEnd(14)} rest ${ex.restSeconds}s`);
     }
   }
 }

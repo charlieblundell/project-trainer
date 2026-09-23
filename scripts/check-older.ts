@@ -17,6 +17,8 @@ import {
   refreshAccessories,
 } from "../src/lib/plan/generate";
 import { planUpgrade } from "../src/lib/plan/upgrade";
+import { applyProgression } from "../src/lib/plan/progress";
+import { targetLabel } from "../src/lib/plan/helpers";
 import { warmUpFor, warmUpProfile } from "../src/lib/plan/warmup";
 import { setsByGroup } from "../src/lib/plan/volume";
 import type { Equipment } from "../src/lib/exercises";
@@ -246,9 +248,90 @@ expect(
   ),
   false
 );
-expect("without that caution, crunches are still allowed", exercisesOf(seventy).some((e) => SPINE_FLEXION_IDS.has(e.exerciseId)), true);
+// Asked for by name, so it's the caution and nothing else that keeps it out.
+const likesCrunches = { ...base, likedExercises: ["cable_crunch"] };
+expect("without that caution, crunches are still allowed", exercisesOf(generatePlan(likesCrunches)).some((e) => e.exerciseId === "cable_crunch"), true);
+expect(
+  "with it, even a liked crunch is left out",
+  exercisesOf(generatePlan({ ...likesCrunches, considerations: "osteoporosis" })).some((e) => SPINE_FLEXION_IDS.has(e.exerciseId)),
+  false
+);
+
+
+console.log("\nBalance that moves and progresses\n");
+const threeDays = generatePlan({ ...base, days: 3, trainingDays: ["mon", "wed", "fri"], equipment: ["bodyweight", "chair"] });
+const balanceOf = (plan: Plan) =>
+  plan.sessions.map((s) => s.exercises.find((e) => BALANCE_IDS.has(e.exerciseId))?.exerciseId ?? null);
+const threeBalance = balanceOf(threeDays);
+expect("every session still has one", threeBalance.every(Boolean), true);
+expect(
+  "standing and walking take turns",
+  threeBalance.map((id) => (id ? EXERCISES_BY_ID[id].unit : null)),
+  ["time", "reps", "time"]
+);
+expect("a beginner starts on the heel-to-toe stand", threeBalance[0], "tandem_stance");
+const sixDays = generatePlan({
+  ...base,
+  days: 6,
+  trainingDays: ["mon", "tue", "wed", "thu", "fri", "sat"],
+  equipment: ["bodyweight", "chair"],
+});
+const walks = balanceOf(sixDays).filter((id) => id && EXERCISES_BY_ID[id].unit === "reps");
+expect("the walking drills differ across the week", new Set(walks).size, walks.length);
+const trainedOlder = generatePlan({ ...base, experience: "I've trained consistently for years", equipment: ["bodyweight", "chair"] });
+expect("someone trained starts further up the ladder", balanceOf(trainedOlder)[0], "single_leg_head_turns");
+expect("a balance walk isn't counted as glute sets", setsByGroup([{ exerciseId: "sideways_walk", unit: "reps", sets: 2, repMin: 10, repMax: 15, restSeconds: 30, targetWeightKg: null }]).glutes, 0);
+
+console.log("\nHolds are counted in seconds\n");
+const stand = threeDays.sessions[0].exercises.find((e) => e.exerciseId === "tandem_stance")!;
+expect("the plan says 30 seconds, not a minute", targetLabel(stand), "2 x 30 s");
+const cardio = threeDays.sessions.find((s) => s.focus === "Conditioning");
+expect("cardio still reads in minutes", cardio ? /min$/.test(targetLabel(cardio.exercises[0])) : true, true);
+const held = (seconds: number, streak = 0) => {
+  const plan: Plan = {
+    ...threeDays,
+    sessions: [{ ...threeDays.sessions[0], exercises: [{ ...stand, seconds, streak }] }],
+  };
+  return applyProgression(plan, plan.sessions[0].id, { tandem_stance: [{ w: 0, r: seconds }, { w: 0, r: seconds }] }, {}, ["bodyweight", "chair"]).changes[0];
+};
+expect("30 seconds held on both sets grows by ten", [held(30).kind, held(30).next.seconds], ["longer", 40]);
+const shortOne = applyProgression(
+  { ...threeDays, sessions: [{ ...threeDays.sessions[0], exercises: [stand] }] },
+  threeDays.sessions[0].id,
+  { tandem_stance: [{ w: 0, r: 30 }, { w: 0, r: 12 }] },
+  {},
+  ["bodyweight", "chair"]
+).changes[0];
+expect("the weaker set is the one that counts", shortOne.kind, "hold");
+expect("a minute, once, is one more session away", held(60).next.exerciseId, "tandem_stance");
+expect("a minute twice moves up a rung", [held(60, 1).kind, held(60, 1).next.exerciseId, held(60, 1).next.seconds], ["harder_variant", "standing_balance", 20]);
+expect("its reason reads in seconds", held(30).reason, "Held 30 s, so next time is 40 s.");
+
+console.log("\nOff the floor, and no high steps\n");
+const homeBeginner = generatePlan({
+  ...base,
+  days: 3,
+  trainingDays: ["mon", "wed", "fri"],
+  equipment: ["bodyweight", "chair", "mat", "dumbbell", "bench", "bands"],
+});
+const lifted = exercisesOf(homeBeginner).map((e) => EXERCISES_BY_ID[e.exerciseId]);
+expect(
+  "an older beginner isn't sent to the floor",
+  lifted.filter((d) => !!d && (d.floor || d.equipment.includes("mat"))).map((d) => d.id),
+  []
+);
+expect("nor up onto a chair or bench", lifted.some((d) => d?.id === "step_up_bw" || d?.id === "step_up"), false);
+const warmFloor = warmUpFor(homeBeginner.sessions[0], ["bodyweight", "chair", "mat"] as Equipment[], warmUpProfile(homeBeginner));
+expect("and warms up on their feet", warmFloor.moves.filter((m) => EXERCISES_BY_ID[m.id]?.equipment.includes("mat")).map((m) => m.id), []);
+const youngHome = generatePlan({ ...base, age: 30, days: 3, trainingDays: ["mon", "wed", "fri"], goal: "Build muscle", equipment: ["bodyweight", "chair", "mat"] });
+expect(
+  "a 30-year-old still gets floor work",
+  exercisesOf(youngHome).some((e) => EXERCISES_BY_ID[e.exerciseId]?.equipment.includes("mat") || EXERCISES_BY_ID[e.exerciseId]?.floor),
+  true
+);
 
 async function main() {
+
   // health-consent makes a Supabase client as it loads; nothing here talks to it.
   process.env.NEXT_PUBLIC_SUPABASE_URL ??= "http://localhost:54321";
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??= "unused";

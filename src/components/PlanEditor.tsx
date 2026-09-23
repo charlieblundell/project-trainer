@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown, ChevronLeft, ChevronUp, Plus, Search, Trash2, X } from "lucide-react";
 import { useAppStore } from "@/lib/store";
-import { availableExercises, searchExercises, type Equipment } from "@/lib/exercises";
+import { availableExercises, countsSeconds, searchExercises, type Equipment } from "@/lib/exercises";
+
 import { EXERCISES_BY_ID } from "@/lib/exercises";
 import { WEEKDAY_LABELS, WEEKDAY_ORDER, exerciseName } from "@/lib/plan/helpers";
 import {
@@ -326,6 +327,7 @@ function ExerciseRow({
   onChange: (change: (plan: Plan) => Plan) => void;
 }) {
   const timed = exercise.unit === "time" || exercise.unit === "distance";
+  const inSeconds = countsSeconds(exercise.exerciseId, exercise.unit);
   const def = EXERCISES_BY_ID[exercise.exerciseId];
   // Bodyweight work that takes added load gets the same box, labelled for what
   // the number actually means.
@@ -373,7 +375,15 @@ function ExerciseRow({
           limits={LIMITS.sets}
           onCommit={(sets) => sets != null && patch({ sets })}
         />
-        {timed ? (
+        {timed && inSeconds ? (
+          <NumberBox
+            key={`secs-${exercise.seconds}`}
+            label="Seconds"
+            value={exercise.seconds ?? 30}
+            limits={LIMITS.holdSeconds}
+            onCommit={(seconds) => seconds != null && patch({ seconds })}
+          />
+        ) : timed ? (
           <NumberBox
             key={`mins-${exercise.seconds}`}
             label="Minutes"

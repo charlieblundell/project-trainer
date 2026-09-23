@@ -37,7 +37,8 @@ function trendLabel(series: ExerciseSeries): string {
   const sessions = series.points.length;
   if (series.change === null) return "First session logged";
 
-  const unit = series.measure === "weight" ? "kg" : series.measure === "time" ? "min" : "reps";
+  const unit = { weight: "kg", time: "min", seconds: "s", reps: "reps" }[series.measure];
+
   if (series.change === 0) return `Holding steady over ${sessions} sessions`;
   const sign = series.change > 0 ? "+" : "";
   return `${sign}${series.change} ${unit} over ${sessions} sessions`;

@@ -64,6 +64,7 @@ export const CONDITIONING_EXERCISES: ExerciseDef[] = [
     loads: ["knee"],
     lowImpact: true,
     substitutes: ["steady_row", "incline_walk"],
+    cues: ["A pace you could hold a conversation at.", "Seat high enough that your knee is only slightly bent at the bottom."],
   },
   {
     id: "steady_row",
@@ -91,6 +92,7 @@ export const CONDITIONING_EXERCISES: ExerciseDef[] = [
     loads: [],
     lowImpact: true,
     substitutes: ["steady_bike"],
+    cues: ["Stand tall and push and pull through the handles too.", "A pace you could talk at, but not sing."],
   },
   {
     id: "swim",
@@ -132,6 +134,7 @@ export const CONDITIONING_EXERCISES: ExerciseDef[] = [
     loads: ["knee"],
     lowImpact: true,
     substitutes: ["tempo_run"],
+    cues: ["Comfortably hard: you can speak in short sentences, not paragraphs.", "Settle into a pace you can hold for the whole block."],
   },
 
   // ---- intervals ----
@@ -160,6 +163,7 @@ export const CONDITIONING_EXERCISES: ExerciseDef[] = [
     unit: "time",
     loads: ["spine", "knee", "shoulder"],
     substitutes: ["interval_bike"],
+    cues: ["Hard efforts with easy rowing in between.", "Legs, then body, then arms on the way back; reverse on the way in."],
   },
   {
     id: "interval_run",
@@ -222,5 +226,49 @@ export const CONDITIONING_EXERCISES: ExerciseDef[] = [
     unit: "time",
     loads: ["knee", "hip"],
     substitutes: ["incline_walk"],
+    cues: ["Steady pace, a hand on the rail.", "Take them one at a time; walking down is part of it."],
+  },
+
+  // ---- added: cardio that doesn't need a machine or a pavement ----
+  {
+    id: "marching_in_place",
+    name: "Marching on the Spot",
+    equipment: ["bodyweight"],
+    pattern: "conditioning",
+    muscles: ["Legs", "Hip flexors"],
+    compound: true,
+    level: 1,
+    unit: "time",
+    loads: [],
+    lowImpact: true,
+    substitutes: ["steady_walk", "seated_march"],
+    cues: ["Lift the knees and swing the arms, fast enough to breathe harder but still talk.", "Near a counter or chair if you want something to hold."],
+  },
+  {
+    id: "walk_intervals",
+    name: "Brisk Walk Intervals",
+    equipment: ["bodyweight"],
+    pattern: "conditioning",
+    muscles: ["Legs"],
+    compound: true,
+    level: 2,
+    unit: "time",
+    loads: ["ankle", "knee"],
+    lowImpact: true,
+    substitutes: ["steady_walk", "interval_bike"],
+    cues: ["Alternate a minute walking as fast as you can with a minute at an easy pace.", "Fast enough that talking is hard, never so fast you break into a run."],
+  },
+  {
+    id: "shadow_boxing",
+    name: "Shadow Boxing",
+    equipment: ["bodyweight"],
+    pattern: "conditioning",
+    muscles: ["Shoulders", "Core"],
+    compound: true,
+    level: 2,
+    unit: "time",
+    loads: ["shoulder"],
+    lowImpact: true,
+    cues: ["Light on your feet, punches crisp but never fully locking the elbow.", "Work in rounds: thirty seconds hard, thirty easy."],
   },
 ];

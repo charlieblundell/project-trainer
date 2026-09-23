@@ -1,6 +1,8 @@
 import {
+  EXERCISES,
   EXERCISES_BY_ID,
   availableExercises,
+  onTheFloor,
   type BodyPart,
   type Equipment,
   type ExerciseDef,
@@ -19,7 +21,9 @@ import type {
 } from "./types";
 import {
   MUSCLE_GROUPS,
+  contribution,
   isLowPriority,
+
   primaryGroup,
   setsByGroup,
   weeklyTarget,
@@ -300,7 +304,7 @@ const BODY_PART_HINTS: Record<BodyPart, string[]> = {
 /**
  * Crude keyword match over what the user typed, used only to steer exercise
  * selection away from a sore area. It is not a diagnosis and it is not a
- * substitute for reading the note â€” the coach still receives the raw text.
+ * substitute for reading the note — the coach still receives the raw text.
  */
 export function parseConsiderations(text: string | null): BodyPart[] {
   if (!text?.trim()) return [];
@@ -375,17 +379,32 @@ type SelectionContext = {
    */
   keep: Set<string>;
   /**
+   * An older beginner, or anyone new whose plan is careful with them: getting
+   * down to the floor and back up is hard work on its own, so a standing or
+   * seated version wins wherever there is one.
+   */
+  avoidFloor?: boolean;
+  /**
    * Sets each muscle is still short of this session's share of its weekly
    * target. A slot prefers movements that close the biggest gap, which is what
    * turns a Legs day's hinge slot into Romanian deadlifts when hamstrings have
    * nothing and glutes already have some.
    */
   needs: Map<MuscleGroup, number>;
+  /**
+   * Movements already in this session for each muscle. An accessory slot
+   * skips a muscle that has two, the same limit the top-up follows: once the
+   * library had a pullover, a Pull day's accessory slots went to a fourth
+   * back movement instead of arms.
+   */
+
+  movementsFor?: Map<MuscleGroup, number>;
 };
 
 const STEADY_IDS = new Set([
   "steady_walk", "incline_walk", "steady_run", "steady_bike", "steady_row",
-  "elliptical", "swim", "stair_climb", "seated_march",
+  "elliptical", "swim", "stair_climb", "seated_march", "marching_in_place",
+
 ]);
 
 /**
@@ -402,11 +421,72 @@ export const SPINE_FLEXION_IDS = new Set([
   "hanging_leg_raise",
 ]);
 
+/** Muscles whose first movement in a session should be a compound lift rather than an accessory. */
+const COMPOUND_FIRST = new Set<MuscleGroup>(["chest", "back", "quads", "hamstrings", "glutes"]);
+
 /** Different movements in one session for anyone with a caution, before spare time goes into sets. */
+
 const MAX_MOVEMENTS_WHEN_NEW = 7;
 
 /** Balance exercises, added to every session for anyone with a caution. */
-export const BALANCE_IDS = new Set(["standing_balance", "tandem_stance"]);
+export const BALANCE_IDS = new Set(EXERCISES.filter((ex) => ex.pattern === "balance").map((ex) => ex.id));
+
+/**
+ * Where standing-still balance starts, by experience: a beginner's first week
+ * is the heel-to-toe stand, and progression walks them up from there.
+ */
+const STILL_BALANCE_LADDER = ["tandem_stance", "standing_balance", "single_leg_head_turns"];
+/** Walking balance, rotated through the week so each session practises something different. */
+const WALKING_BALANCE = ["tandem_walk", "sideways_walk", "backwards_walk", "toe_heel_walk", "walk_and_turn"];
+
+/**
+ * Step-ups onto a chair or a bench: a high step, onto something that can tip.
+ * Left out for anyone with a balance or bone caution, who get the bottom stair
+ * with a handrail instead.
+ */
+export const HIGH_STEP_IDS = new Set(["step_up_bw", "step_up"]);
+
+/**
+ * The balance exercise for one session. Standing still and walking alternate
+ * through the week, since falls prevention trains both; the walking drills
+ * rotate so each session practises something new. A balance exercise already
+ * in the plan being rebuilt is kept, because progression may have moved them
+ * up a rung they've earned.
+ */
+function pickBalance(
+  pool: ExerciseDef[],
+  avoiding: Set<BodyPart>,
+  level: Level,
+  sessionIndex: number,
+  keep: Set<string>,
+  usedThisWeek: Set<string>
+): ExerciseDef | undefined {
+  const usable = pool.filter((ex) => ex.pattern === "balance" && !touchesAvoided(ex, avoiding));
+  const walking = (ex: ExerciseDef) => ex.unit !== "time";
+  const wantWalking = sessionIndex % 2 === 1;
+
+  const still = () => {
+    const kept = usable.find((ex) => keep.has(ex.id) && !walking(ex));
+    if (kept) return kept;
+    const rung = Math.min(level, STILL_BALANCE_LADDER.length) - 1;
+    for (let at = rung; at >= 0; at -= 1) {
+      const ex = usable.find((e) => e.id === STILL_BALANCE_LADDER[at]);
+      if (ex) return ex;
+    }
+    return usable.find((ex) => !walking(ex) && ex.level <= level);
+  };
+
+  const moving = () => {
+    const kept = usable.find((ex) => keep.has(ex.id) && walking(ex) && !usedThisWeek.has(ex.id));
+    if (kept) return kept;
+    const byOrder = WALKING_BALANCE.map((id) => usable.find((ex) => ex.id === id)).filter(
+      (ex): ex is ExerciseDef => !!ex && ex.level <= level
+    );
+    return byOrder.find((ex) => !usedThisWeek.has(ex.id)) ?? byOrder[sessionIndex % Math.max(byOrder.length, 1)];
+  };
+
+  return wantWalking ? moving() ?? still() : still() ?? moving();
+}
 
 export function touchesAvoided(ex: ExerciseDef, avoiding: Set<BodyPart>): boolean {
   return ex.loads.some((part) => avoiding.has(part));
@@ -438,6 +518,7 @@ function score(ex: ExerciseDef, slotIndex: number, ctx: SelectionContext): numbe
   if (!ctx.usedThisWeek.has(ex.id)) s += 12;
   if (ex.compound && slotIndex < 2) s += 30;
   if (ctx.preferLowImpact && ex.lowImpact) s += 25;
+  if (ctx.avoidFloor && onTheFloor(ex)) s -= 40;
   // A movement you can add weight to beats a bodyweight variation when both
   // are available: it keeps progressing long after reps stop being the limit.
   if (ex.unit === "weight_reps") s += 20;
@@ -474,6 +555,7 @@ function selectForSlot(
     if (regionMatters && trains.length > 0) {
       const group = primaryGroup(ex);
       if (group && !trains.includes(group)) return false;
+      if (group && pattern === "isolation" && (ctx.movementsFor?.get(group) ?? 0) >= 2) return false;
     }
     if (!regionMatters || region === "full") return true;
     const exRegion = regionOf(ex);
@@ -626,10 +708,14 @@ export function generatePlan(profile: GeneratorProfile, options: { keep?: Iterab
   let maxMovements = Infinity;
   const notes: string[] = [];
 
-  const pool = poolFor(profile).filter((ex) => !cautions.includes("bone") || !SPINE_FLEXION_IDS.has(ex.id));
+  const pool = poolFor(profile).filter(
+    (ex) =>
+      (!cautions.includes("bone") || !SPINE_FLEXION_IDS.has(ex.id)) && (!gentle || !HIGH_STEP_IDS.has(ex.id))
+  );
   const avoidingSet = new Set(avoiding);
 
   const preferLowImpact = goal === "General health" || (profile.age ?? 0) >= 60 || gentle;
+  const avoidFloor = gentle && level === 1;
 
   const templates = splitFor(days, goal, level);
   const weekdays =
@@ -664,6 +750,7 @@ export function generatePlan(profile: GeneratorProfile, options: { keep?: Iterab
       liked: new Set(profile.likedExercises),
       level,
       preferLowImpact,
+      avoidFloor,
       avoiding: avoidingSet,
       conditioningStyle: template.conditioningStyle,
       usedThisWeek,
@@ -694,6 +781,13 @@ export function generatePlan(profile: GeneratorProfile, options: { keep?: Iterab
     // 1. The template's own slots: main lifts first, in priority order.
     for (const [slotIndex, pattern] of template.slots.entries()) {
       ctx.needs = shortfall("min");
+      ctx.movementsFor = new Map();
+      for (const planned of chosen) {
+        const def = EXERCISES_BY_ID[planned.exerciseId];
+        const group = def && def.pattern !== "mobility" && def.pattern !== "balance" ? primaryGroup(def) : undefined;
+        if (group) ctx.movementsFor.set(group, (ctx.movementsFor.get(group) ?? 0) + 1);
+      }
+
       const result = selectForSlot(pattern, slotIndex, template.region, ctx, template.trains);
       if (result.kind === "no_equipment") {
         missingEquipmentFor.add(pattern);
@@ -714,6 +808,19 @@ export function generatePlan(profile: GeneratorProfile, options: { keep?: Iterab
     const addFor = (group: MuscleGroup): boolean => {
       const fits = (next: PlannedExercise[]) => estimateMinutes(next) <= sessionMinutes;
 
+      const forGroup = chosen.filter((planned) => {
+        const def = EXERCISES_BY_ID[planned.exerciseId];
+        return def && def.pattern !== "mobility" && def.pattern !== "balance" && primaryGroup(def) === group;
+      });
+      const compoundsFor = forGroup.filter((planned) => EXERCISES_BY_ID[planned.exerciseId]?.compound).length;
+      /*
+       * A big muscle with nothing yet this session wants a compound first: an
+       * older lifter's Strength B had no pulling slot, and filling it with a
+       * straight-arm pulldown instead of a row gave their back an accessory
+       * and no main lift.
+       */
+      const compoundFirst = forGroup.length === 0 && COMPOUND_FIRST.has(group);
+
       const candidates = pool
         .filter(
           (ex) =>
@@ -721,24 +828,57 @@ export function generatePlan(profile: GeneratorProfile, options: { keep?: Iterab
             ex.unit !== "time" &&
             ex.unit !== "distance" &&
             ex.pattern !== "mobility" &&
+            ex.pattern !== "balance" &&
             !usedThisSession.has(ex.id) &&
             (ex.level <= level || keep.has(ex.id)) &&
             !touchesAvoided(ex, avoidingSet)
         )
-        // Filling is accessory work, so isolation movements come first: a second
-        // heavy compound late in a session is more fatigue than it's worth.
+        // Filling is otherwise accessory work, so isolation movements come
+        // first: a second heavy compound late in a session is more fatigue
+        // than it's worth.
         .sort(
           (a, b) =>
+            (compoundFirst ? Number(b.compound) - Number(a.compound) : 0) ||
             Number(b.pattern === "isolation") - Number(a.pattern === "isolation") ||
             score(b, chosen.length, ctx) - score(a, chosen.length, ctx) ||
             a.id.localeCompare(b.id)
         );
 
-      const forGroup = chosen.filter((planned) => {
-        const def = EXERCISES_BY_ID[planned.exerciseId];
-        return def && def.pattern !== "mobility" && primaryGroup(def) === group;
-      });
-      const compoundsFor = forGroup.filter((planned) => EXERCISES_BY_ID[planned.exerciseId]?.compound).length;
+      /**
+       * One more set of something already training it, if there's room. With
+       * `secondary`, that includes movements it only helps: a set more of a
+       * pull-through for hamstrings, or of a row for biceps.
+       */
+      const MAX_SETS = 5;
+      const extraSet = (secondary = false): boolean => {
+        for (let at = chosen.length - 1; at >= 0; at -= 1) {
+          const planned = chosen[at];
+          const def = EXERCISES_BY_ID[planned.exerciseId];
+          // A drill isn't training the muscle, so more of it doesn't close the gap.
+          // Topping up through a muscle it only helps stops a set earlier, or
+          // one lift ends up carrying half the session.
+          if (!def || def.pattern === "mobility" || def.pattern === "balance") continue;
+          if (planned.sets >= (secondary ? MAX_SETS - 1 : MAX_SETS)) continue;
+
+          if (planned.unit === "time" || planned.unit === "distance") continue;
+          const helps = secondary ? (contribution(def, 1)[group] ?? 0) > 0 : primaryGroup(def) === group;
+          if (!helps) continue;
+          const trial = chosen.map((e, j) => (j === at ? { ...e, sets: e.sets + 1 } : e));
+          if (fits(trial)) {
+            chosen[at] = trial[at];
+            return true;
+          }
+        }
+        return false;
+      };
+
+      /*
+       * Fewer things to learn for anyone the plan is careful with: a muscle
+       * that already has a movement gets another set of it before a new one,
+       * and one that's already being worked by another lift gets a set more of
+       * that. Only a muscle nothing touches gets a new movement.
+       */
+      if (gentle && (extraSet() || extraSet(true))) return true;
 
       /*
        * A movement with a harder version this person can already do is a
@@ -768,19 +908,7 @@ export function generatePlan(profile: GeneratorProfile, options: { keep?: Iterab
       }
 
       // Nothing new fits: one more set of something already training it.
-      const MAX_SETS = 5;
-      for (let at = chosen.length - 1; at >= 0; at -= 1) {
-        const planned = chosen[at];
-        const def = EXERCISES_BY_ID[planned.exerciseId];
-        // A drill isn't training the muscle, so more of it doesn't close the gap.
-        if (!def || def.pattern === "mobility" || primaryGroup(def) !== group || planned.sets >= MAX_SETS) continue;
-        const trial = chosen.map((e, j) => (j === at ? { ...e, sets: e.sets + 1 } : e));
-        if (fits(trial)) {
-          chosen[at] = trial[at];
-          return true;
-        }
-      }
-      return false;
+      return extraSet();
     };
 
     const fillToward = (bound: "min" | "max") => {
@@ -881,7 +1009,9 @@ export function generatePlan(profile: GeneratorProfile, options: { keep?: Iterab
           .filter(
             (ex) =>
               primaryGroup(ex) === "calves" &&
+              ex.pattern !== "balance" &&
               ex.unit !== "time" &&
+
               ex.unit !== "distance" &&
               !usedThisSession.has(ex.id) &&
               ex.level <= level &&
@@ -928,16 +1058,14 @@ export function generatePlan(profile: GeneratorProfile, options: { keep?: Iterab
      * than at the end when their legs are tired.
      */
     if (gentle && !chosen.some((e) => BALANCE_IDS.has(e.exerciseId))) {
-      const balance = pool
-        .filter((ex) => BALANCE_IDS.has(ex.id) && !touchesAvoided(ex, avoidingSet))
-        .sort((a, b) => a.id.localeCompare(b.id))[0];
+      const balance = pickBalance(pool, avoidingSet, level, i, keep, usedThisWeek);
       if (balance) {
-        const planned: PlannedExercise = {
-          ...prescribe(balance, goal),
-          sets: 2,
-          seconds: 30,
-          restSeconds: 30,
-        };
+        const planned: PlannedExercise =
+          balance.unit === "time"
+            ? { ...prescribe(balance, goal), sets: 2, seconds: 30, restSeconds: 30 }
+            : // Walking drills count steps: ten to fifteen along the counter.
+              { ...prescribe(balance, goal), sets: 2, repMin: 10, repMax: 15, restSeconds: 30 };
+
         // Room comes from accessory sets first, then a finisher's minutes.
         for (let guard = 0; guard < 12 && estimateMinutes([...chosen, planned]) > sessionMinutes; guard += 1) {
           const donor = chosen
@@ -1036,7 +1164,7 @@ export function generatePlan(profile: GeneratorProfile, options: { keep?: Iterab
 
   if (profile.trainingDays.length > 0 && profile.trainingDays.length !== templates.length) {
     notes.push(
-      `You picked ${profile.trainingDays.length} days but train ${days} times a week â€” sessions were spread evenly instead.`
+      `You picked ${profile.trainingDays.length} days but train ${days} times a week — sessions were spread evenly instead.`
     );
   }
 
@@ -1080,7 +1208,10 @@ export function refreshAccessories(plan: Plan, profile: GeneratorProfile): Refre
   const level = experienceToLevel(profile.experience);
   const liked = new Set(profile.likedExercises);
   const avoiding = new Set(plan.avoiding);
-  const preferLowImpact = plan.goal === "General health" || (profile.age ?? 0) >= 60;
+  // The same as when the plan was built: a refresh used to forget a balance or
+  // bone caution and hand the gentle options no preference at all.
+  const preferLowImpact = plan.goal === "General health" || (profile.age ?? 0) >= 60 || cautions.length > 0;
+
   const swapped: { from: string; to: string }[] = [];
   const justRetired: string[] = [];
 
@@ -1105,7 +1236,9 @@ export function refreshAccessories(plan: Plan, profile: GeneratorProfile): Refre
         liked,
         level,
         preferLowImpact,
+        avoidFloor: cautions.length > 0 && level === 1,
         avoiding,
+
         usedThisWeek,
         keep: new Set<string>(),
         // A refresh swaps one accessory for another in the same slot, so the

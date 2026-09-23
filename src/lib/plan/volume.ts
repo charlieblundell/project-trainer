@@ -91,7 +91,9 @@ export function setsByGroup(exercises: PlannedExercise[]): Record<MuscleGroup, n
   for (const planned of exercises) {
     if (planned.unit === "time" || planned.unit === "distance") continue;
     const def = EXERCISES_BY_ID[planned.exerciseId];
-    if (!def || def.pattern === "mobility") continue;
+    // Nor is a balance walk a set for the glutes, however it's counted.
+    if (!def || def.pattern === "mobility" || def.pattern === "balance") continue;
+
     for (const [group, sets] of Object.entries(contribution(def, planned.sets))) {
       totals[group as MuscleGroup] += sets;
     }

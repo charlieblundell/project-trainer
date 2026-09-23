@@ -12,7 +12,7 @@ import { InviteFriends } from "@/components/InviteFriends";
 import { FinishBadge } from "@/components/FinishBadge";
 import { CoachNote } from "@/components/CoachNote";
 import { callAi } from "@/lib/ai/client";
-import { EXERCISES_BY_ID } from "@/lib/exercises";
+import { EXERCISES_BY_ID, countsSeconds } from "@/lib/exercises";
 
 const container = {
   hidden: {},
@@ -59,12 +59,19 @@ export default function TrainComplete() {
   const sessionName = planSession?.name ?? "Workout";
 
   // What the coach is told: the sets as logged, and what the app already said changes.
+  // A timed set is a bare number, so the name carries whether it's seconds or minutes.
+  const timedUnitNote = (id: string) => {
+    const unit = EXERCISES_BY_ID[id]?.unit;
+    if (unit !== "time" && unit !== "distance") return "";
+    return countsSeconds(id, unit) ? " (seconds held)" : " (minutes)";
+  };
+
   const debriefBody = {
     session: sessionName,
     exercises: Object.entries(summary.loggedSets)
       .filter(([, sets]) => sets.length > 0)
       .map(([id, sets]) => ({
-        name: EXERCISES_BY_ID[id]?.name ?? id,
+        name: `${EXERCISES_BY_ID[id]?.name ?? id}${timedUnitNote(id)}`,
         sets: sets.slice(0, 12),
         change: changes.find((c) => c.exerciseId === id)?.reason.slice(0, 200),
       }))

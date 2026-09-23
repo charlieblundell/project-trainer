@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, Check, Info, MoreHorizontal, Lightbulb } from "lucide-react";
-import { EXERCISES_BY_ID, substitutesFor, type Equipment } from "@/lib/exercises";
+import { EXERCISES_BY_ID, countsSeconds, formatDuration, substitutesFor, type Equipment } from "@/lib/exercises";
 import { sessionHasSets, sessionStatus, useAppStore } from "@/lib/store";
 import { RpeSelector } from "@/components/RpeSelector";
 import { SetStepper } from "@/components/SetStepper";
@@ -204,8 +204,11 @@ export default function Train() {
 }
 
 /** "50 kg × 10, 10, 9", "12, 11, 10 reps" or "20 min" — however the exercise is measured. */
-function describeSets(sets: SetLog[], unit: PlannedExercise["unit"]): string {
-  if (unit === "time" || unit === "distance") return `${Math.max(...sets.map((s) => s.r))} min`;
+function describeSets(sets: SetLog[], unit: PlannedExercise["unit"], exerciseId: string): string {
+  if (unit === "time" || unit === "distance") {
+    const best = Math.max(...sets.map((s) => s.r));
+    return countsSeconds(exerciseId, unit) ? formatDuration(best, true) : `${best} min`;
+  }
   if (unit === "reps") {
     const added = sets.every((s) => s.w === sets[0].w) && sets[0].w > 0 ? `+${sets[0].w} kg × ` : "";
     return added
@@ -245,6 +248,8 @@ function ExercisePanel({
   const def = EXERCISES_BY_ID[activeId];
 
   const isTimed = planned.unit === "time" || planned.unit === "distance";
+  // A plank or a balance hold is counted in seconds; cardio in minutes.
+  const inSeconds = countsSeconds(activeId, planned.unit);
   const tracksWeight = planned.unit === "weight_reps";
   /*
    * A bodyweight movement you can hold a dumbbell for. The weight box is
@@ -264,7 +269,9 @@ function ExercisePanel({
         : planned.targetWeightKg != null
           ? String(planned.targetWeightKg)
           : "",
-    r: isTimed ? String(Math.round((planned.seconds ?? 0) / 60)) : String(planned.repMax ?? 10),
+    r: isTimed
+      ? String(inSeconds ? planned.seconds ?? 30 : Math.round((planned.seconds ?? 0) / 60))
+      : String(planned.repMax ?? 10),
   });
   const [showInfo, setShowInfo] = useState(false);
   const [showSwap, setShowSwap] = useState(false);
@@ -405,7 +412,7 @@ function ExercisePanel({
       </div>
       {override && <div className="mb-4 text-footnote font-semibold text-success">Swapped in for today</div>}
       {lastSets && lastSets.length > 0 ? (
-        <div className="tabular mb-4 text-footnote text-muted">Last time: {describeSets(lastSets, planned.unit)}</div>
+        <div className="tabular mb-4 text-footnote text-muted">Last time: {describeSets(lastSets, planned.unit, activeId)}</div>
       ) : (
         !override && <div className="mb-4" />
       )}
@@ -434,7 +441,7 @@ function ExercisePanel({
               key={i}
               aria-label={
                 done
-                  ? `Set ${i + 1}, done: ${done.w > 0 ? `${tracksWeight ? "" : "plus "}${done.w} kg, ` : ""}${done.r} ${isTimed ? "minutes" : "reps"}`
+                  ? `Set ${i + 1}, done: ${done.w > 0 ? `${tracksWeight ? "" : "plus "}${done.w} kg, ` : ""}${done.r} ${isTimed ? (inSeconds ? "seconds" : "minutes") : "reps"}`
                   : `Set ${i + 1}, not done yet`
               }
               className={clsx(
@@ -541,12 +548,13 @@ function ExercisePanel({
                 />
               )}
               <SetStepper
-                label={isTimed ? "Minutes" : "Reps"}
+                label={isTimed ? (inSeconds ? "Seconds" : "Minutes") : "Reps"}
                 value={input.r}
                 onChange={(r) => setInput({ ...input, r })}
-                step={1}
+                step={inSeconds ? 5 : 1}
                 min={1}
-                max={isTimed ? 120 : 50}
+                max={inSeconds ? 600 : isTimed ? 120 : 50}
+
               />
             </div>
             <motion.button

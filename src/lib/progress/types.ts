@@ -9,7 +9,8 @@ export type WorkoutRecord = {
 };
 
 /** How an exercise's best set is measured, which decides how it reads. */
-export type Measure = "weight" | "reps" | "time";
+export type Measure = "weight" | "reps" | "time" | "seconds";
+
 
 export type SeriesPoint = {
   completedAt: string;

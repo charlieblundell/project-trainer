@@ -1,4 +1,4 @@
-import { EXERCISES_BY_ID } from "@/lib/exercises";
+import { EXERCISES_BY_ID, countsSeconds, formatDuration } from "@/lib/exercises";
 import type { SetLog } from "@/lib/types";
 import type {
   ExerciseSeries,
@@ -21,6 +21,7 @@ function measureOf(exerciseId: string, sets: SetLog[]): Measure {
   const unit = EXERCISES_BY_ID[exerciseId]?.unit;
   if (unit === "weight_reps") return "weight";
   if (unit === "reps") return "reps";
+  if (unit === "time" && countsSeconds(exerciseId, unit)) return "seconds";
   if (unit === "time" || unit === "distance") return "time";
   return sets.some((s) => s.w > 0) ? "weight" : "reps";
 }
@@ -48,6 +49,8 @@ function bestSet(sets: SetLog[], measure: Measure): SetLog | null {
 function labelFor(set: SetLog, measure: Measure): string {
   if (measure === "weight") return `${set.w} kg × ${set.r}`;
   if (measure === "time") return `${set.r} min`;
+  if (measure === "seconds") return formatDuration(set.r, true);
+
   return `${set.r} rep${set.r === 1 ? "" : "s"}`;
 }
 

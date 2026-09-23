@@ -17,7 +17,7 @@ import type { GeneratorProfile, Plan } from "./types";
  * again; it's what lets a dismissed offer come back for a new improvement
  * without nagging about the old one.
  */
-export const PLAN_RULES_VERSION = 3;
+export const PLAN_RULES_VERSION = 4;
 
 /** The share of their loaded sets a rebuilt plan has to keep to be offered. */
 const LIGHTEST_ACCEPTED = 0.8;
@@ -96,11 +96,20 @@ export function planUpgrade(current: Plan, profile: GeneratorProfile): PlanUpgra
    * and a much better plan, and the strict count refused exactly the people
    * who needed it. A rebuild onto bodyweight loses nearly all of it, and is
    * still refused.
+   *
+   * A movement that takes added weight counts when they own something to add:
+   * a 70-year-old's dumbbell step-up onto a bench becoming a step-up onto the
+   * bottom stair, dumbbells in hand if they like, is not a move to bodyweight.
    */
+  const canAddWeight = profile.equipment.some((kit) => kit === "dumbbell" || kit === "kettlebell");
   const loadedSets = (plan: Plan) =>
     plan.sessions
       .flatMap((s) => s.exercises)
-      .filter((e) => e.unit === "weight_reps")
+      .filter(
+        (e) =>
+          e.unit === "weight_reps" ||
+          (canAddWeight && e.unit === "reps" && !!EXERCISES_BY_ID[e.exerciseId]?.loadable)
+      )
       .reduce((sum, e) => sum + e.sets, 0);
   if (loadedSets(next) < loadedSets(current) * LIGHTEST_ACCEPTED) return null;
 
@@ -151,6 +160,15 @@ export function planUpgrade(current: Plan, profile: GeneratorProfile): PlanUpgra
   if (hasBalance(next) && !hasBalance(current)) {
     lead.push("A short balance exercise in every session, which cuts the rate of falls");
   }
+  // Plans from before the walking drills had the same standing hold every session.
+  const walks = (plan: Plan) =>
+    plan.sessions.some((s) =>
+      s.exercises.some((e) => BALANCE_IDS.has(e.exerciseId) && EXERCISES_BY_ID[e.exerciseId]?.unit === "reps")
+    );
+  if (hasBalance(current) && walks(next) && !walks(current)) {
+    lead.push("Balance work that changes through the week, with walking drills as well as standing holds");
+  }
+
   // A cardio day's ankle drills are counted in reps, so it's the session's focus that says what it is.
   const strengthDays = (plan: Plan) => plan.sessions.filter((s) => s.focus !== "Conditioning").length;
   if (strengthDays(next) > strengthDays(current)) {

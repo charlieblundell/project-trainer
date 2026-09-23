@@ -1,4 +1,4 @@
-import type { BodyPart, Equipment, ExerciseDef, Level, MovementPattern } from "./types";
+import type { BodyPart, Equipment, ExerciseDef, Level, LoggingUnit, MovementPattern } from "./types";
 import { STRENGTH_EXERCISES } from "./strength";
 import { BODYWEIGHT_EXERCISES } from "./bodyweight";
 import { BAND_EXERCISES } from "./bands";
@@ -20,6 +20,33 @@ export const EXERCISES: ExerciseDef[] = [
 export const EXERCISES_BY_ID: Record<string, ExerciseDef> = Object.fromEntries(
   EXERCISES.map((e) => [e.id, e])
 );
+
+/**
+ * Timed work that's counted in seconds: a plank, a balance stand, a wall sit.
+ * Cardio is counted in minutes. Both are stored as `seconds` on the plan, but
+ * a set is logged in whichever of the two a person would actually count in,
+ * and "1 min" for a 30-second balance hold was neither true nor useful.
+ */
+export function countsSeconds(exerciseId: string, unit: LoggingUnit): boolean {
+  if (unit !== "time") return false;
+  const def = EXERCISES_BY_ID[exerciseId];
+  return !!def && def.pattern !== "conditioning";
+}
+
+/** Lying, kneeling or on all fours: anything on the mat, and the floor work that doesn't list one. */
+export function onTheFloor(ex: ExerciseDef): boolean {
+  return !!ex.floor || ex.equipment.includes("mat");
+}
+
+/** "30 s", "1 min 30 s", "20 min": a duration however it's best read. */
+
+export function formatDuration(seconds: number, inSeconds: boolean): string {
+  if (!inSeconds) return `${Math.round(seconds / 60)} min`;
+  if (seconds < 90) return `${seconds} s`;
+  const mins = Math.floor(seconds / 60);
+  const rest = seconds % 60;
+  return rest ? `${mins} min ${rest} s` : `${mins} min`;
+}
 
 /** Exercises performable with the equipment the user actually has. */
 export function availableExercises(owned: Equipment[]): ExerciseDef[] {

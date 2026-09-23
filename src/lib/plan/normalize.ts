@@ -20,7 +20,11 @@ export function normalizePlan(plan: StoredPlan): Plan {
     ...plan,
     refreshes: plan.refreshes ?? 0,
     retired: plan.retired ?? [],
+    // A note about spread-out days was saved with its dash garbled ("â€”")
+    // before the source file's encoding was fixed.
+    notes: (plan.notes ?? []).map((note) => note.replace(/â€”/g, "—")),
     sessions: plan.sessions.map((session) => ({
+
       ...session,
       region: session.region ?? inferRegion(session),
       /*
