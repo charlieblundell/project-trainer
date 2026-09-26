@@ -9,6 +9,7 @@ import { supabase } from "@/lib/supabase";
 import { CLEARED_HEALTH_FIELDS, withdrawHealthConsent } from "@/lib/health-consent";
 import { InstallPrompt } from "@/components/InstallPrompt";
 import { InviteFriends } from "@/components/InviteFriends";
+import { PasswordSettings } from "@/components/PasswordSettings";
 import { ListButton, ListLink, ListRow, ListSection } from "@/components/List";
 import { EQUIPMENT_LABELS, EXERCISES_BY_ID, type Equipment } from "@/lib/exercises";
 import type { OnboardingData } from "@/lib/types";
@@ -465,6 +466,8 @@ export default function Settings() {
 
       <InstallPrompt className="mb-3" showInstalled />
       <InviteFriends className="mb-6" />
+
+      <PasswordSettings />
 
       <HealthDetails />
 

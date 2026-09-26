@@ -2,10 +2,11 @@
 
 import { useEffect, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
-import { Mail } from "lucide-react";
+import { KeyRound, Mail } from "lucide-react";
 import { TypeMark } from "@/components/TypeMark";
 import { RedirectIfSignedIn } from "@/components/RedirectIfSignedIn";
 import { GoogleSignInButton } from "@/components/GoogleSignInButton";
+import { PasswordForm } from "@/components/PasswordSettings";
 import { marketingFontClasses } from "@/lib/fonts/marketing";
 import { supabase } from "@/lib/supabase";
 import { isRunningInstalled } from "@/lib/install";
@@ -42,7 +43,12 @@ export default function SignUp() {
   const [showEmailForm, setShowEmailForm] = useState(false);
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
-  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "verifying">("idle");
+  // "password" comes after a code, for an account without one yet.
+  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "verifying" | "password">("idle");
+  // Someone who set a password in Settings can skip the emailed code.
+  const [withPassword, setWithPassword] = useState(false);
+  const [password, setPassword] = useState("");
+  const [signingIn, setSigningIn] = useState(false);
   const [error, setError] = useState("");
   const [cooldown, setCooldown] = useState(0);
 
@@ -82,13 +88,31 @@ export default function SignUp() {
     if (token.length < 6) return;
     setStatus("verifying");
     setError("");
-    const { error } = await supabase.auth.verifyOtp({ email: email.trim(), token, type: "email" });
+    const { data, error } = await supabase.auth.verifyOtp({ email: email.trim(), token, type: "email" });
     if (error) {
       setStatus("sent");
       setError("That code didn't work. Check it's from the most recent email, or send a new one.");
+      return;
     }
-    // On success the sign-in listener picks up the session and
-    // RedirectIfSignedIn takes them home.
+    // Every email account gets a password before going in, so another device
+    // never has to wait on a code. Anyone with one already goes straight home.
+    setStatus(data.user?.user_metadata?.has_password === true ? "idle" : "password");
+  }
+
+  async function signInWithPasswordNow() {
+    if (!email.trim() || !password) return;
+    setSigningIn(true);
+    setError("");
+    const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+    setSigningIn(false);
+    if (error) {
+      setError(
+        error.code === "invalid_credentials"
+          ? "That email and password don't match. If you haven't set a password yet, sign in with a code, then add one in Settings."
+          : "Couldn't sign in. Check your connection and try again."
+      );
+    }
+    // On success RedirectIfSignedIn takes them home, as with a code.
   }
 
   async function signInWithGoogle() {
@@ -124,7 +148,7 @@ export default function SignUp() {
   return (
     <div className={`${marketingFontClasses} font-marketing-body min-h-screen bg-background`}>
       <div className="mx-auto flex min-h-screen max-w-sm flex-col px-6 py-8">
-        <RedirectIfSignedIn />
+        {status !== "verifying" && status !== "password" && <RedirectIfSignedIn />}
         <TypeMark />
 
         <div className="flex flex-1 flex-col justify-center py-12">
@@ -137,7 +161,19 @@ export default function SignUp() {
               : "No card needed. Answer a few questions and your first week is ready in a couple of minutes."}
           </p>
 
-          {status === "sent" || status === "verifying" ? (
+          {status === "password" ? (
+            <div className="flex flex-col gap-2.5">
+              <div className="rounded-md border border-line bg-surface p-4">
+                <KeyRound size={20} className="mb-2 text-accent" />
+                <div className="mb-1 text-sm font-semibold text-ink">Create a password</div>
+                <p className="mb-4 text-sm leading-relaxed text-muted">
+                  You&apos;re in. Next time, on any device, sign in with{" "}
+                  <span className="text-ink">{email.trim()}</span> and this password. No code needed.
+                </p>
+                <PasswordForm email={email.trim()} submitLabel="Continue" onSaved={() => setStatus("idle")} />
+              </div>
+            </div>
+          ) : status === "sent" || status === "verifying" ? (
             <div className="flex flex-col gap-2.5">
               <div className="rounded-md border border-line bg-surface p-4">
                 <Mail size={20} className="mb-2 text-accent" />
@@ -199,19 +235,55 @@ export default function SignUp() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && sendCode()}
+                onKeyDown={(e) => e.key === "Enter" && !withPassword && sendCode()}
                 placeholder="you@example.com"
-                autoComplete="email"
+                autoComplete={withPassword ? "username" : "email"}
                 autoFocus={showEmailForm}
                 className="w-full rounded-md border border-line bg-surface px-4 py-3.5 text-[15px] focus:border-ink focus:outline-none"
               />
+              {withPassword && (
+                <>
+                  <label htmlFor="password" className="mt-2 text-sm font-semibold text-ink">
+                    Password
+                  </label>
+                  <input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && signInWithPasswordNow()}
+                    autoComplete="current-password"
+                    className="w-full rounded-md border border-line bg-surface px-4 py-3.5 text-[15px] focus:border-ink focus:outline-none"
+                  />
+                </>
+              )}
               {error && <p className="text-sm text-warning">{error}</p>}
+              {withPassword ? (
+                <button
+                  onClick={signInWithPasswordNow}
+                  disabled={signingIn || !email.trim() || !password}
+                  className="min-h-[54px] w-full rounded-[14px] bg-accent text-[15px] font-semibold text-accent-ink transition hover:opacity-90 disabled:opacity-50"
+                >
+                  {signingIn ? "Signing in…" : "Sign in"}
+                </button>
+              ) : (
+                <button
+                  onClick={sendCode}
+                  disabled={status === "sending" || !email.trim()}
+                  className="min-h-[54px] w-full rounded-[14px] bg-accent text-[15px] font-semibold text-accent-ink transition hover:opacity-90 disabled:opacity-50"
+                >
+                  {status === "sending" ? "Sending…" : "Email me a sign-in code"}
+                </button>
+              )}
               <button
-                onClick={sendCode}
-                disabled={status === "sending" || !email.trim()}
-                className="min-h-[54px] w-full rounded-[14px] bg-accent text-[15px] font-semibold text-accent-ink transition hover:opacity-90 disabled:opacity-50"
+                onClick={() => {
+                  setWithPassword((w) => !w);
+                  setPassword("");
+                  setError("");
+                }}
+                className="py-2 text-sm font-semibold text-ink"
               >
-                {status === "sending" ? "Sending…" : "Email me a sign-in code"}
+                {withPassword ? "Email me a code instead" : "I have a password"}
               </button>
               {installed ? (
                 <div className="mt-3 flex flex-col gap-2">
@@ -231,9 +303,9 @@ export default function SignUp() {
             </div>
           )}
 
-          <p className="mt-6 text-xs leading-relaxed text-muted">
+          <p className={`mt-6 text-xs leading-relaxed text-muted ${status === "password" ? "hidden" : ""}`}>
             Already have an account? Use the same email or Google account and you&apos;ll go straight back to your
-            plan. You&apos;ll stay signed in on this device.
+            plan. You&apos;ll stay signed in on this device. If you&apos;ve made a password, tap &ldquo;I have a password&rdquo; to skip the code.
           </p>
         </div>
 
