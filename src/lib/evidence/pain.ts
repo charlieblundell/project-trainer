@@ -14,6 +14,7 @@ export const PAIN: Finding[] = [
     practical:
       "Lifting is one of the better-evidenced protective things you can do. If you're training around a history of injury, more strength work is usually part of the answer rather than something to be careful of.",
     strength: "strong",
+    agreement: "consistent",
     limits:
       "The evidence is from sports injury prevention trials, and it says nothing about how to load an area that is currently injured.",
     tags: ["injury", "prevention", "prehab", "protect", "reduce risk", "safe"],
@@ -26,6 +27,7 @@ export const PAIN: Finding[] = [
         journal: "British Journal of Sports Medicine",
         locator: "52(24):1557–1563",
         doi: "10.1136/bjsports-2018-099078",
+        design: "meta-analysis",
       },
     ],
   },
@@ -36,6 +38,7 @@ export const PAIN: Finding[] = [
     practical:
       "A sore back is usually a reason to modify training, not to stop moving. Resting until it feels perfect is the approach with the worst evidence behind it.",
     strength: "strong",
+    agreement: "consistent",
     limits:
       "This is chronic, non-specific back pain. New, severe or unexplained back pain — and anything with numbness, weakness, or changes to bladder or bowel function — needs urgent medical assessment, not exercise.",
     tags: ["back", "back pain", "lower back", "spine", "lumbar", "sore back", "disc"],
@@ -47,6 +50,7 @@ export const PAIN: Finding[] = [
         journal: "Cochrane Database of Systematic Reviews",
         locator: "Issue 9, CD009790",
         doi: "10.1002/14651858.CD009790.pub2",
+        design: "meta-analysis",
       },
     ],
   },
@@ -58,8 +62,9 @@ export const PAIN: Finding[] = [
     practical:
       "A frightening-sounding scan report is not a sentence, and it doesn't by itself mean an exercise is dangerous. What your body does under load tells you more than what a picture of it looks like.",
     strength: "strong",
+    agreement: "consistent",
     limits:
-      "Common findings are not the same as irrelevant findings. This is context for a worrying report, not a reason to ignore one — your clinician interprets your scan, not this app.",
+      "The same holds for knees: a 2019 meta-analysis found cartilage damage on MRI in 43% of pain-free, uninjured adults over forty. Common findings are not the same as irrelevant findings. This is context for a worrying report, not a reason to ignore one — your clinician interprets your scan, not this app.",
     tags: ["mri", "scan", "disc", "degeneration", "bulge", "diagnosis", "x-ray", "arthritis"],
     sources: [
       {
@@ -71,6 +76,19 @@ export const PAIN: Finding[] = [
         journal: "American Journal of Neuroradiology",
         locator: "36(4):811–816",
         doi: "10.3174/ajnr.A4173",
+        design: "systematic-review",
+        olderBecause:
+          "Still the largest systematic review of spine imaging in people without pain, and the one clinical guidelines cite.",
+      },
+      {
+        authors: "Culvenor AG, Øiestad BE, Hart HF, Stefanik JJ, Guermazi A, Crossley KM",
+        year: 2019,
+        title:
+          "Prevalence of knee osteoarthritis features on magnetic resonance imaging in asymptomatic uninjured adults: a systematic review and meta-analysis",
+        journal: "British Journal of Sports Medicine",
+        locator: "53(20):1268–1278",
+        doi: "10.1136/bjsports-2018-099257",
+        design: "meta-analysis",
       },
     ],
   },
@@ -82,6 +100,7 @@ export const PAIN: Finding[] = [
     practical:
       "Mild discomfort that settles isn't automatically a signal to stop. It doesn't follow that pushing through worse pain is better — the advantage was small and short-term, and the safe reading is that a bit of discomfort needn't derail you.",
     strength: "moderate",
+    agreement: "mostly",
     limits:
       "This is chronic pain under clinical supervision, not new pain, not sharp pain, and not pain during a heavy lift. Applying it to an acute injury would be a serious misreading.",
     tags: ["pain", "hurts", "discomfort", "should i stop", "push through", "training with pain"],
@@ -94,6 +113,7 @@ export const PAIN: Finding[] = [
         journal: "British Journal of Sports Medicine",
         locator: "51(23):1679–1687",
         doi: "10.1136/bjsports-2016-097383",
+        design: "meta-analysis",
       },
     ],
   },
@@ -105,6 +125,7 @@ export const PAIN: Finding[] = [
     practical:
       "The practical shape of this is a rule agreed in advance: keep pain during and after the session under a set level, and stop if it's still elevated the next morning. That's a far better tool than 'listen to your body', which means nothing.",
     strength: "moderate",
+    agreement: "mostly",
     limits:
       "One randomised trial, in one tendon, with clinician supervision. The principle travels better than the specifics do — the right limit for you is one to set with a clinician.",
     tags: ["tendon", "tendinopathy", "achilles", "pain rules", "how much pain", "keep training"],
@@ -117,6 +138,19 @@ export const PAIN: Finding[] = [
         journal: "The American Journal of Sports Medicine",
         locator: "35(6):897–906",
         doi: "10.1177/0363546506298279",
+        design: "trial",
+        olderBecause:
+          "The original randomised trial of the pain-monitoring model. A 2022 systematic review of tendon rehab (Núñez-Martínez & Hernández-Guillen) supports monitoring pain and controlling load.",
+      },
+      {
+        authors: "Núñez-Martínez P, Hernández-Guillen D",
+        year: 2022,
+        title:
+          "Management of patellar tendinopathy through monitoring, load control, and therapeutic exercise: a systematic review",
+        journal: "Journal of Sport Rehabilitation",
+        locator: "31(3):337–350",
+        doi: "10.1123/jsr.2021-0117",
+        design: "systematic-review",
       },
     ],
   },
@@ -127,6 +161,7 @@ export const PAIN: Finding[] = [
     practical:
       "Arthritic knees are not a reason to stop loading the legs. Strengthening the muscles around the joint is standard care, and the movements can be adjusted for range and load rather than abandoned.",
     strength: "strong",
+    agreement: "consistent",
     limits:
       "Benefits are modest on average and shrink over the long term. Someone with diagnosed osteoarthritis should be guided by their clinician on which movements and what range.",
     tags: ["knee", "arthritis", "osteoarthritis", "joint pain", "creaky", "older", "squat hurts"],
@@ -138,6 +173,7 @@ export const PAIN: Finding[] = [
         journal: "Cochrane Database of Systematic Reviews",
         locator: "CD004376",
         doi: "10.1002/14651858.CD004376.pub4",
+        design: "meta-analysis",
       },
     ],
   },
@@ -145,10 +181,13 @@ export const PAIN: Finding[] = [
     id: "workload-ratios-are-not-a-formula",
     topic: "pain",
     claim:
-      "The popular acute-to-chronic workload ratio has serious conceptual and statistical problems, and shouldn't be treated as a rule for safe progression.",
+      "Sudden spikes in training load are linked with more injuries, but the popular acute-to-chronic workload ratio is too flawed to use as a precise rule.",
     practical:
       "Be sceptical of anything claiming a precise safe percentage to increase by. Sensible progression means small increases, watching how you respond, and backing off when something complains — not a number that guarantees safety.",
     strength: "moderate",
+    agreement: "mixed",
+    limits:
+      "Reviews of team-sport data mostly find more injuries after a sharp jump in load. But the studies measure load in incompatible ways, the people studied were almost all young male athletes, and critics argue the ratio itself is statistically flawed. Both sides agree on avoiding sudden jumps; neither supports a precise safe number.",
     tags: ["load management", "progression", "too fast", "10 percent rule", "increase", "safe"],
     sources: [
       {
@@ -158,6 +197,26 @@ export const PAIN: Finding[] = [
         journal: "International Journal of Sports Physiology and Performance",
         locator: "15(6):907–913",
         doi: "10.1123/ijspp.2019-0864",
+        design: "review",
+      },
+      {
+        authors: "Andrade R, Wik EH, Rebelo-Marques A, Blanch P, Whiteley R, Espregueira-Mendes J, Gabbett TJ",
+        year: 2020,
+        title:
+          "Is the acute: chronic workload ratio (ACWR) associated with risk of time-loss injury in professional team sports? A systematic review of methodology, variables and injury risk in practical situations",
+        journal: "Sports Medicine",
+        locator: "50(9):1613–1635",
+        doi: "10.1007/s40279-020-01308-6",
+        design: "systematic-review",
+      },
+      {
+        authors: "Qin W, Li R, Chen L",
+        year: 2025,
+        title: "Acute to chronic workload ratio (ACWR) for predicting sports injury risk: a systematic review and meta-analysis",
+        journal: "BMC Sports Science, Medicine and Rehabilitation",
+        locator: "17:285",
+        doi: "10.1186/s13102-025-01332-x",
+        design: "meta-analysis",
       },
     ],
   },

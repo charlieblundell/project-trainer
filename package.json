@@ -13,6 +13,7 @@
     "preview:refresh": "tsx scripts/preview-refresh.ts",
     "preview:progress": "tsx scripts/preview-progress.ts",
     "check:evidence": "tsx scripts/check-evidence.ts",
+    "check:why": "tsx scripts/check-why.ts",
     "check:billing": "tsx scripts/check-billing.ts",
     "check:webhook": "tsx scripts/check-webhook.ts",
     "check:weekly": "tsx scripts/check-weekly.ts",

@@ -13,6 +13,7 @@ export const RECOVERY: Finding[] = [
     practical:
       "A bad night doesn't mean skipping the session — it means expecting less from it. Keep the movements, drop a set, don't chase a personal best, and rate the effort honestly so next week's targets aren't set off a bad day.",
     strength: "strong",
+    agreement: "consistent",
     limits:
       "Effects vary by task and by how much sleep was lost. This is about acute loss, not the long-term consequences of chronic short sleep.",
     tags: [
@@ -37,6 +38,7 @@ export const RECOVERY: Finding[] = [
         journal: "Sports Medicine",
         locator: "52:2669–2690",
         doi: "10.1007/s40279-022-01706-y",
+        design: "meta-analysis",
       },
     ],
   },
@@ -47,8 +49,9 @@ export const RECOVERY: Finding[] = [
     practical:
       "The highest-yield recovery intervention is boring: go to bed earlier. It beats anything you can buy, and it's the first thing to fix before blaming your programme.",
     strength: "moderate",
+    agreement: "mostly",
     limits:
-      "The best-known study is small, uncontrolled and in collegiate athletes. The direction is well supported; the size of the effect for an ordinary person isn't.",
+      "The research is in athletes, and most studies are small. A 2023 review of 25 studies found sleeping longer and napping were the interventions that helped most, so the direction is well supported. How big the effect is for an ordinary person isn't known.",
     tags: ["sleep", "recovery", "rest", "more sleep", "performance", "tired"],
     sources: [
       {
@@ -58,6 +61,19 @@ export const RECOVERY: Finding[] = [
         journal: "Sleep",
         locator: "34(7):943–950",
         doi: "10.5665/SLEEP.1132",
+        design: "trial",
+        olderBecause:
+          "The landmark sleep-extension study. A 2023 systematic review (Cunha et al.) found sleep extension and naps were the most effective sleep interventions across 25 studies.",
+      },
+      {
+        authors: "Cunha LA, Costa JA, Marques EA, Brito J, Lastella M, Figueiredo P",
+        year: 2023,
+        title:
+          "The impact of sleep interventions on athletic performance: a systematic review",
+        journal: "Sports Medicine - Open",
+        locator: "9:58",
+        doi: "10.1186/s40798-023-00599-z",
+        design: "systematic-review",
       },
     ],
   },
@@ -68,6 +84,7 @@ export const RECOVERY: Finding[] = [
     practical:
       "Soreness mostly tracks novelty — a new exercise, a long eccentric, a layoff. A session that leaves you fine can be a better session than one that leaves you wrecked. Judge training by whether the numbers move, not by how you feel two days later.",
     strength: "moderate",
+    agreement: "mostly",
     limits:
       "Soreness isn't meaningless either: a sudden jump in it usually means you added too much too fast.",
     tags: ["doms", "sore", "soreness", "aching", "not sore", "good workout", "next day"],
@@ -79,6 +96,19 @@ export const RECOVERY: Finding[] = [
         journal: "Strength & Conditioning Journal",
         locator: "35(5):16–21",
         doi: "10.1519/SSC.0b013e3182a61820",
+        design: "review",
+        olderBecause:
+          "The standard review on soreness. A 2016 trial (Damas et al.) since showed muscle growth tracks protein synthesis only once muscle damage has settled, which supports it.",
+      },
+      {
+        authors: "Damas F, Phillips SM, Libardi CA, Vechin FC, Lixandrão ME, Jannig PR, Costa LAR, Bacurau AV, et al.",
+        year: 2016,
+        title:
+          "Resistance training-induced changes in integrated myofibrillar protein synthesis are related to hypertrophy only after attenuation of muscle damage",
+        journal: "The Journal of Physiology",
+        locator: "594(18):5209–5222",
+        doi: "10.1113/JP272472",
+        design: "trial",
       },
     ],
   },
@@ -90,8 +120,9 @@ export const RECOVERY: Finding[] = [
     practical:
       "Ice baths make you feel better and leave you with less to show for the work. If you're lifting to build muscle, save the cold for competition days or don't bother — an ice bath after every session is actively working against you.",
     strength: "moderate",
+    agreement: "mostly",
     limits:
-      "This applies to strength and hypertrophy training. Cold immersion for acute recovery between same-day events is a different question with different answers.",
+      "A 2024 meta-analysis of eight studies found the same blunting, though the studies were of fair to poor quality. This applies to strength and hypertrophy training. Cold immersion for acute recovery between same-day events is a different question with different answers.",
     tags: ["ice bath", "cold", "cold plunge", "cryotherapy", "recovery", "cold water"],
     sources: [
       {
@@ -103,6 +134,19 @@ export const RECOVERY: Finding[] = [
         journal: "The Journal of Physiology",
         locator: "593(18):4285–4301",
         doi: "10.1113/JP270570",
+        design: "trial",
+        olderBecause:
+          "The landmark trial. A 2024 meta-analysis of eight studies (Piñero et al.) found the same blunting of muscle growth.",
+      },
+      {
+        authors: "Piñero A, Burke R, Augustin F, Mohan AE, DeJesus K, Sapuppo M, Weisenthal M, Coleman M, et al.",
+        year: 2024,
+        title:
+          "Throwing cold water on muscle growth: a systematic review with meta-analysis of the effects of postexercise cold water immersion on resistance training-induced hypertrophy",
+        journal: "European Journal of Sport Science",
+        locator: "24(2):177–189",
+        doi: "10.1002/ejsc.12074",
+        design: "meta-analysis",
       },
     ],
   },
@@ -114,6 +158,7 @@ export const RECOVERY: Finding[] = [
     practical:
       "Fine as a warm-up habit or if it makes you feel ready. It isn't fixing anything structural, and it isn't a substitute for sleep, food or sensible loading.",
     strength: "moderate",
+    agreement: "consistent",
     tags: ["foam roll", "rolling", "release", "massage", "warm up", "recovery tools"],
     sources: [
       {
@@ -124,6 +169,7 @@ export const RECOVERY: Finding[] = [
         journal: "Frontiers in Physiology",
         locator: "10:376",
         doi: "10.3389/fphys.2019.00376",
+        design: "meta-analysis",
       },
     ],
   },
@@ -135,6 +181,7 @@ export const RECOVERY: Finding[] = [
     practical:
       "Keep pre-session stretching brief and moving. Save the long holds for after the session or a separate day — and if you stretch first anyway, do some warm-up sets afterwards so the effect washes out before your working sets.",
     strength: "strong",
+    agreement: "consistent",
     limits:
       "The impairment comes from long holds. Short stretches inside a proper warm-up, or mobility work between sets, aren't the same thing.",
     tags: ["stretch", "stretching", "warm up", "before training", "mobility", "flexibility"],
@@ -147,6 +194,7 @@ export const RECOVERY: Finding[] = [
         journal: "Applied Physiology, Nutrition, and Metabolism",
         locator: "41(1):1–11",
         doi: "10.1139/apnm-2015-0235",
+        design: "systematic-review",
       },
     ],
   },
@@ -158,6 +206,7 @@ export const RECOVERY: Finding[] = [
     practical:
       "Feeling flat for a week is not overtraining. It's usually accumulated fatigue, poor sleep, or under-eating, and an easier week fixes it. Persistent, unexplained performance loss lasting months with mood and sleep disturbance is a different matter and warrants medical input.",
     strength: "moderate",
+    agreement: "consistent",
     limits:
       "There is no diagnostic test — the consensus definition is one of exclusion, which is exactly why the label gets over-applied.",
     tags: ["overtraining", "burnt out", "flat", "exhausted", "too much", "fatigue", "run down"],
@@ -171,6 +220,19 @@ export const RECOVERY: Finding[] = [
         journal: "Medicine & Science in Sports & Exercise",
         locator: "45(1):186–205",
         doi: "10.1249/MSS.0b013e318279a10a",
+        design: "consensus",
+        olderBecause:
+          "Still the standing joint consensus of the European College of Sport Science and the American College of Sports Medicine; nothing has replaced it.",
+      },
+      {
+        authors: "Bell L, Ruddock A, Maden-Wilkinson T, Rogerson D",
+        year: 2020,
+        title:
+          "Overreaching and overtraining in strength sports and resistance training: a scoping review",
+        journal: "Journal of Sports Sciences",
+        locator: "38(16):1897–1912",
+        doi: "10.1080/02640414.2020.1763077",
+        design: "review",
       },
     ],
   },
@@ -182,6 +244,7 @@ export const RECOVERY: Finding[] = [
     practical:
       "Backing off when performance stalls or fatigue piles up is sensible and costs almost nothing. Just don't treat a fixed deload schedule as a proven necessity — it's convention, and this app reduces load in response to your logged sessions rather than to the calendar.",
     strength: "limited",
+    agreement: "mixed",
     limits:
       "A scoping review found the research base on overreaching and recovery in resistance training to be small and inconsistent. Absence of evidence here is genuinely absence of evidence, not evidence of absence.",
     tags: ["deload", "easy week", "back off", "rest week", "recovery week", "stalled", "plateau"],
@@ -194,6 +257,7 @@ export const RECOVERY: Finding[] = [
         journal: "Journal of Sports Sciences",
         locator: "38(16)",
         doi: "10.1080/02640414.2020.1763077",
+        design: "review",
       },
     ],
   },
@@ -205,6 +269,7 @@ export const RECOVERY: Finding[] = [
     practical:
       "Some of what training does for you won't show up in any of the numbers on the progress screen. On weeks where the lifting is going badly, that benefit is still being paid out.",
     strength: "strong",
+    agreement: "consistent",
     limits:
       "Exercise is a supportive intervention, not a replacement for treatment. Anyone struggling with their mental health should speak to a professional rather than train harder.",
     tags: ["mental health", "mood", "depression", "anxiety", "stress", "motivation", "wellbeing"],
@@ -218,6 +283,7 @@ export const RECOVERY: Finding[] = [
         journal: "British Journal of Sports Medicine",
         locator: "57(18):1203–1209",
         doi: "10.1136/bjsports-2022-106195",
+        design: "umbrella-review",
       },
     ],
   },

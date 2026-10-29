@@ -9,8 +9,10 @@ import { sessionHasSets, sessionStatus, useAppStore } from "@/lib/store";
 import { RpeSelector } from "@/components/RpeSelector";
 import { SetStepper } from "@/components/SetStepper";
 import { clsx } from "@/lib/clsx";
-import Link from "next/link";
 import { ExerciseInfoModal } from "@/components/ExerciseInfoModal";
+import { ExerciseWhySheet } from "@/components/ExerciseWhySheet";
+import { whyTheseNumbers } from "@/lib/plan/why";
+import { experienceToLevel } from "@/lib/plan/generate";
 import { AskCoachLink } from "@/components/AskCoachLink";
 import { ExerciseSwapPanel } from "@/components/ExerciseSwapPanel";
 import { WEEKDAY_LABELS, nextSession, sessionById, sessionForToday, targetLabel } from "@/lib/plan/helpers";
@@ -274,7 +276,20 @@ function ExercisePanel({
       : String(planned.repMax ?? 10),
   });
   const [showInfo, setShowInfo] = useState(false);
+  const [showWhy, setShowWhy] = useState(false);
   const [showSwap, setShowSwap] = useState(false);
+  const plan = useAppStore((s) => s.plan);
+  // Explained for what they're actually doing, so a swap gets its own reasons.
+  const reasons = plan
+    ? whyTheseNumbers(
+        { ...planned, exerciseId: activeId },
+        {
+          plan,
+          goal: plan.goal ?? onboarding.goal ?? "Build muscle",
+          level: plan.level ?? experienceToLevel(onboarding.experience),
+        }
+      )
+    : [];
 
   // Sets and effort are recorded against the exercise actually performed. If
   // it was swapped, the planned exercise gets no sets today, so its targets
@@ -401,13 +416,13 @@ function ExercisePanel({
       <div className="mb-1 flex items-center justify-between gap-3">
         <span className="tabular text-callout font-semibold text-accent">{targetLabel(planned)}</span>
         {/* Rep and weight targets are what this explains; a timed interval has neither. */}
-        {!isTimed && (
-          <Link
-            href="/plan/why?rule=load-by-goal"
-            className="-mr-2 flex min-h-[44px] items-center px-2 text-footnote text-muted"
+        {!isTimed && reasons.length > 0 && (
+          <button
+            onClick={() => setShowWhy(true)}
+            className="-mr-2 flex min-h-[44px] items-center px-2 text-footnote text-accent"
           >
             Why these numbers?
-          </Link>
+          </button>
         )}
       </div>
       {override && <div className="mb-4 text-footnote font-semibold text-success">Swapped in for today</div>}
@@ -650,6 +665,9 @@ function ExercisePanel({
             }}
             onClose={() => setShowInfo(false)}
           />
+        )}
+        {showWhy && def && (
+          <ExerciseWhySheet name={def.name} reasons={reasons} onClose={() => setShowWhy(false)} />
         )}
         {showSwap && (
           <ExerciseSwapPanel

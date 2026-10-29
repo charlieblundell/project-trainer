@@ -5,8 +5,17 @@ import { Suspense, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { ChevronDown, ChevronLeft, ExternalLink } from "lucide-react";
-import { FINDINGS, STRENGTH_LABEL, TOPICS, citation, sourceUrl } from "@/lib/evidence";
-import type { EvidenceStrength, EvidenceTopic, Finding } from "@/lib/evidence";
+import {
+  AGREEMENT_EXPLAIN,
+  AGREEMENT_LABEL,
+  DESIGN_LABEL,
+  FINDINGS,
+  STRENGTH_LABEL,
+  TOPICS,
+  citation,
+  sourceUrl,
+} from "@/lib/evidence";
+import type { Agreement, EvidenceStrength, EvidenceTopic, Finding } from "@/lib/evidence";
 import { clsx } from "@/lib/clsx";
 import { previousScreen } from "@/lib/navigation";
 
@@ -25,6 +34,20 @@ function StrengthBadge({ strength }: { strength: EvidenceStrength }) {
   );
 }
 
+/** Whether the studies agree, which is a different question from how many there are. */
+function AgreementBadge({ agreement }: { agreement: Agreement }) {
+  return (
+    <span
+      className={clsx(
+        "flex-shrink-0 rounded-full px-2 py-1 text-[11px] font-semibold",
+        agreement === "mixed" ? "bg-warning-soft text-warning" : "border border-line text-muted"
+      )}
+    >
+      {AGREEMENT_LABEL[agreement]}
+    </span>
+  );
+}
+
 function FindingCard({ finding, startOpen }: { finding: Finding; startOpen: boolean }) {
   const [open, setOpen] = useState(startOpen);
 
@@ -38,6 +61,7 @@ function FindingCard({ finding, startOpen }: { finding: Finding; startOpen: bool
         <div className="flex-1">
           <div className="mb-2 flex flex-wrap items-center gap-2">
             <StrengthBadge strength={finding.strength} />
+            <AgreementBadge agreement={finding.agreement} />
           </div>
           <p className="text-subhead font-semibold leading-relaxed text-ink">{finding.claim}</p>
         </div>
@@ -54,6 +78,7 @@ function FindingCard({ finding, startOpen }: { finding: Finding; startOpen: bool
           className="border-t border-line px-4 pb-4 pt-3"
         >
           <p className="mb-3 text-subhead leading-relaxed text-ink">{finding.practical}</p>
+          <p className="mb-3 text-footnote leading-relaxed text-muted">{AGREEMENT_EXPLAIN[finding.agreement]}</p>
 
           {finding.limits && (
             <div className="mb-3 rounded-[12px] bg-background p-3">
@@ -74,9 +99,17 @@ function FindingCard({ finding, startOpen }: { finding: Finding; startOpen: bool
                   rel="noopener noreferrer"
                   className="group flex items-start gap-1.5 text-footnote leading-relaxed text-muted hover:text-accent"
                 >
-                  <span>{citation(source)}</span>
+                  <span>
+                    <span className="font-semibold text-ink">{DESIGN_LABEL[source.design]}, {source.year}.</span>{" "}
+                    {citation(source)}
+                  </span>
                   <ExternalLink size={12} className="mt-0.5 flex-shrink-0" />
                 </a>
+                {source.olderBecause && (
+                  <p className="mt-1 pl-0 text-footnote leading-relaxed text-faint">
+                    Why an older study: {source.olderBecause}
+                  </p>
+                )}
               </li>
             ))}
           </ul>

@@ -13,6 +13,33 @@ export type EvidenceTopic = "programming" | "recovery" | "nutrition" | "pain";
  */
 export type EvidenceStrength = "strong" | "moderate" | "limited";
 
+/**
+ * Whether the research points one way, not just how much of it there is.
+ * A claim can rest on plenty of studies that disagree with each other, and
+ * that's worth saying rather than quietly picking the side we like.
+ *
+ * consistent — the studies point the same way.
+ * mostly     — most point the same way; some find no difference.
+ * mixed      — studies disagree; the claim is the cautious reading.
+ */
+export type Agreement = "consistent" | "mostly" | "mixed";
+
+/**
+ * What kind of paper a source is. Pooled designs (meta-analyses, reviews of
+ * them, expert consensus) speak for many studies at once; a single trial
+ * speaks for itself.
+ */
+export type StudyDesign =
+  | "umbrella-review"
+  | "meta-analysis"
+  | "systematic-review"
+  | "consensus"
+  | "trial"
+  | "review";
+
+/** Sources older than this need a reason to still be here. */
+export const RECENT_FROM = 2016;
+
 export type Source = {
   /** As cited: "Schoenfeld BJ, Ogborn D, Krieger JW" */
   authors: string;
@@ -23,6 +50,12 @@ export type Source = {
   locator?: string;
   /** Every source here has one, and it's the link the app shows. */
   doi: string;
+  design: StudyDesign;
+  /**
+   * Why a source from before RECENT_FROM is still cited: usually that it's
+   * the landmark study or standing consensus, and newer work agrees with it.
+   */
+  olderBecause?: string;
 };
 
 export type Finding = {
@@ -33,6 +66,7 @@ export type Finding = {
   /** What it means for someone standing in a gym. */
   practical: string;
   strength: EvidenceStrength;
+  agreement: Agreement;
   /**
    * What the evidence does not say. Present wherever the claim is easy to
    * over-read, which is most of the time.

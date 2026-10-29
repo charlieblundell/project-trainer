@@ -216,12 +216,13 @@ const PRESCRIPTIONS: Record<string, { compound: Prescription; isolation: Prescri
   /*
    * Two minutes on main lifts: the library's rest finding is that rushing the
    * rest on a heavy compound costs reps on the next set, and those reps are
-   * the training. Isolation work stays short, where systemic fatigue isn't
-   * what limits the set.
+   * the training. Isolation work rests less, where systemic fatigue isn't
+   * what limits the set, but not a minute: for growth, resting past sixty
+   * seconds helps a little and levels off around ninety (Singer et al. 2024).
    */
   "Build muscle": {
     compound: { sets: 4, repMin: 6, repMax: 10, restSeconds: 120 },
-    isolation: { sets: 3, repMin: 10, repMax: 15, restSeconds: 60 },
+    isolation: { sets: 3, repMin: 10, repMax: 15, restSeconds: 90 },
   },
   /*
    * The same as building muscle, on purpose. High reps and short rest "for
@@ -230,7 +231,7 @@ const PRESCRIPTIONS: Record<string, { compound: Prescription; isolation: Prescri
    */
   "Lose fat": {
     compound: { sets: 4, repMin: 6, repMax: 10, restSeconds: 120 },
-    isolation: { sets: 3, repMin: 10, repMax: 15, restSeconds: 60 },
+    isolation: { sets: 3, repMin: 10, repMax: 15, restSeconds: 90 },
   },
   "Improve fitness": {
     compound: { sets: 3, repMin: 10, repMax: 12, restSeconds: 60 },
@@ -254,10 +255,26 @@ const PRESCRIPTIONS: Record<string, { compound: Prescription; isolation: Prescri
  */
 const BEGINNER_MAX_SETS = 3;
 
+/**
+ * Under an hour, smaller exercises rest a minute rather than ninety seconds.
+ * The extra rest buys a small amount of growth; in a short session it costs
+ * whole sets, and weekly sets are the much stronger finding. Main lifts keep
+ * their full rest either way.
+ */
+const SHORT_SESSION_MINUTES = 60;
+const SHORT_SESSION_REST = 60;
+
 /** The sets, reps and rest a movement gets for a goal and experience. Shared with the plan editor. */
-export function prescribe(exercise: ExerciseDef, goal: string, level?: Level): PlannedExercise {
+export function prescribe(
+  exercise: ExerciseDef,
+  goal: string,
+  level?: Level,
+  options: { sessionMinutes?: number } = {}
+): PlannedExercise {
   const table = PRESCRIPTIONS[goal] ?? PRESCRIPTIONS["Build muscle"];
-  const chosen = exercise.compound ? table.compound : table.isolation;
+  const short = (options.sessionMinutes ?? Infinity) < SHORT_SESSION_MINUTES;
+  const isolationRest = short ? Math.min(table.isolation.restSeconds, SHORT_SESSION_REST) : table.isolation.restSeconds;
+  const chosen = exercise.compound ? table.compound : { ...table.isolation, restSeconds: isolationRest };
   const base = level === 1 ? { ...chosen, sets: Math.min(chosen.sets, BEGINNER_MAX_SETS) } : chosen;
 
   if (exercise.unit === "time") {
@@ -298,7 +315,7 @@ export function prescribe(exercise: ExerciseDef, goal: string, level?: Level): P
       sets: base.sets,
       repMin: LIGHT_REP_MIN,
       repMax: LIGHT_REP_MAX,
-      restSeconds: table.isolation.restSeconds,
+      restSeconds: isolationRest,
       targetWeightKg: null,
     };
   }
@@ -842,7 +859,7 @@ export function generatePlan(profile: GeneratorProfile, options: { keep?: Iterab
         droppedForInjury.add(pattern);
         continue;
       }
-      take(result.exercise, prescribe(result.exercise, goal, level));
+      take(result.exercise, prescribe(result.exercise, goal, level, { sessionMinutes: profile.length ?? 45 }));
     }
 
     /**
@@ -945,7 +962,7 @@ export function generatePlan(profile: GeneratorProfile, options: { keep?: Iterab
         // stimulus again. Past two, the next step is another set, below.
         if (forGroup.length >= 2) break;
         if (isRegression(exercise)) continue;
-        const planned = prescribe(exercise, goal, level);
+        const planned = prescribe(exercise, goal, level, { sessionMinutes: profile.length ?? 45 });
         if (fits([...chosen, planned])) {
           take(exercise, planned);
           return true;
@@ -1072,7 +1089,7 @@ export function generatePlan(profile: GeneratorProfile, options: { keep?: Iterab
           .sort((a, b) => score(b, chosen.length, ctx) - score(a, chosen.length, ctx) || a.id.localeCompare(b.id))[0];
 
         if (calf) {
-          const planned = { ...prescribe(calf, goal, level), sets: Math.max(2, Math.min(3, floor - have)) };
+          const planned = { ...prescribe(calf, goal, level, { sessionMinutes: profile.length ?? 45 }), sets: Math.max(2, Math.min(3, floor - have)) };
           // Make room from the accessory carrying the most sets, never a main lift.
           for (let guard = 0; guard < 12 && estimateMinutes([...chosen, planned]) > sessionMinutes; guard += 1) {
             const donor = chosen

@@ -4,6 +4,7 @@ import { NUTRITION } from "./nutrition";
 import { PAIN } from "./pain";
 import type { EvidenceTopic, Finding } from "./types";
 import { citation } from "./types";
+import { AGREEMENT_LABEL, DESIGN_LABEL } from "./labels";
 
 export * from "./types";
 export * from "./labels";
@@ -107,7 +108,7 @@ export function relevantFindings(query: string, limit = 6): Finding[] {
  * finding didn't happen to match the question.
  */
 export function claimsIndex(): string {
-  return FINDINGS.map((f) => `- [${f.id}] (${f.strength}) ${f.claim}`).join("\n");
+  return FINDINGS.map((f) => `- [${f.id}] (${f.strength}, ${f.agreement}) ${f.claim}`).join("\n");
 }
 
 /** The full entry, for the handful of findings a question actually touches. */
@@ -117,10 +118,11 @@ export function detailFor(findings: Finding[]): string {
       const lines = [
         `[${f.id}] ${f.claim}`,
         `  Evidence strength: ${f.strength}`,
+        `  Do studies agree: ${AGREEMENT_LABEL[f.agreement].toLowerCase()}`,
         `  In practice: ${f.practical}`,
       ];
       if (f.limits) lines.push(`  What it doesn't say: ${f.limits}`);
-      for (const source of f.sources) lines.push(`  Source: ${citation(source)}`);
+      for (const source of f.sources) lines.push(`  Source (${DESIGN_LABEL[source.design].toLowerCase()}): ${citation(source)}`);
       return lines.join("\n");
     })
     .join("\n\n");

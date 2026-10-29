@@ -1,7 +1,17 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { FINDINGS, FINDINGS_BY_ID, STRENGTH_LABEL, TOPICS, citation, sourceUrl } from "@/lib/evidence";
+import {
+  AGREEMENT_EXPLAIN,
+  AGREEMENT_LABEL,
+  DESIGN_LABEL,
+  FINDINGS,
+  FINDINGS_BY_ID,
+  STRENGTH_LABEL,
+  TOPICS,
+  citation,
+  sourceUrl,
+} from "@/lib/evidence";
 import { ResearchShell, strengthClass } from "@/components/ResearchShell";
 import { SITE_NAME } from "@/lib/site";
 
@@ -61,7 +71,7 @@ export default async function FindingPage({ params }: Props) {
 
       <article className="mt-8 max-w-[68ch]">
         <p className={`text-xs font-semibold uppercase tracking-[0.12em] ${strengthClass(finding.strength)}`}>
-          {STRENGTH_LABEL[finding.strength]}
+          {STRENGTH_LABEL[finding.strength]} · {AGREEMENT_LABEL[finding.agreement]}
         </p>
         <h1 className="mt-3 font-marketing-display text-[clamp(2rem,5vw,3.1rem)] font-extrabold leading-[1.02] text-ink [font-stretch:85%] [text-wrap:balance]">
           {finding.claim}
@@ -77,10 +87,14 @@ export default async function FindingPage({ params }: Props) {
           </>
         )}
 
+        <h2 className={sectionHeading}>How settled it is</h2>
+        <p className="mt-3 text-[17px] leading-[1.7] text-muted">{AGREEMENT_EXPLAIN[finding.agreement]}</p>
+
         <h2 className={sectionHeading}>{finding.sources.length > 1 ? "Sources" : "Source"}</h2>
         <ul className="mt-3 flex flex-col gap-3">
           {finding.sources.map((source) => (
             <li key={source.doi} className="text-[15px] leading-relaxed text-muted">
+              <span className="font-semibold text-ink">{DESIGN_LABEL[source.design]}, {source.year}.</span>{" "}
               {citation(source)}{" "}
               <a
                 href={sourceUrl(source)}
@@ -90,6 +104,7 @@ export default async function FindingPage({ params }: Props) {
               >
                 doi.org/{source.doi}
               </a>
+              {source.olderBecause && <span className="mt-1 block text-[14px]">Why an older study: {source.olderBecause}</span>}
             </li>
           ))}
         </ul>

@@ -13,6 +13,7 @@ export const PROGRAMMING: Finding[] = [
     practical:
       "If growth has stalled and you're recovering fine, adding a set or two per muscle per week is the first lever to pull — before changing exercises or chasing a new programme.",
     strength: "strong",
+    agreement: "consistent",
     limits:
       "The relationship is graded, not unlimited: gains per extra set shrink as volume climbs, and more sets cost more time and more fatigue. Most of the underlying studies are short and run on younger men.",
     tags: ["volume", "sets", "growth", "hypertrophy", "plateau", "stalled", "muscle"],
@@ -25,6 +26,7 @@ export const PROGRAMMING: Finding[] = [
         journal: "Journal of Sports Sciences",
         locator: "35(11):1073–1082",
         doi: "10.1080/02640414.2016.1210197",
+        design: "meta-analysis",
       },
       {
         authors: "Pelland JC, Remmert JF, Robinson ZP, Hinson SR, Zourdos MC",
@@ -34,6 +36,17 @@ export const PROGRAMMING: Finding[] = [
         journal: "Sports Medicine",
         locator: "56(2):481–505",
         doi: "10.1007/s40279-025-02344-w",
+        design: "meta-analysis",
+      },
+      {
+        authors: "Baz-Valle E, Balsalobre-Fernández C, Alix-Fages C, Santos-Concejero J",
+        year: 2022,
+        title:
+          "A systematic review of the effects of different resistance training volumes on muscle hypertrophy",
+        journal: "Journal of Human Kinetics",
+        locator: "81:199–210",
+        doi: "10.2478/hukin-2022-0017",
+        design: "meta-analysis",
       },
     ],
   },
@@ -45,6 +58,7 @@ export const PROGRAMMING: Finding[] = [
     practical:
       "A bench press is real work for your triceps, but not the same as a triceps exercise. Counting it as a full triceps set overstates what they're getting; ignoring it understates it. Half is the count that best matched real results across the research, and it's how this app adds up your week.",
     strength: "moderate",
+    agreement: "mostly",
     limits:
       "This is the counting method that best predicted outcomes across 67 studies, not a direct test of any one exercise or muscle. The participants averaged 25 years old and were mostly men.",
     tags: ["indirect sets", "counting sets", "weekly sets", "indirect", "compound lifts", "triceps", "biceps"],
@@ -57,6 +71,7 @@ export const PROGRAMMING: Finding[] = [
         journal: "Sports Medicine",
         locator: "56(2):481–505",
         doi: "10.1007/s40279-025-02344-w",
+        design: "meta-analysis",
       },
     ],
   },
@@ -68,6 +83,7 @@ export const PROGRAMMING: Finding[] = [
     practical:
       "A new lifter's first weeks don't need to be long to work — around four hard sets a muscle a week is enough to make progress. That's why the app starts beginners on less: it's easier to recover from and to keep turning up for. It's a starting point, not a ceiling. More volume still pays off early, and the plan grows as you do.",
     strength: "limited",
+    agreement: "mostly",
     limits:
       "The comparison of one set against three comes from a single eight-week trial of 34 sedentary young men, where three sets did better. The four-set minimum is a practical recommendation from a narrative review, not a trial designed to find a beginner's ideal dose. Starting beginners lower is partly a judgement about recovery and sticking with it, not a finding that less is better.",
     tags: ["beginner", "novice", "new to lifting", "starting out", "first weeks", "never lifted"],
@@ -80,6 +96,7 @@ export const PROGRAMMING: Finding[] = [
         journal: "Sports Medicine",
         locator: "51(10):2079–2095",
         doi: "10.1007/s40279-021-01490-1",
+        design: "review",
       },
       {
         authors: "Coskun IA, Kafkas ME",
@@ -88,6 +105,7 @@ export const PROGRAMMING: Finding[] = [
           "Comparative effects of single vs. multiple-set resistance training on neuromuscular performance and muscle morphology in sedentary men",
         journal: "BMC Sports Science, Medicine and Rehabilitation",
         doi: "10.1186/s13102-026-01874-8",
+        design: "trial",
       },
     ],
   },
@@ -99,6 +117,7 @@ export const PROGRAMMING: Finding[] = [
     practical:
       "Train each muscle as often as your week allows. Three sessions or six makes little difference to growth if the total number of hard sets is the same — so pick the split you'll actually turn up for.",
     strength: "strong",
+    agreement: "consistent",
     limits:
       "Higher frequency can still help indirectly: more sessions make a large weekly volume easier to fit and easier to recover between. This is about frequency itself, not about what frequency lets you do.",
     tags: ["frequency", "split", "days", "schedule", "how often", "twice a week"],
@@ -111,6 +130,17 @@ export const PROGRAMMING: Finding[] = [
         journal: "Journal of Sports Sciences",
         locator: "37(11):1286–1295",
         doi: "10.1080/02640414.2018.1555906",
+        design: "meta-analysis",
+      },
+      {
+        authors: "Pelland JC, Remmert JF, Robinson ZP, Hinson SR, Zourdos MC",
+        year: 2026,
+        title:
+          "The resistance training dose response: meta-regressions exploring the effects of weekly volume and frequency on muscle hypertrophy and strength gains",
+        journal: "Sports Medicine",
+        locator: "56(2):481–505",
+        doi: "10.1007/s40279-025-02344-w",
+        design: "meta-analysis",
       },
     ],
   },
@@ -122,6 +152,7 @@ export const PROGRAMMING: Finding[] = [
     practical:
       "You don't need heavy weight to grow. Sets of 20 with something light build muscle much like sets of 6 with something heavy, provided you push both near your limit. That matters most when your equipment is limited or a joint won't tolerate load.",
     strength: "strong",
+    agreement: "consistent",
     limits:
       "The equivalence holds for muscle size, not for strength — and light sets have to be genuinely hard, which most people find far less pleasant than lifting heavy.",
     tags: ["reps", "load", "light weights", "heavy", "rep range", "bands", "bodyweight", "home"],
@@ -134,6 +165,17 @@ export const PROGRAMMING: Finding[] = [
         journal: "Journal of Strength and Conditioning Research",
         locator: "31(12):3508–3523",
         doi: "10.1519/JSC.0000000000002200",
+        design: "meta-analysis",
+      },
+      {
+        authors: "Lopez P, Radaelli R, Taaffe DR, Newton RU, Galvão DA, Trajano GS, Teodoro JL, Kraemer WJ, et al.",
+        year: 2021,
+        title:
+          "Resistance training load effects on muscle hypertrophy and strength gain: systematic review and network meta-analysis",
+        journal: "Medicine & Science in Sports & Exercise",
+        locator: "53(6):1206–1216",
+        doi: "10.1249/MSS.0000000000002585",
+        design: "meta-analysis",
       },
     ],
   },
@@ -144,6 +186,7 @@ export const PROGRAMMING: Finding[] = [
     practical:
       "If the goal is a bigger one-rep max, some of your work has to be heavy and low-rep. Sets of fifteen build the muscle but not the skill of expressing force against a heavy bar.",
     strength: "strong",
+    agreement: "consistent",
     tags: ["strength", "heavy", "1rm", "max", "powerlifting", "low reps"],
     sources: [
       {
@@ -154,6 +197,7 @@ export const PROGRAMMING: Finding[] = [
         journal: "Journal of Strength and Conditioning Research",
         locator: "31(12):3508–3523",
         doi: "10.1519/JSC.0000000000002200",
+        design: "meta-analysis",
       },
       {
         authors:
@@ -164,6 +208,17 @@ export const PROGRAMMING: Finding[] = [
         journal: "British Journal of Sports Medicine",
         locator: "57:1211–1220",
         doi: "10.1136/bjsports-2023-106807",
+        design: "meta-analysis",
+      },
+      {
+        authors: "Lopez P, Radaelli R, Taaffe DR, Newton RU, Galvão DA, Trajano GS, Teodoro JL, Kraemer WJ, et al.",
+        year: 2021,
+        title:
+          "Resistance training load effects on muscle hypertrophy and strength gain: systematic review and network meta-analysis",
+        journal: "Medicine & Science in Sports & Exercise",
+        locator: "53(6):1206–1216",
+        doi: "10.1249/MSS.0000000000002585",
+        design: "meta-analysis",
       },
     ],
   },
@@ -175,6 +230,7 @@ export const PROGRAMMING: Finding[] = [
     practical:
       "This is why the same exercise gets different numbers depending on your goal. Chasing strength means fewer reps and heavier weight; chasing size means more total hard sets, and the weight matters less.",
     strength: "moderate",
+    agreement: "mostly",
     limits:
       "The two overlap enormously — almost any sensible programme moves both. This shapes emphasis, not category.",
     tags: ["goal", "sets", "reps", "prescription", "why these numbers", "strength", "hypertrophy"],
@@ -188,6 +244,7 @@ export const PROGRAMMING: Finding[] = [
         journal: "British Journal of Sports Medicine",
         locator: "57:1211–1220",
         doi: "10.1136/bjsports-2023-106807",
+        design: "meta-analysis",
       },
     ],
   },
@@ -199,6 +256,7 @@ export const PROGRAMMING: Finding[] = [
     practical:
       "Stopping one to three reps short of failure gets you almost all of the growth and leaves you far fresher for the rest of the session and the week. For strength work specifically, grinding to failure appears to offer no advantage.",
     strength: "moderate",
+    agreement: "mostly",
     limits:
       "Proximity to failure is estimated in most of these studies rather than measured, and people are unreliable judges of how many reps they had left — beginners especially tend to stop well short of where they think they are.",
     tags: ["failure", "rir", "rpe", "effort", "how hard", "last rep", "grinding"],
@@ -211,6 +269,7 @@ export const PROGRAMMING: Finding[] = [
         journal: "Sports Medicine",
         locator: "54(9):2209–2231",
         doi: "10.1007/s40279-024-02069-2",
+        design: "meta-analysis",
       },
       {
         authors: "Refalo MC, Helms ER, Trexler ET, Hamilton DL, Fyfe JJ",
@@ -220,6 +279,7 @@ export const PROGRAMMING: Finding[] = [
         journal: "Sports Medicine",
         locator: "53(3):649–665",
         doi: "10.1007/s40279-022-01784-y",
+        design: "meta-analysis",
       },
     ],
   },
@@ -227,12 +287,13 @@ export const PROGRAMMING: Finding[] = [
     id: "effort-gauged-by-reps-left",
     topic: "programming",
     claim:
-      "Rating a set by how many reps you had left is a usable way to gauge effort, and gets more accurate as you get more experienced.",
+      "Rating a set by how many reps you had left is a usable way to gauge effort, though people tend to guess about one rep low.",
     practical:
       "This is what the effort rating after each exercise is for. It's how the app knows the difference between 'made the reps comfortably' and 'barely survived' — two sessions that look identical in the numbers but mean opposite things for next week.",
     strength: "moderate",
+    agreement: "mostly",
     limits:
-      "Accuracy is best close to failure and with heavier loads. On light, high-rep sets, and among untrained lifters, estimates drift a long way from reality.",
+      "Accuracy is a little better close to failure and on heavier, lower-rep sets; on light, high-rep sets estimates drift further. Pooled across studies, experienced lifters were no more accurate than beginners, so practice helps less than people assume.",
     tags: ["rpe", "rir", "effort", "rating", "how hard was that", "reps in reserve"],
     sources: [
       {
@@ -244,6 +305,17 @@ export const PROGRAMMING: Finding[] = [
         journal: "Journal of Strength and Conditioning Research",
         locator: "30(1):267–275",
         doi: "10.1519/JSC.0000000000001049",
+        design: "trial",
+      },
+      {
+        authors: "Halperin I, Malleron T, Har-Nir I, Androulakis-Korakakis P, Wolf M, Fisher J, Steele J",
+        year: 2022,
+        title:
+          "Accuracy in predicting repetitions to task failure in resistance exercise: a scoping review and exploratory meta-analysis",
+        journal: "Sports Medicine",
+        locator: "52(2):377–390",
+        doi: "10.1007/s40279-021-01559-x",
+        design: "meta-analysis",
       },
     ],
   },
@@ -255,6 +327,7 @@ export const PROGRAMMING: Finding[] = [
     practical:
       "On a week where everything is going wrong, one working set is not a wasted session — it's most of the maintenance benefit. Doing something small beats skipping.",
     strength: "moderate",
+    agreement: "consistent",
     limits:
       "This is the minimum to keep gaining strength, not the amount that maximises anything, and the studies were in resistance-trained men. Size responds to volume far more than strength does.",
     tags: [
@@ -278,6 +351,7 @@ export const PROGRAMMING: Finding[] = [
         journal: "Sports Medicine",
         locator: "50:751–765",
         doi: "10.1007/s40279-019-01236-0",
+        design: "meta-analysis",
       },
     ],
   },
@@ -285,10 +359,13 @@ export const PROGRAMMING: Finding[] = [
     id: "rest-between-sets",
     topic: "programming",
     claim:
-      "Longer rests between sets support greater strength gains, particularly in trained lifters.",
+      "Resting longer between sets supports strength, and resting more than a minute helps muscle growth a little, with no added benefit beyond about ninety seconds.",
     practical:
-      "Rushing the rest on a heavy compound costs you reps on the next set, and those reps are the training. Two to three minutes on main lifts is not wasted time. Short rests are fine on isolation work, where the limiting factor isn't systemic fatigue.",
+      "Rushing the rest on a heavy compound costs you reps on the next set, and those reps are the training. Two to three minutes on main lifts is not wasted time. Smaller exercises need less, but not under a minute: for growth, about ninety seconds is where the benefit of resting levels off.",
+    limits:
+      "The growth benefit of resting past a minute is small and may come from doing more reps on later sets, rather than from the rest itself. Rest beyond ninety seconds didn't add growth, but it doesn't hurt either, so resting longer when you need to is fine.",
     strength: "moderate",
+    agreement: "mostly",
     tags: ["rest", "between sets", "timer", "how long", "recovery between sets"],
     sources: [
       {
@@ -299,6 +376,17 @@ export const PROGRAMMING: Finding[] = [
         journal: "Sports Medicine",
         locator: "48:137–151",
         doi: "10.1007/s40279-017-0788-x",
+        design: "systematic-review",
+      },
+      {
+        authors: "Singer A, Wolf M, Generoso L, Arias E, Delcastillo K, Echevarria E, Martinez A, Androulakis Korakakis P, et al.",
+        year: 2024,
+        title:
+          "Give it a rest: a systematic review with Bayesian meta-analysis on the effect of inter-set rest interval duration on muscle hypertrophy",
+        journal: "Frontiers in Sports and Active Living",
+        locator: "6:1429789",
+        doi: "10.3389/fspor.2024.1429789",
+        design: "meta-analysis",
       },
     ],
   },
@@ -309,8 +397,9 @@ export const PROGRAMMING: Finding[] = [
     practical:
       "Take the squat to depth and let the dumbbell down all the way. Half reps with more weight on the bar look better and work less — and the stretched part of the movement seems to be where much of the benefit lives.",
     strength: "moderate",
+    agreement: "mostly",
     limits:
-      "Range should be the range you can control and tolerate. A joint that hurts at the bottom is a reason to shorten the range for now, not to force it.",
+      "Full range clearly wins for strength and for lower-body growth; for upper-body growth and muscle shape the differences are small. Range should be the range you can control and tolerate. A joint that hurts at the bottom is a reason to shorten the range for now, not to force it.",
     tags: ["range of motion", "rom", "depth", "partial reps", "half reps", "form", "technique"],
     sources: [
       {
@@ -320,6 +409,17 @@ export const PROGRAMMING: Finding[] = [
         journal: "International Journal of Strength and Conditioning",
         locator: "3(1)",
         doi: "10.47206/ijsc.v3i1.182",
+        design: "meta-analysis",
+      },
+      {
+        authors: "Pallarés JG, Hernández-Belmonte A, Martínez-Cava A, Vetrovsky T, Steffl M, Courel-Ibáñez J",
+        year: 2021,
+        title:
+          "Effects of range of motion on resistance training adaptations: a systematic review and meta-analysis",
+        journal: "Scandinavian Journal of Medicine & Science in Sports",
+        locator: "31(10):1866–1881",
+        doi: "10.1111/sms.14006",
+        design: "meta-analysis",
       },
     ],
   },
@@ -331,8 +431,9 @@ export const PROGRAMMING: Finding[] = [
     practical:
       "Worth something, but far less than showing up and adding weight when you earn it. Elaborate periodisation is not what stands between most people and progress.",
     strength: "moderate",
+    agreement: "mostly",
     limits:
-      "The comparison is contested — critics argue the periodised groups often did more total work, which would explain the difference without periodisation itself doing anything.",
+      "The main criticism was that periodised groups simply did more work. A 2022 meta-analysis of programmes matched for volume still found a small strength edge, but no difference at all for muscle size.",
     tags: ["periodisation", "programme", "block", "variation", "structure", "deload"],
     sources: [
       {
@@ -343,6 +444,17 @@ export const PROGRAMMING: Finding[] = [
         journal: "Sports Medicine",
         locator: "47(10):2083–2100",
         doi: "10.1007/s40279-017-0734-y",
+        design: "meta-analysis",
+      },
+      {
+        authors: "Moesgaard L, Beck MM, Christiansen L, Aagaard P, Lundbye-Jensen J",
+        year: 2022,
+        title:
+          "Effects of periodization on strength and muscle hypertrophy in volume-equated resistance training programs: a systematic review and meta-analysis",
+        journal: "Sports Medicine",
+        locator: "52(7):1647–1666",
+        doi: "10.1007/s40279-021-01636-1",
+        design: "meta-analysis",
       },
     ],
   },
@@ -354,6 +466,7 @@ export const PROGRAMMING: Finding[] = [
     practical:
       "You can train for your heart and your legs in the same week. Explosive, jumping-type strength is the one quality that may suffer, so if that's what you're training for, keep hard cardio away from those sessions.",
     strength: "moderate",
+    agreement: "mostly",
     limits:
       "This is about compatibility, not free lunch — a very large amount of hard endurance work still competes for the recovery your lifting needs.",
     tags: ["cardio", "running", "interference", "concurrent", "conditioning", "endurance", "steps"],
@@ -366,6 +479,7 @@ export const PROGRAMMING: Finding[] = [
         journal: "Sports Medicine",
         locator: "52(3):601–612",
         doi: "10.1007/s40279-021-01587-7",
+        design: "meta-analysis",
       },
     ],
   },
@@ -377,6 +491,7 @@ export const PROGRAMMING: Finding[] = [
     practical:
       "Age changes the starting point and the rate of progress, not the method. Progressive resistance training is recommended for older adults specifically to preserve strength, function and independence.",
     strength: "strong",
+    agreement: "consistent",
     limits:
       "Existing conditions and medications matter, and anyone starting later in life with a medical history should get individual clearance first.",
     tags: [
@@ -401,6 +516,7 @@ export const PROGRAMMING: Finding[] = [
         journal: "Journal of Strength and Conditioning Research",
         locator: "33(8):2019–2052",
         doi: "10.1519/JSC.0000000000003230",
+        design: "consensus",
       },
     ],
   },
@@ -412,6 +528,7 @@ export const PROGRAMMING: Finding[] = [
     practical:
       "A few minutes of standing balance work — one foot, or heel to toe, with something to hold nearby — belongs in every session from your mid-sixties on, alongside the lifting rather than instead of it.",
     strength: "strong",
+    agreement: "consistent",
     limits:
       "The trials are mostly in people living at home, averaging mid-seventies. Whether it prevents fall-related fractures is less certain than whether it prevents falls.",
     tags: ["falls", "fall", "balance", "unsteady", "wobbly", "older", "osteoporosis", "fracture"],
@@ -424,6 +541,7 @@ export const PROGRAMMING: Finding[] = [
         journal: "Cochrane Database of Systematic Reviews",
         locator: "1(1):CD012424",
         doi: "10.1002/14651858.CD012424.pub2",
+        design: "meta-analysis",
       },
       {
         authors: "Bull FC, Al-Ansari SS, Biddle S, Borodulin K, Buman MP, Cardon G, et al.",
@@ -432,6 +550,7 @@ export const PROGRAMMING: Finding[] = [
         journal: "British Journal of Sports Medicine",
         locator: "54(24):1451–1462",
         doi: "10.1136/bjsports-2020-102955",
+        design: "consensus",
       },
     ],
   },
@@ -443,6 +562,7 @@ export const PROGRAMMING: Finding[] = [
     practical:
       "There's no good basis for restructuring a training week around cycle phase. Symptoms are real and worth adjusting a session for on the day — but that's autoregulation, the same as adjusting for a bad night's sleep, not a different programme.",
     strength: "moderate",
+    agreement: "mostly",
     limits:
       "The underlying studies are mostly small and methodologically weak, which is exactly why strong phase-based claims aren't supportable in either direction.",
     tags: ["menstrual", "cycle", "period", "women", "female", "hormones", "training around"],
@@ -455,6 +575,7 @@ export const PROGRAMMING: Finding[] = [
         journal: "Frontiers in Sports and Active Living",
         locator: "5:1054542",
         doi: "10.3389/fspor.2023.1054542",
+        design: "umbrella-review",
       },
     ],
   },
@@ -466,6 +587,7 @@ export const PROGRAMMING: Finding[] = [
     practical:
       "Two full-body sessions a week already meets the strength half of the international guideline. That's the floor for health, not the ceiling for progress — but it's a much lower bar than most people assume.",
     strength: "strong",
+    agreement: "consistent",
     tags: ["guidelines", "how much", "minimum", "health", "beginner", "recommended", "who"],
     sources: [
       {
@@ -475,6 +597,7 @@ export const PROGRAMMING: Finding[] = [
         journal: "British Journal of Sports Medicine",
         locator: "54(24):1451–1462",
         doi: "10.1136/bjsports-2020-102955",
+        design: "consensus",
       },
     ],
   },
@@ -486,6 +609,7 @@ export const PROGRAMMING: Finding[] = [
     practical:
       "Around 30–60 minutes a week of strengthening work is associated with most of the observed benefit. Lifting is not only cosmetic, and the dose that matters for health is small.",
     strength: "moderate",
+    agreement: "mostly",
     limits:
       "These are observational cohorts, so they show association rather than proof of cause, and people who lift differ from people who don't in many other ways.",
     tags: ["health", "longevity", "mortality", "disease", "why lift", "benefits", "heart"],
@@ -498,6 +622,7 @@ export const PROGRAMMING: Finding[] = [
         journal: "British Journal of Sports Medicine",
         locator: "56(13):755–763",
         doi: "10.1136/bjsports-2021-105061",
+        design: "meta-analysis",
       },
     ],
   },
@@ -508,6 +633,7 @@ export const PROGRAMMING: Finding[] = [
     practical:
       "One set is enough to keep progressing, but it isn't the amount that maximises it. Where time allows, multiple working sets on the main lifts are the better trade.",
     strength: "moderate",
+    agreement: "consistent",
     limits:
       "The advantage of more sets flattens off, and the studies vary widely in how they counted volume in the first place.",
     tags: ["sets", "how many sets", "volume", "strength", "one set", "3 sets"],
@@ -519,6 +645,17 @@ export const PROGRAMMING: Finding[] = [
         journal: "Sports Medicine",
         locator: "47(12):2585–2601",
         doi: "10.1007/s40279-017-0762-7",
+        design: "meta-analysis",
+      },
+      {
+        authors: "Pelland JC, Remmert JF, Robinson ZP, Hinson SR, Zourdos MC",
+        year: 2026,
+        title:
+          "The resistance training dose response: meta-regressions exploring the effects of weekly volume and frequency on muscle hypertrophy and strength gains",
+        journal: "Sports Medicine",
+        locator: "56(2):481–505",
+        doi: "10.1007/s40279-025-02344-w",
+        design: "meta-analysis",
       },
     ],
   },
@@ -529,8 +666,9 @@ export const PROGRAMMING: Finding[] = [
     practical:
       "A few progressively heavier sets before your working weight isn't a formality — it's a measurable performance gain and it costs five minutes.",
     strength: "moderate",
+    agreement: "mostly",
     limits:
-      "The review found most warm-ups helped and few hurt, but warm-up protocols vary so much that no single recipe is established.",
+      "Most warm-ups helped and few hurt, but protocols vary so much that no single recipe is established. For lifting specifically, a 2021 review of eleven studies found the clearest benefit from warm-up sets of the exercise itself, building toward the working weight; whether a general warm-up beforehand adds anything is unclear.",
     tags: ["warm up", "warmup", "before", "first set", "preparation", "ramp up"],
     sources: [
       {
@@ -540,6 +678,18 @@ export const PROGRAMMING: Finding[] = [
         journal: "Journal of Strength and Conditioning Research",
         locator: "24(1):140–148",
         doi: "10.1519/JSC.0b013e3181c643a0",
+        design: "meta-analysis",
+        olderBecause:
+          "Still the only meta-analysis of warm-ups on performance across many kinds of exercise; the newer reviews of warm-ups before lifting are scoping reviews that don't pool results.",
+      },
+      {
+        authors: "Ribeiro B, Pereira A, Neves PP, Marinho D, Marques M, Neiva HP",
+        year: 2021,
+        title: "The effect of warm-up in resistance training and strength performance: a systematic review",
+        journal: "Motricidade",
+        locator: "17(1):87–94",
+        doi: "10.6063/motricidade.21143",
+        design: "systematic-review",
       },
     ],
   },
@@ -551,6 +701,7 @@ export const PROGRAMMING: Finding[] = [
     practical:
       "Control the weight rather than counting seconds. Prescribed tempos aren't doing much beyond keeping you honest about not throwing the weight around.",
     strength: "moderate",
+    agreement: "consistent",
     limits: "Very slow reps — beyond roughly ten seconds — do appear to be worse for growth.",
     tags: ["tempo", "speed", "slow reps", "eccentric", "control", "3 seconds down"],
     sources: [
@@ -562,6 +713,19 @@ export const PROGRAMMING: Finding[] = [
         journal: "Sports Medicine",
         locator: "45(4):577–585",
         doi: "10.1007/s40279-015-0304-0",
+        design: "meta-analysis",
+        olderBecause:
+          "Still the only meta-analysis of rep duration and muscle growth; a 2021 review of the newer studies (Wilk et al.) reaches the same conclusion.",
+      },
+      {
+        authors: "Wilk M, Zajac A, Tufano JJ",
+        year: 2021,
+        title:
+          "The influence of movement tempo during resistance training on muscular strength and hypertrophy responses: a review",
+        journal: "Sports Medicine",
+        locator: "51(8):1629–1650",
+        doi: "10.1007/s40279-021-01465-2",
+        design: "review",
       },
     ],
   },
@@ -572,6 +736,7 @@ export const PROGRAMMING: Finding[] = [
     practical:
       "Use whichever you'll do consistently and can load safely. A machine is not a lesser exercise, and it's often the better choice when balance, a sore joint, or training alone is the constraint.",
     strength: "moderate",
+    agreement: "mostly",
     limits:
       "Strength gains are somewhat specific to how you train — test yourself on a barbell and barbell training will look better. Free weights may also carry advantages for balance and sport transfer.",
     tags: ["machine", "free weights", "barbell", "dumbbell", "smith machine", "cable", "equipment"],
@@ -583,6 +748,7 @@ export const PROGRAMMING: Finding[] = [
           "Effect of free-weight vs. machine-based strength training on maximal strength, hypertrophy and jump performance — a systematic review and meta-analysis",
         journal: "BMC Sports Science, Medicine and Rehabilitation",
         doi: "10.1186/s13102-023-00713-4",
+        design: "meta-analysis",
       },
     ],
   },
@@ -593,6 +759,7 @@ export const PROGRAMMING: Finding[] = [
     practical:
       "Loading bone is one of the few things that maintains it. This is a strong argument for lifting meaningful weight rather than very light weights, particularly around and after menopause.",
     strength: "moderate",
+    agreement: "mostly",
     limits:
       "Protocols vary widely across studies and the best one isn't settled. Anyone with diagnosed osteoporosis needs individual guidance before loading heavily.",
     tags: ["bone", "osteoporosis", "menopause", "bone density", "women", "older", "fracture"],
@@ -605,6 +772,7 @@ export const PROGRAMMING: Finding[] = [
         journal: "Frontiers in Physiology",
         locator: "14:1105303",
         doi: "10.3389/fphys.2023.1105303",
+        design: "meta-analysis",
       },
     ],
   },
@@ -615,8 +783,9 @@ export const PROGRAMMING: Finding[] = [
     practical:
       "A missed week is nothing. A missed month costs you less than you think and comes back faster than it took to build. Don't restart from zero after a break — pick up near where you left off and let the effort rating tell you if it's too much.",
     strength: "moderate",
+    agreement: "mostly",
     limits:
-      "Rates of loss differ by age, training history and what exactly is measured; power tends to fade faster than maximal strength.",
+      "Rates of loss differ by age, training history and what exactly is measured; power tends to fade faster than maximal strength. In older adults, muscle size held up over three to six months off but fell noticeably after seven months or more.",
     tags: ["detraining", "break", "missed", "holiday", "time off", "illness", "starting again", "layoff"],
     sources: [
       {
@@ -626,6 +795,19 @@ export const PROGRAMMING: Finding[] = [
         journal: "Scandinavian Journal of Medicine & Science in Sports",
         locator: "23(3):e140–e149",
         doi: "10.1111/sms.12047",
+        design: "meta-analysis",
+        olderBecause:
+          "Still the main meta-analysis of strength loss after stopping; a 2022 meta-analysis of muscle size in older adults (Grgic) agrees that losses are gradual.",
+      },
+      {
+        authors: "Grgic J",
+        year: 2022,
+        title:
+          "Use it or lose it? A meta-analysis on the effects of resistance training cessation (detraining) on muscle size in older adults",
+        journal: "International Journal of Environmental Research and Public Health",
+        locator: "19(21):14048",
+        doi: "10.3390/ijerph192114048",
+        design: "meta-analysis",
       },
     ],
   },

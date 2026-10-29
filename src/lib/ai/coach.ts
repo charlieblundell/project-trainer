@@ -8,6 +8,8 @@ import {
   todayWeekday,
 } from "@/lib/plan/helpers";
 import type { Plan } from "@/lib/plan/types";
+import { experienceToLevel } from "@/lib/plan/generate";
+import { MUSCLE_GROUPS, setsByGroup, weeklyTarget } from "@/lib/plan/volume";
 import { EQUIPMENT_LABELS, EXERCISES_BY_ID, availableExercises, type Equipment } from "@/lib/exercises";
 import { PROPOSE_TOOL, parseProposal, type PlanProposal } from "@/lib/plan/proposal";
 import { claimsIndex, detailFor, relevantFindings } from "@/lib/evidence";
@@ -94,6 +96,26 @@ export async function askCoach(ctx: CoachContext): Promise<{ reply: string; prop
     .map((ex) => `${ex.id}: ${ex.name} (${ex.pattern.replace("_", " ")}, level ${ex.level}${disliked.has(ex.id) ? ", they dislike it" : ""})`)
     .join("\n");
 
+  /*
+   * Hard sets per muscle against what the plan aims for, so "why am I doing
+   * four sets of this?" is answered from their week rather than in general.
+   */
+  const weeklySets = plan
+    ? (() => {
+        const week = setsByGroup(plan.sessions.flatMap((s) => s.exercises));
+        const level = plan.level ?? experienceToLevel(ctx.profile?.experience ?? null);
+        const goal = plan.goal ?? ctx.profile?.goal ?? "Build muscle";
+        return MUSCLE_GROUPS.filter((g) => week[g] > 0)
+          .map((g) => {
+            const sets = Number.isInteger(week[g]) ? String(week[g]) : week[g].toFixed(1);
+            if (g === "calves") return `- ${g}: ${sets}`;
+            const aim = weeklyTarget(goal, level, g);
+            return `- ${g}: ${sets} (aim ${aim.min}-${aim.max})`;
+          })
+          .join("\n");
+      })()
+    : "";
+
   const planNotes = plan?.notes.length
     ? plan.notes.map((n) => `- ${n}`).join("\n")
     : "None.";
@@ -127,6 +149,9 @@ export async function askCoach(ctx: CoachContext): Promise<{ reply: string; prop
     "- Only cite sources listed in the detail section below. Never invent an author, year, journal or study, and never cite a paper from memory. If you have no source for something, say it is general practice rather than dressing it up as evidence.",
     "- Respect the strength rating. 'limited' means say it's thinly evidenced; 'strong' can be stated plainly.",
     "- Where a finding has a 'what it doesn't say' line, don't let your answer overreach it.",
+    "- Respect the agreement rating too. 'mixed' means studies disagree: say so plainly and give the cautious reading, never just one side. 'mostly' means most studies agree but some found no difference.",
+    "- When they ask why an exercise has its sets, reps or rest, answer from their weekly sets below and the matching findings (weekly volume, load and reps for their goal, effort, rest). Each exercise also has a 'Why these numbers?' button that shows the same reasoning.",
+    "- If they bring up a study, influencer or trend that disagrees with the library, don't dismiss it: say what the wider body of research shows, and that one study doesn't outweigh many.",
     "",
     "Findings index (claim, with evidence strength):",
     claimsIndex(),
@@ -161,6 +186,9 @@ export async function askCoach(ctx: CoachContext): Promise<{ reply: string; prop
     `Today's session (${todaySession?.name ?? "rest day"}):`,
     todayDetail,
     "",
+    plan ? "Hard sets per muscle per week in their plan (indirect work counts as half), with the range the plan aims for:" : null,
+    plan ? weeklySets : null,
+    plan ? "" : null,
     "Decisions the plan generator made and why (mention these if asked why something is or isn't in the plan):",
     planNotes,
     "",

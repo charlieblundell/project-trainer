@@ -16,6 +16,7 @@ export const NUTRITION: Finding[] = [
     practical:
       "For an 80 kg person that's about 130 g a day. Getting there matters far more than what you eat it as or when. Beyond it, more protein is not doing what the tub says it is.",
     strength: "strong",
+    agreement: "consistent",
     limits:
       "It's a population average with wide individual variation, derived largely from supplementation trials in healthy adults. Older adults may need more, and the benefit of supplementing at all shrinks if you already eat enough.",
     tags: ["protein", "how much protein", "grams", "diet", "shake", "whey", "muscle"],
@@ -28,6 +29,7 @@ export const NUTRITION: Finding[] = [
         journal: "British Journal of Sports Medicine",
         locator: "52(6):376–384",
         doi: "10.1136/bjsports-2017-097608",
+        design: "meta-analysis",
       },
     ],
   },
@@ -39,8 +41,9 @@ export const NUTRITION: Finding[] = [
     practical:
       "Roughly four meals, each with a decent portion of protein, is easier than agonising over any single one. Hitting the daily total is the part that matters; distribution is a refinement on top.",
     strength: "moderate",
+    agreement: "mostly",
     limits:
-      "The per-meal ceilings often quoted are extrapolated from short acute studies, not from long-term training outcomes. Treat them as a rule of thumb, not a limit.",
+      "The per-meal ceilings often quoted come from short studies, not long-term training. A 2023 trial found a 100 g dose kept building muscle protein for longer than a 25 g dose, so there is no hard limit on what one meal can use. Spreading meals out is a convenient default, not a requirement.",
     tags: ["protein", "meals", "timing", "distribution", "per meal", "breakfast", "how often"],
     sources: [
       {
@@ -51,6 +54,17 @@ export const NUTRITION: Finding[] = [
         journal: "Journal of the International Society of Sports Nutrition",
         locator: "15:10",
         doi: "10.1186/s12970-018-0215-1",
+        design: "review",
+      },
+      {
+        authors: "Trommelen J, van Lieshout GAA, Nyakayiru J, Holwerda AM, Smeets JSJ, Hendriks FK, van Kranenburg JMX, Zorenc AH, et al.",
+        year: 2023,
+        title:
+          "The anabolic response to protein ingestion during recovery from exercise has no upper limit in magnitude and duration in vivo in humans",
+        journal: "Cell Reports Medicine",
+        locator: "4(12):101324",
+        doi: "10.1016/j.xcrm.2023.101324",
+        design: "trial",
       },
     ],
   },
@@ -62,6 +76,7 @@ export const NUTRITION: Finding[] = [
     practical:
       "You do not need a shake within thirty minutes. Eat properly across the day and the timing looks after itself.",
     strength: "moderate",
+    agreement: "mostly",
     tags: ["timing", "post workout", "shake", "anabolic window", "after training", "protein"],
     sources: [
       {
@@ -71,6 +86,19 @@ export const NUTRITION: Finding[] = [
         journal: "Journal of the International Society of Sports Nutrition",
         locator: "10:5",
         doi: "10.1186/1550-2783-10-5",
+        design: "review",
+        olderBecause:
+          "The original review. The 2017 ISSN position stand on nutrient timing (Kerksick et al.) reaches the same conclusion.",
+      },
+      {
+        authors: "Kerksick CM, Arent S, Schoenfeld BJ, Stout JR, Campbell B, Wilborn CD, Taylor L, Kalman D, et al.",
+        year: 2017,
+        title:
+          "International Society of Sports Nutrition position stand: nutrient timing",
+        journal: "Journal of the International Society of Sports Nutrition",
+        locator: "14:33",
+        doi: "10.1186/s12970-017-0189-4",
+        design: "consensus",
       },
     ],
   },
@@ -82,8 +110,9 @@ export const NUTRITION: Finding[] = [
     practical:
       "An aggressive deficit costs you muscle and strength alongside the fat, and the strength loss shows up in your logged sessions. Slower is not just kinder, it's a better result.",
     strength: "moderate",
+    agreement: "mostly",
     limits:
-      "The evidence here is from elite athletes in a controlled setting. The direction is well accepted; the exact rate that suits an individual isn't something a study can set.",
+      "The direct comparison of slow and fast loss is one trial in elite athletes. A 2022 meta-analysis found that an energy deficit of around 500 calories a day was enough to stop lean mass gains from training, though strength still improved. The direction is well supported; the exact rate that suits an individual isn't something a study can set.",
     tags: ["fat loss", "cutting", "deficit", "diet", "weight loss", "losing muscle", "calories"],
     sources: [
       {
@@ -94,6 +123,19 @@ export const NUTRITION: Finding[] = [
         journal: "International Journal of Sport Nutrition and Exercise Metabolism",
         locator: "21(2):97–104",
         doi: "10.1123/ijsnem.21.2.97",
+        design: "trial",
+        olderBecause:
+          "The only controlled trial of weight-loss rate in trained athletes. A 2022 meta-analysis (Murphy & Koehler) found larger daily deficits cost more lean mass, which points the same way.",
+      },
+      {
+        authors: "Murphy C, Koehler K",
+        year: 2022,
+        title:
+          "Energy deficiency impairs resistance training gains in lean mass but not strength: a meta-analysis and meta-regression",
+        journal: "Scandinavian Journal of Medicine & Science in Sports",
+        locator: "32(1):125–137",
+        doi: "10.1111/sms.14075",
+        design: "meta-analysis",
       },
     ],
   },
@@ -105,6 +147,7 @@ export const NUTRITION: Finding[] = [
     practical:
       "If training is going backwards while you're eating less and less, that's a signal to eat more, not to train harder. This affects men as well as women, and recreational trainees as well as athletes.",
     strength: "strong",
+    agreement: "consistent",
     limits:
       "Recognising this pattern is a clinical matter. If it sounds familiar, that's a conversation with a doctor or a registered dietitian, not with an app.",
     tags: [
@@ -126,6 +169,7 @@ export const NUTRITION: Finding[] = [
         journal: "British Journal of Sports Medicine",
         locator: "57(17):1073–1097",
         doi: "10.1136/bjsports-2023-106994",
+        design: "consensus",
       },
     ],
   },
@@ -137,6 +181,7 @@ export const NUTRITION: Finding[] = [
     practical:
       "One of very few supplements with a genuine evidence base. Monohydrate is the studied form; the expensive variants have nothing extra behind them.",
     strength: "strong",
+    agreement: "consistent",
     limits:
       "The position stand is from a body with industry links, which is worth knowing — though the underlying literature on monohydrate is large and consistent. Anyone with kidney disease should ask a doctor first.",
     tags: ["creatine", "supplement", "monohydrate", "worth taking", "safe"],
@@ -150,6 +195,7 @@ export const NUTRITION: Finding[] = [
         journal: "Journal of the International Society of Sports Nutrition",
         locator: "14:18",
         doi: "10.1186/s12970-017-0173-z",
+        design: "consensus",
       },
     ],
   },
@@ -160,6 +206,7 @@ export const NUTRITION: Finding[] = [
     practical:
       "Coffee before training is a legitimate performance aid, not a placebo. Its downside is what it does to sleep — and sleep is doing more for your training than the caffeine is.",
     strength: "strong",
+    agreement: "consistent",
     limits:
       "Individual response varies a lot, and tolerance builds. Anyone with a heart condition, high blood pressure, or who is pregnant should take medical advice on intake.",
     tags: ["caffeine", "coffee", "pre workout", "energy", "supplement", "stimulant"],
@@ -172,6 +219,7 @@ export const NUTRITION: Finding[] = [
         journal: "British Journal of Sports Medicine",
         locator: "54(11):681–688",
         doi: "10.1136/bjsports-2018-100278",
+        design: "umbrella-review",
       },
     ],
   },
@@ -183,6 +231,7 @@ export const NUTRITION: Finding[] = [
     practical:
       "If sessions are falling apart late on, being under-fuelled is a likelier explanation than being under-trained. Eat properly before hard or long sessions.",
     strength: "strong",
+    agreement: "consistent",
     tags: ["carbs", "carbohydrate", "fuel", "energy", "before training", "bonking", "flat"],
     sources: [
       {
@@ -192,6 +241,7 @@ export const NUTRITION: Finding[] = [
         journal: "Medicine & Science in Sports & Exercise",
         locator: "48(3):543–568",
         doi: "10.1249/MSS.0000000000000852",
+        design: "consensus",
       },
     ],
   },
@@ -203,6 +253,7 @@ export const NUTRITION: Finding[] = [
     practical:
       "Creatine and caffeine have real support. Most of the rest of the shelf does not, and supplements also carry a contamination risk that matters if you're ever tested. Food, sleep and consistency are where the returns are.",
     strength: "strong",
+    agreement: "consistent",
     tags: ["supplements", "bcaa", "pre workout", "worth it", "pills", "powder", "fat burner"],
     sources: [
       {
@@ -212,6 +263,7 @@ export const NUTRITION: Finding[] = [
         journal: "Medicine & Science in Sports & Exercise",
         locator: "48(3):543–568",
         doi: "10.1249/MSS.0000000000000852",
+        design: "consensus",
       },
     ],
   },

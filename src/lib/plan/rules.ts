@@ -113,7 +113,7 @@ export const PLAN_RULES: PlanRule[] = [
     id: "rest",
     title: "Real rest on the main lifts",
     explain:
-      "Two to three minutes before the next set of a heavy lift keeps the reps you'd otherwise lose. That evidence is strongest for strength; applying it to a muscle-building plan is a reasonable step, not a direct finding.",
+      "Two to three minutes before the next set of a heavy lift keeps the reps you'd otherwise lose, which matters most for strength. For muscle growth, resting more than a minute helps a little and the benefit levels off at about ninety seconds, so smaller exercises rest about that long. In sessions under an hour they rest a minute instead: the extra time would cost whole sets, and weekly sets matter more.",
     basis: { kind: "research", findings: ["rest-between-sets"] },
     // General health, fitness and endurance plans rest for less, on purpose.
     appliesTo: ({ goal }) => ["Get stronger", "Build muscle", "Lose fat"].includes(goal),
@@ -122,7 +122,7 @@ export const PLAN_RULES: PlanRule[] = [
     id: "light-bands-more-reps",
     title: "Bands for higher reps",
     explain:
-      "Light loads build about as much muscle as heavy ones when each set is taken close to your limit, and a band can't make six reps hard. So band exercises aim for 12 to 20 reps, with a minute's rest rather than the long rest a heavy lift needs.",
+      "Light loads build about as much muscle as heavy ones when each set is taken close to your limit, and a band can't make six reps hard. So band exercises aim for 12 to 20 reps, with a shorter rest than a heavy lift needs.",
     basis: { kind: "research", findings: ["load-range-hypertrophy", "rest-between-sets"] },
     // Only the heavy-rep goals change anything; the others already train bands in that range.
     appliesTo: ({ plan, goal }) =>

@@ -8,8 +8,10 @@
  *
  * Run with: npm run check:evidence  (add -- --online to hit the network)
  */
-import { FINDINGS, relevantFindings, type Source } from "../src/lib/evidence";
+import { FINDINGS, RECENT_FROM, relevantFindings, type Source, type StudyDesign } from "../src/lib/evidence";
 import { claimsIndex } from "../src/lib/evidence";
+
+const POOLED = new Set<StudyDesign>(["umbrella-review", "meta-analysis", "systematic-review", "consensus"]);
 
 const online = process.argv.includes("--online");
 let problems = 0;
@@ -49,6 +51,36 @@ for (const finding of FINDINGS) {
   if (finding.strength === "limited" && !finding.limits) {
     fail(`${finding.id} is rated 'limited' but doesn't explain what's missing`);
   }
+
+  /*
+   * No claim stands on one study that the rest of the field might contradict.
+   * "Strong" needs a pooled source — a meta-analysis, a review of them, or
+   * expert consensus — and studies that agree. Anything else rests on more
+   * than one single trial, or is rated 'limited' and says so.
+   */
+  const pooled = finding.sources.filter((s) => POOLED.has(s.design));
+  if (finding.strength === "strong" && pooled.length === 0) {
+    fail(`${finding.id} is rated 'strong' with no meta-analysis, review or consensus behind it`);
+  }
+  if (finding.strength === "strong" && finding.agreement !== "consistent") {
+    fail(`${finding.id} is rated 'strong' but the studies don't all agree`);
+  }
+  if (finding.agreement === "mixed" && !finding.limits) {
+    fail(`${finding.id} has mixed evidence but doesn't say where it disagrees`);
+  }
+  if (pooled.length === 0 && finding.sources.length < 2 && finding.strength !== "limited") {
+    fail(`${finding.id} rests on a single study but isn't rated 'limited'`);
+  }
+
+  // Recent research first; anything older has to earn its place.
+  if (!finding.sources.some((s) => s.year >= RECENT_FROM)) {
+    fail(`${finding.id} has no source from ${RECENT_FROM} or later`);
+  }
+  for (const source of finding.sources) {
+    if (source.year < RECENT_FROM && !source.olderBecause) {
+      fail(`${finding.id} cites ${source.doi} (${source.year}) without saying why it's still the best source`);
+    }
+  }
 }
 
 const byTopic = new Map<string, number>();
@@ -62,6 +94,11 @@ console.log("  By strength: " + [...byStrength].map(([s, n]) => `${s} ${n}`).joi
 const sources = new Map<string, Source>();
 for (const f of FINDINGS) for (const s of f.sources) sources.set(s.doi, s);
 console.log(`  Distinct sources: ${sources.size}`);
+const recent = [...sources.values()].filter((s) => s.year >= RECENT_FROM).length;
+console.log(`  From ${RECENT_FROM} on: ${recent} of ${sources.size}`);
+const byDesign = new Map<string, number>();
+for (const s of sources.values()) byDesign.set(s.design, (byDesign.get(s.design) ?? 0) + 1);
+console.log("  By design: " + [...byDesign].map(([d, n]) => `${d} ${n}`).join(", "));
 
 // The claims index rides along on every coach request, so its size is a
 // recurring cost rather than a one-off.
@@ -126,6 +163,19 @@ async function verify(source: Source): Promise<void> {
     headers: { "User-Agent": "Your Personal Trainer citation check (mailto:cblundell38@gmail.com)" },
   });
 
+  /*
+   * Some journals register their DOIs with another agency, so Crossref has no
+   * record. The link still has to work: doi.org must send it somewhere.
+   */
+  if (res.status === 404) {
+    const resolved = await fetch(`https://doi.org/${source.doi}`, { method: "HEAD", redirect: "manual" });
+    if (resolved.status >= 300 && resolved.status < 400) {
+      console.log(`  ok    ${source.doi} — resolves (not in Crossref, so title unchecked)`);
+    } else {
+      fail(`${source.doi} did not resolve at Crossref or doi.org (HTTP ${resolved.status})`);
+    }
+    return;
+  }
   if (!res.ok) {
     fail(`${source.doi} did not resolve at Crossref (HTTP ${res.status})`);
     return;

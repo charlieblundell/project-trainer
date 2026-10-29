@@ -29,6 +29,7 @@ jobs:
       - name: Check the rules the app is built on
         run: |
           npm run check:evidence
+          npm run check:why
           npm run check:billing
           npm run check:weekly
           npm run check:readiness
