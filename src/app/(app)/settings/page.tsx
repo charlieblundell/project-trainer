@@ -10,7 +10,7 @@ import { CLEARED_HEALTH_FIELDS, withdrawHealthConsent } from "@/lib/health-conse
 import { InstallPrompt } from "@/components/InstallPrompt";
 import { InviteFriends } from "@/components/InviteFriends";
 import { PasswordSettings } from "@/components/PasswordSettings";
-import { ListButton, ListLink, ListRow, ListSection } from "@/components/List";
+import { ListButton, ListLink, ListSection } from "@/components/List";
 import { EQUIPMENT_LABELS, EXERCISES_BY_ID, type Equipment } from "@/lib/exercises";
 import type { OnboardingData } from "@/lib/types";
 import { PLANS } from "@/lib/billing/plans";
@@ -42,67 +42,67 @@ function exerciseNames(ids: string[]): string {
   return ids.map((id) => EXERCISES_BY_ID[id]?.name ?? id).join(", ");
 }
 
-type ProfileGroup = { title: string; href: string; rows: [string, string][] };
+type PlanSetting = { title: string; href: string; detail: string };
 
-/** Their setup answers, grouped the way they can be edited. */
-function profileGroups(o: OnboardingData): ProfileGroup[] {
+const joined = (parts: (string | null | false | undefined)[]) => parts.filter(Boolean).join(" · ");
+
+/*
+ * Everything that shapes their plan, one row each, titled by the change
+ * someone has in mind ("I joined a gym" is where you train) and showing what
+ * it's set to now. These used to sit in label-and-value tables under
+ * Subscription, mixed in with account settings, and nothing said which of
+ * them changed the plan.
+ */
+function planSettings(o: OnboardingData): PlanSetting[] {
   const dayOrder = Object.keys(DAY_LABELS);
   const days = [...o.trainingDays].sort((a, b) => dayOrder.indexOf(a) - dayOrder.indexOf(b));
+  const equipment = o.equipment.length
+    ? o.equipment.length <= 2
+      ? o.equipment.map((e) => EQUIPMENT_LABELS[e as Equipment] ?? e).join(", ")
+      : `${o.equipment.length} pieces of equipment`
+    : "No equipment set";
 
-  const groups: ProfileGroup[] = [
+  const settings: PlanSetting[] = [
     {
       title: "Goal and experience",
       href: "/settings/training",
-      rows: [
-        ["Goal", o.goal ?? "Not set"],
-        ["Experience", o.experience ?? "Not set"],
-        ["Age", o.age ? `${o.age}` : "Not given"],
-      ],
+      detail: joined([o.goal ?? "No goal set", o.experience, o.age ? `Age ${o.age}` : null]),
     },
     {
-      title: "Training schedule",
+      title: "Days and session length",
       href: "/settings/schedule",
-      rows: [
-        ["Sessions", o.days ? `${o.days} a week` : "Not set"],
-        ["Days", days.length ? days.map((d) => DAY_LABELS[d] ?? d).join(", ") : "Not set"],
-        ["Session length", o.length ? `~${o.length} min` : "Not set"],
-      ],
+      detail: joined([
+        o.days ? `${o.days} a week` : "Not set",
+        days.length ? days.map((d) => DAY_LABELS[d] ?? d).join(", ") : null,
+        o.length ? `about ${o.length} min` : null,
+      ]),
     },
     {
-      title: "Equipment and exercises",
+      title: "Where you train and equipment",
       href: "/settings/equipment",
-      rows: [
-        ["Where you train", o.environment ?? "Not set"],
-        [
-          "Equipment",
-          // The full list wrapped into a paragraph beside its label; the count
-          // reads at a glance, and the list is one tap away.
-          o.equipment.length
-            ? o.equipment.length <= 2
-              ? o.equipment.map((e) => EQUIPMENT_LABELS[e as Equipment] ?? e).join(", ")
-              : `${o.equipment.length} items`
-            : "Not set",
-        ],
-        ["Favourites", o.likedExercises.length ? exerciseNames(o.likedExercises) : "None"],
-        ["Avoiding", o.dislikedExercises.length ? exerciseNames(o.dislikedExercises) : "None"],
-      ],
+      detail: joined([
+        o.environment ?? "Not set",
+        equipment,
+        o.likedExercises.length ? `Favourites: ${exerciseNames(o.likedExercises)}` : null,
+        o.dislikedExercises.length ? `Avoiding: ${exerciseNames(o.dislikedExercises)}` : null,
+      ]),
     },
   ];
 
   if (o.healthConsent === true) {
-    groups.push({
-      title: "Body and injury details",
+    settings.push({
+      title: "Body and injuries",
       href: "/settings/body",
-      rows: [
-        ["Bodyweight", o.bodyweightKg ? `${o.bodyweightKg} kg` : "Not given"],
-        ["Height", o.heightCm ? `${o.heightCm} cm` : "Not given"],
-        ["Sex", o.sex ? (SEX_LABELS[o.sex] ?? o.sex) : "Not given"],
-        ["Injuries", o.considerations?.trim() || "None given"],
-      ],
+      detail: joined([
+        o.bodyweightKg ? `${o.bodyweightKg} kg` : null,
+        o.heightCm ? `${o.heightCm} cm` : null,
+        o.sex ? (SEX_LABELS[o.sex] ?? o.sex) : null,
+        o.considerations?.trim() ? `Injuries: ${o.considerations.trim()}` : "No injuries listed",
+      ]),
     });
   }
 
-  return groups;
+  return settings;
 }
 
 function formatDate(iso: string): string {
@@ -420,6 +420,16 @@ export default function Settings() {
       <h1 className="mb-1 text-largetitle font-bold text-ink">Settings</h1>
       {user?.email && <p className="mb-6 text-subhead text-muted">{user.email}</p>}
 
+      <ListSection
+        header="Your plan"
+        footer="Your plan is built from these. Before you save a change, you'll see exactly what it does to your plan. Your history and weights always stay."
+      >
+        {planSettings(onboarding).map((setting) => (
+          <ListLink key={setting.href} href={setting.href} title={setting.title} detail={setting.detail} />
+        ))}
+        <ListLink href="/plan/why" title="How your plan is built" detail="Every rule behind your sets, reps and rest" />
+      </ListSection>
+
       <div className="mb-2 text-footnote font-semibold text-muted">Subscription</div>
       <div className="mb-6 rounded-[20px] bg-surface shadow-card px-4 py-3.5">
         <div className={summary.action === "none" ? "" : "mb-3"}>
@@ -447,27 +457,18 @@ export default function Settings() {
         {billingError && <p className="mt-2 text-footnote text-warning">{billingError}</p>}
       </div>
 
-      {profileGroups(onboarding).map((group) => (
-        <ListSection key={group.href} header={group.title}>
-          {group.rows.map(([label, value]) => (
-            <ListRow key={label} label={label} value={value} />
-          ))}
-          <ListLink href={group.href} title={`Change ${group.title.toLowerCase()}`} />
-        </ListSection>
-      ))}
+      <PasswordSettings />
 
-      <ListSection header="App">
+      <ListSection header="Research">
         <ListLink
           onClick={() => router.push("/evidence?from=settings")}
           title="The evidence behind your plan"
-          detail="The research your plan and coach are built on, with sources"
+          detail="Every finding your plan and coach use, how strong it is, and whether studies agree"
         />
       </ListSection>
 
       <InstallPrompt className="mb-3" showInstalled />
       <InviteFriends className="mb-6" />
-
-      <PasswordSettings />
 
       <HealthDetails />
 

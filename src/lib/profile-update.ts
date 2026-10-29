@@ -3,7 +3,7 @@ import { rebuildPlan } from "@/lib/plan/generate";
 import { savePlan } from "@/lib/plan/storage";
 import type { Plan } from "@/lib/plan/types";
 import type { OnboardingData } from "@/lib/types";
-import { affectsPlan, planProfile } from "@/lib/profile-changes";
+import { affectsPlan, keepsCurrentExercises, planProfile } from "@/lib/profile-changes";
 import { readNotes } from "@/lib/ai/client";
 
 export type ProfileSaveResult = { ok: true; plan: Plan | null; rebuilt: boolean } | { ok: false };
@@ -53,7 +53,7 @@ export async function saveProfileChanges(
   const profile = planProfile(after);
   const notesChanged = planProfile(before).considerations !== profile.considerations;
   if (notesChanged) profile.notesReading = (await readNotes(profile.considerations)) ?? { avoiding: [], cautions: [] };
-  const next = rebuildPlan(plan, profile);
+  const next = rebuildPlan(plan, profile, { preferCurrent: keepsCurrentExercises(before, after) });
   try {
     await savePlan(userId, next);
   } catch {

@@ -14,7 +14,10 @@ import {
 } from "@/lib/exercises";
 import type { OnboardingData } from "@/lib/types";
 import { grantHealthConsent } from "@/lib/health-consent";
-import { affectsPlan } from "@/lib/profile-changes";
+import { affectsPlan, keepsCurrentExercises, planProfile } from "@/lib/profile-changes";
+import { rebuildPlan } from "@/lib/plan/generate";
+import { planChanges, type PlanChanges } from "@/lib/plan/diff";
+import { PlanChangeSummary } from "@/components/PlanChangeSummary";
 import { ageProblem } from "@/lib/age";
 import { saveProfileChanges } from "@/lib/profile-update";
 import {
@@ -35,13 +38,26 @@ export type ProfileSection = "training" | "schedule" | "equipment" | "body";
 
 const TITLES: Record<ProfileSection, string> = {
   training: "Goal and experience",
-  schedule: "Training schedule",
-  equipment: "Equipment and exercises",
-  body: "Body and injury details",
+  schedule: "Days and session length",
+  equipment: "Where you train",
+  body: "Body and injuries",
 };
 
-function Label({ children }: { children: ReactNode }) {
-  return <div className="mb-2 mt-6 text-footnote font-semibold text-muted first:mt-0">{children}</div>;
+/** One line under each title: what this screen changes, before anyone touches it. */
+const INTROS: Record<ProfileSection, string> = {
+  training: "These set your reps, rest and how many sets each muscle gets.",
+  schedule: "These set how your week is split and how much fits in each session.",
+  equipment: "These decide which exercises your plan can use.",
+  body: "Your plan steers around injuries you list here.",
+};
+
+function Label({ children, hint }: { children: ReactNode; hint?: string }) {
+  return (
+    <div className="mb-2 mt-6 first:mt-0">
+      <div className="text-footnote font-semibold text-muted">{children}</div>
+      {hint && <div className="text-footnote leading-relaxed text-faint">{hint}</div>}
+    </div>
+  );
 }
 
 function toggle(list: string[], value: string): string[] {
@@ -85,6 +101,7 @@ function Editor({ section, saved }: { section: ProfileSection; saved: Onboarding
   const [draft, setDraft] = useState<OnboardingData>(saved);
   const [status, setStatus] = useState<"editing" | "saving" | "saved">("editing");
   const [rebuilt, setRebuilt] = useState(false);
+  const [applied, setApplied] = useState<PlanChanges | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [likedQuery, setLikedQuery] = useState("");
   const [avoidQuery, setAvoidQuery] = useState("");
@@ -99,6 +116,19 @@ function Editor({ section, saved }: { section: ProfileSection; saved: Onboarding
   const rebuilds = changed && !!plan && affectsPlan(saved, draft);
   const problem = missing(section, draft);
 
+  /*
+   * The plan they'd get, worked out as they edit, so they can see what a
+   * change does before committing to it. Injury notes are read by the coach
+   * on save, so a preview can't include what that reading changes.
+   */
+  const preview = useMemo<PlanChanges | null>(() => {
+    if (!rebuilds || problem || !plan) return null;
+    return planChanges(
+      plan,
+      rebuildPlan(plan, planProfile(draft), { preferCurrent: keepsCurrentExercises(saved, draft) })
+    );
+  }, [rebuilds, problem, plan, draft, saved]);
+
   async function save() {
     if (!user || problem) return;
     setStatus("saving");
@@ -111,6 +141,7 @@ function Editor({ section, saved }: { section: ProfileSection; saved: Onboarding
     }
 
     setOnboarding(draft);
+    if (result.rebuilt && result.plan && plan) setApplied(planChanges(plan, result.plan));
     if (result.rebuilt && result.plan) {
       setPlan(result.plan);
       const state = useAppStore.getState();
@@ -142,11 +173,13 @@ function Editor({ section, saved }: { section: ProfileSection; saved: Onboarding
         <h1 className="mb-2 text-title1 font-bold text-ink">
           {rebuilt ? "Saved, and your plan's updated." : "Saved."}
         </h1>
-        <p className="mb-6 text-subhead leading-relaxed text-muted">
-          {rebuilt
-            ? "Your plan has been rebuilt around your changes. Your workout history and personal bests are all still here, and exercises that stayed in your plan kept their weights."
-            : "Your changes are saved."}
-        </p>
+        {rebuilt && applied ? (
+          <PlanChangeSummary title="What changed in your plan" changes={applied} />
+        ) : (
+          <p className="mb-6 text-subhead leading-relaxed text-muted">
+            {rebuilt ? "Your plan has been rebuilt around your changes." : "Nothing in your plan needed to change."}
+          </p>
+        )}
         {rebuilt && (
           <button
             onClick={() => router.push("/plan")}
@@ -177,7 +210,8 @@ function Editor({ section, saved }: { section: ProfileSection; saved: Onboarding
       >
         <ChevronLeft size={22} strokeWidth={2.2} /> Settings
       </button>
-      <h1 className="mb-5 text-largetitle font-bold text-ink">{TITLES[section]}</h1>
+      <h1 className="mb-1 text-largetitle font-bold text-ink">{TITLES[section]}</h1>
+      <p className="mb-5 text-subhead leading-relaxed text-muted">{INTROS[section]}</p>
     </>
   );
 
@@ -228,13 +262,13 @@ function Editor({ section, saved }: { section: ProfileSection; saved: Onboarding
       <div className="mb-8">
         {section === "training" && (
           <>
-            <Label>Goal</Label>
+            <Label hint="Sets your reps, rest and weekly sets per muscle.">Goal</Label>
             <SingleSelect
               options={optionsFor("goal")}
               value={valueFor("goal", draft)}
               onSelect={(opt) => patch(patchFor("goal", opt, draft))}
             />
-            <Label>Experience</Label>
+            <Label hint="Sets how many sets you start on and which exercises you're given.">Experience</Label>
             <SingleSelect
               options={optionsFor("experience")}
               value={valueFor("experience", draft)}
@@ -251,19 +285,19 @@ function Editor({ section, saved }: { section: ProfileSection; saved: Onboarding
 
         {section === "schedule" && (
           <>
-            <Label>Sessions a week</Label>
+            <Label hint="Changes how your week is split, e.g. full body or upper and lower.">Sessions a week</Label>
             <SingleSelect
               options={optionsFor("days")}
               value={valueFor("days", draft)}
               onSelect={(opt) => patch(patchFor("days", opt, draft))}
             />
-            <Label>Which days</Label>
+            <Label hint="Only moves sessions between days; the workouts stay the same.">Which days</Label>
             <WeekdayPicker
               selected={draft.trainingDays}
               days={draft.days ?? 0}
               onToggle={(day) => patch({ trainingDays: toggleWeekday(draft.trainingDays, day) })}
             />
-            <Label>Session length</Label>
+            <Label hint="Sets how many exercises and sets fit in each session.">Session length</Label>
             <SingleSelect
               options={optionsFor("length")}
               value={valueFor("length", draft)}
@@ -274,13 +308,13 @@ function Editor({ section, saved }: { section: ProfileSection; saved: Onboarding
 
         {section === "equipment" && (
           <>
-            <Label>Where you train</Label>
+            <Label hint="Joined a gym or training at home now? Change this and your equipment updates to match.">Where you train</Label>
             <SingleSelect
               options={optionsFor("environment")}
               value={valueFor("environment", draft)}
               onSelect={(opt) => patch(patchFor("environment", opt, draft))}
             />
-            <Label>Equipment</Label>
+            <Label hint="Your plan only uses exercises you have the kit for.">Equipment</Label>
             {isFullyEquipped(draft.environment) && (
               <p className="mb-3 text-subhead leading-relaxed text-muted">
                 A full gym is assumed to have everything. Untick anything yours doesn&apos;t have.
@@ -291,7 +325,7 @@ function Editor({ section, saved }: { section: ProfileSection; saved: Onboarding
               selected={draft.equipment}
               onToggle={(eq) => patch({ equipment: toggle(draft.equipment, eq) })}
             />
-            <Label>Exercises you love</Label>
+            <Label hint="Used whenever they fit the session.">Exercises you love</Label>
             <ExercisePicker
               query={likedQuery}
               setQuery={setLikedQuery}
@@ -299,7 +333,7 @@ function Editor({ section, saved }: { section: ProfileSection; saved: Onboarding
               selected={draft.likedExercises}
               onToggle={(id) => patch({ likedExercises: toggle(draft.likedExercises, id) })}
             />
-            <Label>Exercises to avoid</Label>
+            <Label hint="Never put in your plan.">Exercises to avoid</Label>
             <ExercisePicker
               query={avoidQuery}
               setQuery={setAvoidQuery}
@@ -331,11 +365,14 @@ function Editor({ section, saved }: { section: ProfileSection; saved: Onboarding
 
       {problem && changed && <p className="mb-3 text-subhead text-warning">{problem}</p>}
       {error && <p className="mb-3 text-subhead text-warning">{error}</p>}
-      {rebuilds && !problem && (
+      {preview && <PlanChangeSummary title="If you save, your plan changes like this" changes={preview} />}
+      {section === "body" && rebuilds && !problem && (
         <p className="mb-3 text-footnote leading-relaxed text-muted">
-          Saving rebuilds your plan around this. Your workout history and personal bests stay, and exercises that stay
-          in your plan keep their weights.
+          The coach reads new injury notes when you save, so any exercises it swaps for them will show after.
         </p>
+      )}
+      {changed && !rebuilds && !problem && (
+        <p className="mb-3 text-footnote leading-relaxed text-muted">This won&apos;t change your plan.</p>
       )}
       <button
         onClick={save}
